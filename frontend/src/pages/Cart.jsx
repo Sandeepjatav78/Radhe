@@ -146,7 +146,22 @@ const Cart = () => {
                             <div className="flex justify-between items-center mt-2">
                                 <p className="text-emerald-700 font-bold">{currency}{productData.price}</p>
                                 <div className="flex items-center gap-3">
-                                    <input type="number" min={1} defaultValue={item.quantity} onChange={(e) => updateQuantity(item._id, Number(e.target.value))} className="border border-gray-300 px-2 py-1 w-14 text-center rounded focus:outline-emerald-500"/>
+                                    {/* --- INPUT FIX START --- */}
+                                    <input 
+                                      type="number" 
+                                      min={1} 
+                                      defaultValue={item.quantity} 
+                                      onChange={(e) => {
+                                          const value = e.target.value;
+                                          // Agar empty hai ya '0' hai, to update mat karo (wait karo)
+                                          if (value === '' || value === '0') return; 
+                                          // Valid number hone par hi update karo
+                                          updateQuantity(item._id, Number(value));
+                                      }} 
+                                      className="border border-gray-300 px-2 py-1 w-14 text-center rounded focus:outline-emerald-500"
+                                    />
+                                    {/* --- INPUT FIX END --- */}
+
                                     <img src={assets.bin_icon} onClick={() => updateQuantity(item._id, 0)} className="w-5 cursor-pointer opacity-60 hover:text-red-500" alt="Delete"/>
                                 </div>
                             </div>
