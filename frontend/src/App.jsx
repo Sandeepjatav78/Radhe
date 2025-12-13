@@ -19,9 +19,12 @@ import Chatbot from "./chatbot/chatbot";
 
 const App = () => {
   return (
-    <div className="">
+    // Change: Added 'overflow-x-hidden' and 'min-h-screen'
+    <div className="w-full min-h-screen overflow-x-hidden">
+      
       <Navbar />
       <SearchBar />
+      
       <ToastContainer
         position="top-right"
         toastClassName={() =>
@@ -44,8 +47,10 @@ const App = () => {
           <Route path="/orders" element={<Orders />} />
           <Route path="/profile" element={<Profile />} />
         </Routes>
+        
         <Footer />
       </div>
+      
     </div>
   );
 };

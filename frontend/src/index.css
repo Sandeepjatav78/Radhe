@@ -1,10 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Prata&display=swap');
 @import "tailwindcss";
 
+/* --- 1. GLOBAL OVERFLOW FIX (YE ADD KARO) --- */
+html, body {
+  width: 100%;
+  overflow-x: hidden; /* Ye side scrollbar rokega */
+  position: relative;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  width: 100%;
+  overflow-x: hidden; /* React root ko bhi safe rakho */
+}
+
+/* --- BAKI CODE WAISA HI RAHEGA --- */
+
 @keyframes shimmer {
-  100% {
-    transform: translateX(100%);
-  }
+  100% { transform: translateX(100%); }
 }
 
 .shimmer-wrapper {
@@ -15,7 +29,7 @@
 .shimmer {
   position: relative;
   overflow: hidden;
-  background-color: #e2e8f0; /* Tailwind slate-200 */
+  background-color: #e2e8f0;
 }
 
 .shimmer::after {
@@ -29,11 +43,11 @@
   animation: shimmer 1.5s infinite;
 }
 
-
 a.active hr{
     display: block;
 }
 
+/* Scrollbar hide karne ke liye */
 ::-webkit-scrollbar{
     display: none;
 }
@@ -44,8 +58,8 @@ a.active hr{
 }
 
 @media(max-width:640px) {
-        a.active{
-            background-color: black;
-            color: white;
-        }
+    a.active{
+        background-color: black;
+        color: white;
+    }
 }
