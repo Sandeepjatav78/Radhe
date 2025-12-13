@@ -1,10 +1,10 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap, useMapEvents } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import axios from 'axios';
 
-// Fix default icon issue
+// Fix Leaflet Default Icon
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
@@ -17,7 +17,7 @@ let DefaultIcon = L.icon({
 });
 L.Marker.prototype.options.icon = DefaultIcon;
 
-// Helper to fly to location
+// Map Controller to Fly to Location
 const MapController = ({ coords }) => {
     const map = useMap();
     useEffect(() => {
@@ -28,43 +28,60 @@ const MapController = ({ coords }) => {
     return null;
 };
 
-const LocationPicker = ({ setLocation }) => {
-    const [position, setPosition] = useState({ lat: 20.5937, lng: 78.9629 });
-    const [addressText, setAddressText] = useState("India"); // Address dikhane ke liye
+const LocationPicker = ({ setLocation, onAddressSelect }) => {
+    const [position, setPosition] = useState({ lat: 29.3909, lng: 76.9635 }); // Default: Panipat
+    const [isLocating, setIsLocating] = useState(false);
     const [searchText, setSearchText] = useState("");
     const markerRef = useRef(null);
 
-    // --- Function: Coordinates se Address nikalo (Reverse Geocoding) ---
+    // --- REVERSE GEOCODING (Coords -> Address) ---
     const getAddressFromCoords = async (lat, lng) => {
         try {
-            setAddressText("Fetching address...");
             const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`;
             const response = await axios.get(url);
-            if (response.data && response.data.display_name) {
-                setAddressText(response.data.display_name); // Set Text
+            
+            if (response.data) {
+                const addr = response.data.address;
+                const structuredAddress = {
+                    street: addr.road || addr.suburb || addr.neighbourhood || "",
+                    city: addr.city || addr.town || addr.village || "",
+                    state: addr.state || "",
+                    zipcode: addr.postcode || "",
+                    country: addr.country || "India"
+                };
+
+                // Parent ko data bhejo
+                if(onAddressSelect) {
+                    onAddressSelect(structuredAddress);
+                }
             }
         } catch (error) {
-            setAddressText("Address not found");
+            console.error("Address fetch failed", error);
         }
     };
 
-    // --- 1. Get GPS Location ---
+    // --- 1. Detect GPS Location ---
     const handleGetLocation = () => {
+        setIsLocating(true);
         if (navigator.geolocation) {
-            setAddressText("Locating you...");
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
                     const { latitude, longitude } = pos.coords;
                     const newPos = { lat: latitude, lng: longitude };
                     setPosition(newPos);
                     setLocation(newPos);
-                    getAddressFromCoords(latitude, longitude); // Address bhi fetch karo
+                    getAddressFromCoords(latitude, longitude);
+                    setIsLocating(false);
                 },
                 (err) => {
-                    alert("Could not detect location. Please use search.");
+                    alert("Location access denied or unavailable.");
+                    setIsLocating(false);
                 },
                 { enableHighAccuracy: true }
             );
+        } else {
+            alert("Geolocation not supported");
+            setIsLocating(false);
         }
     };
 
@@ -74,12 +91,12 @@ const LocationPicker = ({ setLocation }) => {
         try {
             const response = await axios.get(`https://nominatim.openstreetmap.org/search?format=json&q=${searchText}`);
             if (response.data && response.data.length > 0) {
-                const { lat, lon, display_name } = response.data[0];
+                const { lat, lon } = response.data[0];
                 const newPos = { lat: parseFloat(lat), lng: parseFloat(lon) };
                 
                 setPosition(newPos);
                 setLocation(newPos);
-                setAddressText(display_name); // Set searched address
+                getAddressFromCoords(newPos.lat, newPos.lng);
             } else {
                 alert("Location not found.");
             }
@@ -88,7 +105,7 @@ const LocationPicker = ({ setLocation }) => {
         }
     };
 
-    // --- 3. Drag Logic (Sabse Important) ---
+    // --- 3. Drag Logic ---
     const eventHandlers = useMemo(
         () => ({
             dragend() {
@@ -97,7 +114,6 @@ const LocationPicker = ({ setLocation }) => {
                     const newPos = marker.getLatLng();
                     setPosition(newPos);
                     setLocation({ lat: newPos.lat, lng: newPos.lng });
-                    // Jaise hi drag khatam ho, naya address pata karo
                     getAddressFromCoords(newPos.lat, newPos.lng);
                 }
             },
@@ -106,37 +122,48 @@ const LocationPicker = ({ setLocation }) => {
     );
 
     return (
-        <div className='flex flex-col gap-3 mb-6'>
-            <div className='flex justify-between items-end'>
-                <p className='font-semibold text-gray-700'>
-                    Delivery Location <span className='text-red-500'>*</span>
+        <div className='flex flex-col gap-4 w-full'>
+            
+            {/* Header & Detect Button (Mobile Responsive) */}
+            <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-2'>
+                <p className='font-semibold text-gray-700 text-sm'>
+                    Pin Delivery Location <span className='text-red-500'>*</span>
                 </p>
                 <button 
                     type="button"
                     onClick={handleGetLocation}
-                    className='text-xs bg-emerald-700 text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-emerald-800'
+                    disabled={isLocating}
+                    className='text-xs bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-sm active:scale-95 disabled:opacity-70 w-full sm:w-auto'
                 >
-                    📍 Detect My Location
+                    {isLocating ? (
+                        <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                    ) : (
+                        <span>📍 Detect Current Location</span>
+                    )}
                 </button>
             </div>
 
             {/* Search Bar */}
-            <div className='flex gap-2'>
+            <div className='flex gap-2 w-full'>
                 <input 
                     type="text" 
-                    placeholder="Type area (e.g. Model Town, Panipat)" 
-                    className='border border-gray-300 rounded px-2 py-1.5 w-full text-sm outline-emerald-500'
+                    placeholder="Search (e.g. Model Town, Panipat)" 
+                    className='flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all'
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                 />
-                <button type="button" onClick={handleSearch} className='bg-gray-800 text-white px-3 py-1.5 rounded text-sm'>
+                <button 
+                    type="button" 
+                    onClick={handleSearch} 
+                    className='bg-gray-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-700 transition-colors'
+                >
                     Search
                 </button>
             </div>
 
-            {/* Map Area */}
-            <div className='h-[350px] w-full border-2 border-emerald-100 rounded-lg overflow-hidden relative z-0'>
+            {/* Map Container */}
+            <div className='h-[250px] sm:h-[300px] w-full border-2 border-gray-100 rounded-xl overflow-hidden relative z-0 shadow-md'>
                 <MapContainer center={position} zoom={13} style={{ height: "100%", width: "100%" }}>
                     <TileLayer
                         attribution='&copy; OpenStreetMap'
@@ -149,18 +176,14 @@ const LocationPicker = ({ setLocation }) => {
                         eventHandlers={eventHandlers}
                         ref={markerRef}
                     >
-                        <Popup>Drag me to adjust!</Popup>
+                        <Popup>Deliver Here</Popup>
                     </Marker>
                 </MapContainer>
             </div>
             
-            {/* --- LIVE ADDRESS FEEDBACK (Blinkit Style) --- */}
-            <div className='bg-emerald-50 p-3 rounded border border-emerald-100'>
-                <p className='text-xs text-gray-500 font-bold uppercase'>Selected Location:</p>
-                <p className='text-sm text-gray-800 mt-1 font-medium leading-snug'>
-                    {addressText}
-                </p>
-            </div>
+            <p className='text-[10px] text-gray-500 italic text-center'>
+                * Drag marker or use search to pinpoint exact location.
+            </p>
         </div>
     );
 };

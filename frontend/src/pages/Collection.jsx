@@ -8,10 +8,9 @@ const Collection = () => {
   const { products, search, showSearch } = useContext(ShopContext);
   const [showFilter, setShowFilter] = useState(false);
   const [filterProducts, setFilterProducts] = useState([]);
-  
-  // Renamed for clarity, but logic remains same
-  const [category, setCategory] = useState([]); 
-  const [subCategory, setSubCategory] = useState([]); 
+
+  const [category, setCategory] = useState([]);
+  const [subCategory, setSubCategory] = useState([]);
   const [sortType, setSortType] = useState("relevant");
 
   const toggleCategory = (e) => {
@@ -37,9 +36,11 @@ const Collection = () => {
 
     if (showSearch && search) {
       const regex = new RegExp(`\\b${search.toLowerCase()}\\b`);
-      productsCopy = productsCopy.filter((item) =>
-        regex.test(item.name.toLowerCase()) || 
-        (item.saltComposition && item.saltComposition.toLowerCase().includes(search.toLowerCase())) // Added Salt Search
+      productsCopy = productsCopy.filter(
+        (item) =>
+          regex.test(item.name.toLowerCase()) ||
+          (item.saltComposition &&
+            item.saltComposition.toLowerCase().includes(search.toLowerCase()))
       );
     }
 
@@ -83,7 +84,6 @@ const Collection = () => {
 
   return (
     <div className="flex flex-col sm:flex-row gap-1 sm:gap-10 pt-10 border-t">
-      
       {/* --- Filter Options Left Side --- */}
       <div className="min-w-60">
         <p
@@ -100,34 +100,77 @@ const Collection = () => {
           />
         </p>
 
-        {/* Filter 1: Type (Tablet, Syrup etc) */}
+        {/* Filter 1: Category (Updated with Sexual Wellness & Devices) */}
         <div
           className={`border border-gray-300 pl-5 py-3 mt-6 ${
             showFilter ? "" : "hidden"
           } sm:block`}
         >
-          <p className="mb-3 text-sm font-medium">MEDICINE TYPE</p>
+          <p className="mb-3 text-sm font-medium">CATEGORY</p>
           <div className="flex flex-col gap-2 text-sm font-light text-gray-700">
-            {['Tablet', 'Syrup', 'Injection', 'Cream', 'Drops'].map((type) => (
-               <label key={type} className="flex gap-2 items-center">
-                <input className="w-3" type="checkbox" value={type} onChange={toggleCategory} />
+            {[
+              "Tablet",
+              "Syrup",
+              "Injection",
+              "Cream",
+              "Drops",
+              "Sexual Wellness", // New
+              "Devices", // New
+            ].map((type) => (
+              <label
+                key={type}
+                className="flex gap-2 items-center cursor-pointer hover:text-emerald-600"
+              >
+                <input
+                  className="w-3 cursor-pointer"
+                  type="checkbox"
+                  value={type}
+                  onChange={toggleCategory}
+                />
                 {type}
               </label>
             ))}
           </div>
         </div>
 
-        {/* Filter 2: Health Concern (Pain, Cold etc) */}
+        {/* Filter 2: Type/Health Concern (Updated with New Types) */}
         <div
           className={`border border-gray-300 pl-5 py-3 mt-5 ${
             showFilter ? "" : "hidden"
           } sm:block`}
         >
-          <p className="mb-3 text-sm font-medium">HEALTH CONCERN</p>
-          <div className="flex flex-col gap-2 text-sm font-light text-gray-700">
-             {['Pain Relief', 'Gastric', 'Cold & Cough', 'Vitamins', 'Antibiotic'].map((sub) => (
-               <label key={sub} className="flex gap-2 items-center">
-                <input className="w-3" type="checkbox" value={sub} onChange={toggleSubCategory} />
+          <p className="mb-3 text-sm font-medium">HEALTH CONCERN / TYPE</p>
+          <div className="flex flex-col gap-2 text-sm font-light text-gray-700 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
+            {[
+              // Common
+              "Pain Relief",
+              "Gastric",
+              "Cold & Cough",
+              "Vitamins",
+              "Antibiotic",
+              // Skin
+              "Skin Care",
+              // Sexual Wellness
+              "Condoms",
+              "Lubricants",
+              "Performance Supplements",
+              // Chronic
+              "Diabetes",
+              "Heart",
+              // Devices
+              "BP Monitor",
+              "Thermometer",
+            ].map((sub) => (
+              <label
+                key={sub}
+                className="flex gap-2 items-center cursor-pointer hover:text-emerald-600"
+              >
+                <input
+                  className="w-3 cursor-pointer"
+                  type="checkbox"
+                  value={sub}
+                  onChange={toggleSubCategory}
+                />
                 {sub}
               </label>
             ))}
@@ -142,7 +185,7 @@ const Collection = () => {
           {/* Sorting */}
           <select
             onClick={(e) => setSortType(e.target.value)}
-            className="border-2 border-gray-300 text-sm px-2"
+            className="border-2 border-gray-300 text-sm px-2 py-1 rounded outline-emerald-500"
           >
             <option value="relevant">Sort By: Relevant</option>
             <option value="low-high">Sort By: Low to High</option>
@@ -153,23 +196,23 @@ const Collection = () => {
         {/* Map Products */}
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-6">
           {filterProducts.length > 0 ? (
-             filterProducts.map((item, index) => (
+            filterProducts.map((item, index) => (
               <ProductItem
                 key={index}
                 id={item._id}
                 name={item.name}
                 price={item.price}
+                mrp={item.mrp} // <--- YE PASS KARNA MAT BHULNA
                 image={item.image}
-                // Passing Pharmacy Props
                 salt={item.saltComposition}
                 packSize={item.packSize}
                 isRx={item.prescriptionRequired}
               />
             ))
           ) : (
-             <p className="col-span-full text-center text-gray-500 text-lg">
-                No medicines found matching filters.
-             </p>
+            <p className="col-span-full text-center text-gray-500 text-lg mt-10">
+              No medicines found matching filters.
+            </p>
           )}
         </div>
       </div>

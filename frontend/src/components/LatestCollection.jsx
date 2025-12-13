@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import ProductItem from "./ProductItem";
-import ProductItemSkeleton from "../components/ProductSkeleton"; // Make sure path is correct
+import ProductItemSkeleton from "../components/ProductSkeleton"; 
 import { motion } from "framer-motion";
 
 const LatestCollection = () => {
@@ -56,6 +56,7 @@ const LatestCollection = () => {
                   image={item.image}
                   name={item.name}
                   price={item.price}
+                  mrp={item.mrp}  // <--- MRP ADDED
                   // Pharmacy Specific Data
                   salt={item.saltComposition}
                   packSize={item.packSize}

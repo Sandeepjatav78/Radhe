@@ -1,76 +1,63 @@
 import { v2 as cloudinary } from "cloudinary";
-import productModel from "../models/productModels.js";
+import productModel from "../models/productModels.js"; // Path check kar lena
 
-// Add Product (Pharmacy Logic)
+// Add Product
 const addProduct = async (req, res) => {
   try {
-    // 1. Naye Pharmacy Fields receive karna
-    const { 
-        name, 
-        description, 
-        price, 
-        category, 
-        subCategory, 
-        bestsellar, 
-        
-        // New Fields
-        saltComposition,
-        manufacturer,
-        packSize,
-        prescriptionRequired,
-        stock,
-        expiryDate
+    const {
+      name, description, price, mrp, category, subCategory, bestsellar,
+      saltComposition, manufacturer, packSize, stock, expiryDate, prescriptionRequired
     } = req.body;
 
-    // 2. Images handle karna (Same as before)
+    // Handling Images
     const image1 = req.files.image1 && req.files.image1[0];
     const image2 = req.files.image2 && req.files.image2[0];
     const image3 = req.files.image3 && req.files.image3[0];
     const image4 = req.files.image4 && req.files.image4[0];
 
-    const images = [image1, image2, image3, image4].filter(Boolean);
+    const images = [image1, image2, image3, image4].filter((item) => item !== undefined);
 
-    const imagesURL = await Promise.all(
+    let imagesUrl = await Promise.all(
       images.map(async (item) => {
-        const result = await cloudinary.uploader.upload(item.path, {
-          resource_type: "image",
-        });
+        let result = await cloudinary.uploader.upload(item.path, { resource_type: 'image' });
         return result.secure_url;
       })
     );
 
-    // 3. Data Prepare karna
+    // Data Preparation
     const productData = {
       name,
       description,
-      price: Number(price),
       category,
       subCategory,
-      bestsellar: bestsellar === "true" || bestsellar === true,
-      image: imagesURL,
-      date: Date.now(),
-      
-      // Saving New Fields
+      price: Number(price),
+      mrp: Number(mrp), // <--- Important
+      bestsellar: bestsellar === "true" ? true : false,
+      image: imagesUrl,
+
+      // Pharmacy Data Save
       saltComposition,
       manufacturer,
       packSize,
       stock: Number(stock),
-      expiryDate: Number(expiryDate), // Timestamp format expected
-      prescriptionRequired: prescriptionRequired === "true" || prescriptionRequired === true
-    };
+      expiryDate: Number(expiryDate),
+      prescriptionRequired: prescriptionRequired === "true" ? true : false,
 
-    console.log(productData); // Debugging ke liye
+      date: Date.now()
+    }
+
+    console.log(productData); // Console me check karne ke liye
 
     const product = new productModel(productData);
     await product.save();
 
     res.json({ success: true, message: "Medicine Added Successfully" });
+
   } catch (error) {
     console.log(error);
     res.json({ success: false, message: error.message });
   }
-};
-
+}
 // List All Products
 const listProduct = async (req, res) => {
   try {
@@ -104,4 +91,43 @@ const singleProduct = async (req, res) => {
   }
 };
 
-export { listProduct, addProduct, removeProduct, singleProduct };
+// Update Product (Quick Edit)
+// Update Product (Full Edit)
+const updateProduct = async (req, res) => {
+  try {
+    const {
+      id, name, description, price, mrp, category, subCategory, bestsellar,
+      saltComposition, manufacturer, packSize, stock, expiryDate, prescriptionRequired
+    } = req.body;
+
+    // Note: Hum abhi Images update nahi kar rahe complex logic se bachne ke liye.
+    // Agar images change karni hain to delete karke naya product add karna behtar rehta hai, 
+    // ya fir complex image replacement logic lagana padta hai.
+    // Abhi hum sirf TEXT DATA update kar rahe hain jo sabse jaruri hai.
+
+    await productModel.findByIdAndUpdate(id, {
+      name,
+      description,
+      price: Number(price),
+      mrp: Number(mrp),
+      category,
+      subCategory,
+      bestsellar: bestsellar === "true" || bestsellar === true,
+      saltComposition,
+      manufacturer,
+      packSize,
+      stock: Number(stock),
+      expiryDate: Number(expiryDate),
+      prescriptionRequired: prescriptionRequired === "true" || prescriptionRequired === true
+    });
+
+    res.json({ success: true, message: "Product Details Updated" });
+
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: error.message });
+  }
+}
+
+// Export it
+export { listProduct, addProduct, removeProduct, singleProduct, updateProduct };

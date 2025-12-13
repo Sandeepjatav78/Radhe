@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
-import { assets } from '../assets/assets' // Check your path
+import { assets } from '../assets/assets'
 import axios from 'axios'
-import { backendURL } from '../App' // Check your path
+import { backendURL } from '../App'
 import { toast } from 'react-toastify'
 
 const Add = ({ token }) => {
@@ -14,17 +14,38 @@ const Add = ({ token }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [category, setCategory] = useState("Tablet");
-  const [subCategory, setSubCategory] = useState("Pain Relief");
+  const [mrp, setMrp] = useState(""); 
   const [bestsellar, setBestsellar] = useState(false);
   
-  // --- NEW PHARMACY STATES ---
+  // Pharmacy Specific States
   const [saltComposition, setSaltComposition] = useState("");
   const [manufacturer, setManufacturer] = useState("");
   const [packSize, setPackSize] = useState("");
   const [stock, setStock] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [prescriptionRequired, setPrescriptionRequired] = useState(false);
+
+  // --- 1. DYNAMIC CATEGORY DATA ---
+  const categoryData = {
+      "Tablet": ["Pain Relief", "Gastric", "Antibiotic", "Vitamins", "Cold & Cough", "Heart"],
+      "Syrup": ["Cough Syrup", "Digestion", "Multivitamin", "Antacid"],
+      "Injection": ["Pain Killer", "Antibiotic", "Diabetes", "Vaccine"],
+      "Cream": ["Antifungal", "Antibiotic", "Pain Relief", "Moisturizer", "Skin Care"],
+      "Drops": ["Eye Drops", "Ear Drops", "Pediatric Drops"],
+      "Sexual Wellness": ["Condoms", "Lubricants", "Performance Supplements", "Test Kits", "Hygiene"],
+      "Devices": ["BP Monitor", "Glucometer", "Thermometer", "Oximeter"]
+  };
+
+  // Default States for Dropdowns
+  const [category, setCategory] = useState("Tablet");
+  const [subCategory, setSubCategory] = useState(categoryData["Tablet"][0]);
+
+  // Handle Category Change (Auto-update SubCategory)
+  const handleCategoryChange = (e) => {
+      const selectedCategory = e.target.value;
+      setCategory(selectedCategory);
+      setSubCategory(categoryData[selectedCategory][0]);
+  };
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
@@ -35,16 +56,16 @@ const Add = ({ token }) => {
       formData.append("name", name)
       formData.append("description", description)
       formData.append("price", price)
+      formData.append("mrp", mrp)
       formData.append("category", category)
       formData.append("subCategory", subCategory)
       formData.append("bestsellar", bestsellar)
       
-      // New Fields Append
       formData.append("saltComposition", saltComposition)
       formData.append("manufacturer", manufacturer)
       formData.append("packSize", packSize)
       formData.append("stock", stock)
-      formData.append("expiryDate", new Date(expiryDate).getTime()) // Convert date to timestamp
+      formData.append("expiryDate", new Date(expiryDate).getTime())
       formData.append("prescriptionRequired", prescriptionRequired)
 
       image1 && formData.append("image1", image1)
@@ -64,11 +85,14 @@ const Add = ({ token }) => {
         setImage3(false)
         setImage4(false)
         setPrice("")
+        setMrp("")
         setSaltComposition("")
         setManufacturer("")
         setPackSize("")
         setStock("")
         setExpiryDate("")
+        setCategory("Tablet")
+        setSubCategory(categoryData["Tablet"][0])
       } else {
         toast.error(response.data.message)
       }
@@ -108,89 +132,108 @@ const Add = ({ token }) => {
       {/* Basic Details */}
       <div className='w-full'>
         <p className='mb-2'>Medicine Name</p>
-        <input onChange={(e) => setName(e.target.value)} value={name} className='w-full max-w-[500px] px-3 py-2' type="text" placeholder='Type here (e.g. Dolo 650)' required />
+        <input onChange={(e) => setName(e.target.value)} value={name} className='w-full max-w-[500px] px-3 py-2 border border-gray-300 rounded' type="text" placeholder='Type here (e.g. Dolo 650)' required />
       </div>
 
       <div className='w-full'>
         <p className='mb-2'>Product Description</p>
-        <textarea onChange={(e) => setDescription(e.target.value)} value={description} className='w-full max-w-[500px] px-3 py-2' type="text" placeholder='Uses, Side effects, etc.' required />
+        <textarea onChange={(e) => setDescription(e.target.value)} value={description} className='w-full max-w-[500px] px-3 py-2 border border-gray-300 rounded' type="text" placeholder='Uses, Side effects, etc.' required />
       </div>
 
       {/* --- PHARMACY SPECIFIC FIELDS --- */}
       
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
-        <div>
+        <div className='w-full'>
           <p className='mb-2'>Salt Composition</p>
-          <input onChange={(e) => setSaltComposition(e.target.value)} value={saltComposition} className='w-full px-3 py-2' type="text" placeholder='e.g. Paracetamol' required />
+          <input onChange={(e) => setSaltComposition(e.target.value)} value={saltComposition} className='w-full px-3 py-2 border border-gray-300 rounded' type="text" placeholder='e.g. Paracetamol' required />
         </div>
 
-        <div>
+        <div className='w-full'>
           <p className='mb-2'>Manufacturer</p>
-          <input onChange={(e) => setManufacturer(e.target.value)} value={manufacturer} className='w-full px-3 py-2' type="text" placeholder='e.g. Cipla' required />
+          <input onChange={(e) => setManufacturer(e.target.value)} value={manufacturer} className='w-full px-3 py-2 border border-gray-300 rounded' type="text" placeholder='e.g. Cipla' required />
         </div>
       </div>
 
+      {/* --- DYNAMIC DROPDOWNS --- */}
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
-         <div>
+         <div className='w-full'>
             <p className='mb-2'>Category</p>
-            <select onChange={(e) => setCategory(e.target.value)} className='w-full px-3 py-2'>
-              <option value="Tablet">Tablet</option>
-              <option value="Syrup">Syrup</option>
-              <option value="Injection">Injection</option>
-              <option value="Cream">Cream</option>
-              <option value="Drops">Drops</option>
+            <select onChange={handleCategoryChange} value={category} className='w-full px-3 py-2 border border-gray-300 rounded bg-white'>
+              {Object.keys(categoryData).map((cat) => (
+                  <option key={cat} value={cat}>{cat}</option>
+              ))}
             </select>
         </div>
 
-        <div>
-            <p className='mb-2'>Type</p>
-            <select onChange={(e) => setSubCategory(e.target.value)} className='w-full px-3 py-2'>
-              <option value="Pain Relief">Pain Relief</option>
-              <option value="Gastric">Gastric</option>
-              <option value="Cold & Cough">Cold & Cough</option>
-              <option value="Vitamins">Vitamins</option>
-              <option value="Antibiotic">Antibiotic</option>
+        <div className='w-full'>
+            <p className='mb-2'>Type (Sub-Category)</p>
+            <select onChange={(e) => setSubCategory(e.target.value)} value={subCategory} className='w-full px-3 py-2 border border-gray-300 rounded bg-white'>
+               {categoryData[category].map((sub) => (
+                  <option key={sub} value={sub}>{sub}</option>
+              ))}
             </select>
         </div>
+      </div>
 
-        <div>
-          <p className='mb-2'>Price</p>
-          <input onChange={(e) => setPrice(e.target.value)} value={price} className='w-full px-3 py-2 sm:w-[120px]' type="number" placeholder='25' />
+      {/* --- PRICE & MRP SECTION --- */}
+      <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
+        <div className='w-full'>
+          <p className='mb-2'>MRP (₹)</p>
+          <input 
+            onChange={(e) => setMrp(e.target.value)} 
+            value={mrp} 
+            className='w-full px-3 py-2 border border-red-300 rounded text-red-600 font-medium' 
+            type="number" 
+            placeholder='100' 
+            required
+          />
+        </div>
+
+        <div className='w-full'>
+          <p className='mb-2'>Selling Price (₹)</p>
+          <input 
+            onChange={(e) => setPrice(e.target.value)} 
+            value={price} 
+            className='w-full px-3 py-2 border border-green-300 rounded text-green-700 font-bold' 
+            type="number" 
+            placeholder='80' 
+            required
+          />
         </div>
       </div>
 
       {/* Extra Details Row */}
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
-          <div>
+          <div className='w-full'>
             <p className='mb-2'>Pack Size</p>
-            <input onChange={(e) => setPackSize(e.target.value)} value={packSize} className='w-full px-3 py-2' type="text" placeholder='10 Tablets/Strip' required />
+            <input onChange={(e) => setPackSize(e.target.value)} value={packSize} className='w-full px-3 py-2 border border-gray-300 rounded' type="text" placeholder='10 Tablets/Strip' required />
           </div>
 
-           <div>
+           <div className='w-full'>
             <p className='mb-2'>Stock Quantity</p>
-            <input onChange={(e) => setStock(e.target.value)} value={stock} className='w-full px-3 py-2' type="number" placeholder='100' required />
+            <input onChange={(e) => setStock(e.target.value)} value={stock} className='w-full px-3 py-2 border border-gray-300 rounded' type="number" placeholder='100' required />
           </div>
 
-          <div>
+          <div className='w-full'>
             <p className='mb-2'>Expiry Date</p>
-            <input onChange={(e) => setExpiryDate(e.target.value)} value={expiryDate} className='w-full px-3 py-2' type="date" required />
+            <input onChange={(e) => setExpiryDate(e.target.value)} value={expiryDate} className='w-full px-3 py-2 border border-gray-300 rounded' type="date" required />
           </div>
       </div>
 
       {/* Checkboxes */}
-      <div className='flex gap-2 mt-2'>
-        <div className='flex gap-2 cursor-pointer'>
-          <input onChange={() => setBestsellar(prev => !prev)} checked={bestsellar} type="checkbox" id="bestseller" />
-          <label className='cursor-pointer' htmlFor="bestseller">Add to Bestseller</label>
+      <div className='flex gap-4 mt-2'>
+        <div className='flex gap-2 items-center cursor-pointer'>
+          <input onChange={() => setBestsellar(prev => !prev)} checked={bestsellar} type="checkbox" id="bestseller" className='w-4 h-4 cursor-pointer' />
+          <label className='cursor-pointer select-none' htmlFor="bestseller">Add to Bestseller</label>
         </div>
         
-        <div className='flex gap-2 cursor-pointer ml-4'>
-          <input onChange={() => setPrescriptionRequired(prev => !prev)} checked={prescriptionRequired} type="checkbox" id="presc" />
-          <label className='cursor-pointer text-red-500 font-medium' htmlFor="presc">Prescription Required?</label>
+        <div className='flex gap-2 items-center cursor-pointer'>
+          <input onChange={() => setPrescriptionRequired(prev => !prev)} checked={prescriptionRequired} type="checkbox" id="presc" className='w-4 h-4 cursor-pointer' />
+          <label className='cursor-pointer text-red-600 font-medium select-none' htmlFor="presc">Prescription Required?</label>
         </div>
       </div>
 
-      <button type='submit' className='w-28 py-3 mt-4 bg-black text-white' onClick={console.log("yy")}>ADD</button>
+      <button type='submit' className='w-32 py-3 mt-4 bg-black text-white font-medium rounded hover:bg-gray-800 transition-colors'>ADD MEDICINE</button>
 
     </form>
   )

@@ -1,35 +1,23 @@
 import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema({
-    name: { type: String, required: true }, // Medicine Name (e.g. Dolo 650)
-    description: { type: String, required: true }, // Uses & Side effects
+    name: { type: String, required: true },
+    description: { type: String, required: true },
     price: { type: Number, required: true },
+    mrp: { type: Number, required: true }, // <--- New Field
     image: { type: Array, required: true },
-    category: { type: String, required: true }, // e.g. Tablet, Syrup, Injection
-    subCategory: { type: String, required: true }, // e.g. Pain Relief, Gastric
+    category: { type: String, required: true },
+    subCategory: { type: String, required: true },
+    bestsellar: { type: Boolean },
     
-    // --- Naya Pharmacy Logic ---
-    
-    // 1. Dawaai ka Salt (Generic Name) - Search ke liye best hai
-    saltComposition: { type: String, required: true }, 
-
-    // 2. Company ka naam
-    manufacturer: { type: String, required: true }, 
-
-    // 3. Pack size (e.g. "10 Tablets per Strip" or "100ml Bottle")
+    // --- PHARMACY NEW FIELDS ---
+    saltComposition: { type: String, required: true },
+    manufacturer: { type: String, required: true },
     packSize: { type: String, required: true },
-
-    // 4. Kya prescription chahiye? (True/False)
+    stock: { type: Number, required: true },
+    expiryDate: { type: Number },
     prescriptionRequired: { type: Boolean, default: false },
 
-    // 5. Stock Quantity (Inventory manage karne ke liye)
-    stock: { type: Number, required: true, default: 0 },
-
-    // 6. Expiry Date (Optional abhi ke liye, par future me jaruri hai)
-    expiryDate: { type: Number }, 
-    
-    // --- Common Fields ---
-    bestsellar: { type: Boolean },
     date: { type: Number, required: true }
 })
 

@@ -2,8 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { backendURL, currency } from "../App";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom"; // <--- 1. Import useNavigate
 
-// Trash Icon Component (Inline SVG for better look)
+// Icons
 const TrashIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 6h18"></path>
@@ -12,7 +13,15 @@ const TrashIcon = () => (
   </svg>
 );
 
+const EditIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+  </svg>
+);
+
 const List = ({ token }) => {
+  const navigate = useNavigate(); // <--- 2. Initialize Navigation
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -46,15 +55,9 @@ const List = ({ token }) => {
   };
 
   const removeProduct = async (id) => {
-    // Confirmation Dialog
-    if(!window.confirm("Are you sure you want to delete this medicine?")) return;
-
+    if (!window.confirm("Are you sure you want to delete this medicine?")) return;
     try {
-      const res = await axios.post(
-        `${backendURL}/api/product/remove`,
-        { id },
-        { headers: { token } }
-      );
+      const res = await axios.post(`${backendURL}/api/product/remove`, { id }, { headers: { token } });
       if (res.data.success) {
         toast.success(res.data.message);
         setPage(1);
@@ -78,7 +81,7 @@ const List = ({ token }) => {
   }, [page]);
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 w-full">
+    <div className="min-h-screen bg-gray-50/50 p-6 w-full relative">
       {/* --- Header Section --- */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
         <div>
@@ -123,57 +126,62 @@ const List = ({ token }) => {
                             {product.manufacturer}
                         </p>
                     </div>
-                    {/* Price for Mobile View */}
                     <span className="sm:hidden font-bold text-emerald-700">{currency}{product.price}</span>
                 </div>
 
                 <div className="flex flex-wrap items-center gap-2 mt-3">
-                    {/* Category Badge */}
                     <span className="bg-blue-50 text-blue-600 text-xs px-2.5 py-1 rounded-md font-medium border border-blue-100">
                         {product.category}
                     </span>
-                    
-                    {/* Pack Size Badge */}
                     <span className="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-md font-medium border border-gray-200">
                         {product.packSize}
                     </span>
-
-                    {/* Prescription Badge */}
                     {product.prescriptionRequired && (
                         <span className="bg-red-50 text-red-600 text-xs px-2.5 py-1 rounded-md font-bold border border-red-100 flex items-center gap-1">
                             Rx Required
                         </span>
                     )}
+                    {product.bestsellar && (
+                        <span className="bg-yellow-50 text-yellow-600 text-xs px-2.5 py-1 rounded-md font-bold border border-yellow-200">
+                            Bestseller
+                        </span>
+                    )}
                 </div>
               </div>
 
-              {/* 3. Price & Actions (Desktop View) */}
+              {/* 3. Price & Actions */}
               <div className="flex sm:flex-col items-center sm:items-end justify-between w-full sm:w-auto gap-4 mt-2 sm:mt-0 border-t sm:border-none pt-3 sm:pt-0">
                 <p className="hidden sm:block text-xl font-bold text-gray-800">
                     {currency}{product.price}
                 </p>
                 
-                <button
-                    onClick={() => removeProduct(product._id)}
-                    className="flex items-center gap-2 text-sm text-red-500 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg font-medium transition-colors w-full sm:w-auto justify-center"
-                >
-                    <TrashIcon /> Delete
-                </button>
+                <div className="flex gap-2">
+                    {/* EDIT BUTTON - Redirects to Update Page */}
+                    <button
+                        onClick={() => navigate(`/update/${product._id}`)} // <--- 3. Yahan Change kiya hai
+                        className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg font-medium transition-colors"
+                    >
+                        <EditIcon /> Edit
+                    </button>
+
+                    {/* DELETE BUTTON */}
+                    <button
+                        onClick={() => removeProduct(product._id)}
+                        className="flex items-center gap-2 text-sm text-red-500 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg font-medium transition-colors"
+                    >
+                        <TrashIcon />
+                    </button>
+                </div>
               </div>
             </div>
           ))
         )}
       </div>
 
-      {/* --- Load More Button --- */}
       {hasMore && !loading && (
         <div className="flex justify-center mt-10 mb-10">
-          <button
-            onClick={handleLoadMore}
-            className="group flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-full hover:bg-gray-50 hover:border-gray-400 transition-all font-medium shadow-sm active:scale-95"
-          >
+          <button onClick={handleLoadMore} className="group flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-full hover:bg-gray-50 transition-all font-medium shadow-sm">
             Load More Items
-            <span className="block w-2 h-2 border-r-2 border-b-2 border-gray-500 transform rotate-45 group-hover:translate-y-0.5 transition-transform"></span>
           </button>
         </div>
       )}
@@ -183,6 +191,7 @@ const List = ({ token }) => {
               <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
       )}
+
     </div>
   );
 };

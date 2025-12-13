@@ -21,7 +21,6 @@ const RelatedProducts = ({ category, subCategory }) => {
   return (
     <div className='my-24'>
       <div className='text-center text-3xl py-2'>
-        {/* Changed 'Collections' to 'Medicines' */}
         <Title text1={'RELATED'} text2={'MEDICINES'} />
       </div>
 
@@ -32,6 +31,7 @@ const RelatedProducts = ({ category, subCategory }) => {
             id={item._id}
             name={item.name}
             price={item.price}
+            mrp={item.mrp} // <--- MRP ADDED
             image={item.image}
             
             // --- NEW: Pharmacy Props pass kiye ---
