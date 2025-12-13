@@ -11,7 +11,7 @@ const productSchema = new mongoose.Schema({
     bestsellar: { type: Boolean },
     
     // --- PHARMACY NEW FIELDS ---
-    saltComposition: { type: String, required: true },
+    saltComposition: { type: String, required: false },
     manufacturer: { type: String, required: true },
     packSize: { type: String, required: true },
     stock: { type: Number, required: true },

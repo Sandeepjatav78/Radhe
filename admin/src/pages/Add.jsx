@@ -25,7 +25,7 @@ const Add = ({ token }) => {
   const [expiryDate, setExpiryDate] = useState("");
   const [prescriptionRequired, setPrescriptionRequired] = useState(false);
 
-  // --- 1. DYNAMIC CATEGORY DATA ---
+  // --- 1. UPDATED CATEGORY DATA (Added 'Other') ---
   const categoryData = {
       "Tablet": ["Pain Relief", "Gastric", "Antibiotic", "Vitamins", "Cold & Cough", "Heart"],
       "Syrup": ["Cough Syrup", "Digestion", "Multivitamin", "Antacid"],
@@ -33,18 +33,26 @@ const Add = ({ token }) => {
       "Cream": ["Antifungal", "Antibiotic", "Pain Relief", "Moisturizer", "Skin Care"],
       "Drops": ["Eye Drops", "Ear Drops", "Pediatric Drops"],
       "Sexual Wellness": ["Condoms", "Lubricants", "Performance Supplements", "Test Kits", "Hygiene"],
-      "Devices": ["BP Monitor", "Glucometer", "Thermometer", "Oximeter"]
+      "Devices": ["BP Monitor", "Glucometer", "Thermometer", "Oximeter"],
+      "Other": [] // Empty array for custom input
   };
 
-  // Default States for Dropdowns
   const [category, setCategory] = useState("Tablet");
   const [subCategory, setSubCategory] = useState(categoryData["Tablet"][0]);
+  const [customSubCategory, setCustomSubCategory] = useState(""); // State for custom input
 
-  // Handle Category Change (Auto-update SubCategory)
+  // Handle Category Change
   const handleCategoryChange = (e) => {
       const selectedCategory = e.target.value;
       setCategory(selectedCategory);
-      setSubCategory(categoryData[selectedCategory][0]);
+      
+      // Agar "Other" hai to subCategory clear karo, warna pehla option select karo
+      if (selectedCategory === "Other") {
+          setSubCategory("Other");
+          setCustomSubCategory("");
+      } else {
+          setSubCategory(categoryData[selectedCategory][0]);
+      }
   };
 
   const onSubmitHandler = async (e) => {
@@ -58,9 +66,12 @@ const Add = ({ token }) => {
       formData.append("price", price)
       formData.append("mrp", mrp)
       formData.append("category", category)
-      formData.append("subCategory", subCategory)
-      formData.append("bestsellar", bestsellar)
       
+      // Agar Other hai to custom value bhejo, warna dropdown value
+      const finalSubCategory = category === "Other" ? customSubCategory : subCategory;
+      formData.append("subCategory", finalSubCategory)
+      
+      formData.append("bestsellar", bestsellar)
       formData.append("saltComposition", saltComposition)
       formData.append("manufacturer", manufacturer)
       formData.append("packSize", packSize)
@@ -93,6 +104,7 @@ const Add = ({ token }) => {
         setExpiryDate("")
         setCategory("Tablet")
         setSubCategory(categoryData["Tablet"][0])
+        setCustomSubCategory("")
       } else {
         toast.error(response.data.message)
       }
@@ -141,11 +153,10 @@ const Add = ({ token }) => {
       </div>
 
       {/* --- PHARMACY SPECIFIC FIELDS --- */}
-      
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
         <div className='w-full'>
           <p className='mb-2'>Salt Composition</p>
-          <input onChange={(e) => setSaltComposition(e.target.value)} value={saltComposition} className='w-full px-3 py-2 border border-gray-300 rounded' type="text" placeholder='e.g. Paracetamol' required />
+          <input onChange={(e) => setSaltComposition(e.target.value)} value={saltComposition} className='w-full px-3 py-2 border border-gray-300 rounded' type="text" placeholder='e.g. Paracetamol' />
         </div>
 
         <div className='w-full'>
@@ -154,7 +165,7 @@ const Add = ({ token }) => {
         </div>
       </div>
 
-      {/* --- DYNAMIC DROPDOWNS --- */}
+      {/* --- DYNAMIC DROPDOWNS WITH CUSTOM 'OTHER' --- */}
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
          <div className='w-full'>
             <p className='mb-2'>Category</p>
@@ -167,11 +178,24 @@ const Add = ({ token }) => {
 
         <div className='w-full'>
             <p className='mb-2'>Type (Sub-Category)</p>
-            <select onChange={(e) => setSubCategory(e.target.value)} value={subCategory} className='w-full px-3 py-2 border border-gray-300 rounded bg-white'>
-               {categoryData[category].map((sub) => (
-                  <option key={sub} value={sub}>{sub}</option>
-              ))}
-            </select>
+            
+            {/* Logic: Agar Category 'Other' hai to Input dikhao, warna Dropdown */}
+            {category === "Other" ? (
+                <input 
+                    type="text" 
+                    value={customSubCategory} 
+                    onChange={(e) => setCustomSubCategory(e.target.value)} 
+                    placeholder="Type custom category..." 
+                    className='w-full px-3 py-2 border border-emerald-500 rounded bg-emerald-50 outline-none'
+                    required
+                />
+            ) : (
+                <select onChange={(e) => setSubCategory(e.target.value)} value={subCategory} className='w-full px-3 py-2 border border-gray-300 rounded bg-white'>
+                   {categoryData[category].map((sub) => (
+                      <option key={sub} value={sub}>{sub}</option>
+                   ))}
+                </select>
+            )}
         </div>
       </div>
 
@@ -179,26 +203,12 @@ const Add = ({ token }) => {
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
         <div className='w-full'>
           <p className='mb-2'>MRP (₹)</p>
-          <input 
-            onChange={(e) => setMrp(e.target.value)} 
-            value={mrp} 
-            className='w-full px-3 py-2 border border-red-300 rounded text-red-600 font-medium' 
-            type="number" 
-            placeholder='100' 
-            required
-          />
+          <input onChange={(e) => setMrp(e.target.value)} value={mrp} className='w-full px-3 py-2 border border-red-300 rounded text-red-600 font-medium' type="number" placeholder='100' required />
         </div>
 
         <div className='w-full'>
           <p className='mb-2'>Selling Price (₹)</p>
-          <input 
-            onChange={(e) => setPrice(e.target.value)} 
-            value={price} 
-            className='w-full px-3 py-2 border border-green-300 rounded text-green-700 font-bold' 
-            type="number" 
-            placeholder='80' 
-            required
-          />
+          <input onChange={(e) => setPrice(e.target.value)} value={price} className='w-full px-3 py-2 border border-green-300 rounded text-green-700 font-bold' type="number" placeholder='80' required />
         </div>
       </div>
 
