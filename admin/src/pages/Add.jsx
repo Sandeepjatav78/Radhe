@@ -21,11 +21,11 @@ const Add = ({ token }) => {
   const [saltComposition, setSaltComposition] = useState("");
   const [manufacturer, setManufacturer] = useState("");
   const [packSize, setPackSize] = useState("");
+  const [batchNumber, setBatchNumber] = useState(""); // --- NEW STATE ---
   const [stock, setStock] = useState("");
   const [expiryDate, setExpiryDate] = useState("");
   const [prescriptionRequired, setPrescriptionRequired] = useState(false);
 
-  // --- 1. UPDATED CATEGORY DATA (Added 'Other') ---
   const categoryData = {
       "Tablet": ["Pain Relief", "Gastric", "Antibiotic", "Vitamins", "Cold & Cough", "Heart"],
       "Syrup": ["Cough Syrup", "Digestion", "Multivitamin", "Antacid"],
@@ -34,19 +34,16 @@ const Add = ({ token }) => {
       "Drops": ["Eye Drops", "Ear Drops", "Pediatric Drops"],
       "Sexual Wellness": ["Condoms", "Lubricants", "Performance Supplements", "Test Kits", "Hygiene"],
       "Devices": ["BP Monitor", "Glucometer", "Thermometer", "Oximeter"],
-      "Other": [] // Empty array for custom input
+      "Other": [] 
   };
 
   const [category, setCategory] = useState("Tablet");
   const [subCategory, setSubCategory] = useState(categoryData["Tablet"][0]);
-  const [customSubCategory, setCustomSubCategory] = useState(""); // State for custom input
+  const [customSubCategory, setCustomSubCategory] = useState(""); 
 
-  // Handle Category Change
   const handleCategoryChange = (e) => {
       const selectedCategory = e.target.value;
       setCategory(selectedCategory);
-      
-      // Agar "Other" hai to subCategory clear karo, warna pehla option select karo
       if (selectedCategory === "Other") {
           setSubCategory("Other");
           setCustomSubCategory("");
@@ -67,7 +64,6 @@ const Add = ({ token }) => {
       formData.append("mrp", mrp)
       formData.append("category", category)
       
-      // Agar Other hai to custom value bhejo, warna dropdown value
       const finalSubCategory = category === "Other" ? customSubCategory : subCategory;
       formData.append("subCategory", finalSubCategory)
       
@@ -75,6 +71,7 @@ const Add = ({ token }) => {
       formData.append("saltComposition", saltComposition)
       formData.append("manufacturer", manufacturer)
       formData.append("packSize", packSize)
+      formData.append("batchNumber", batchNumber) // --- ADDED TO FORM DATA ---
       formData.append("stock", stock)
       formData.append("expiryDate", new Date(expiryDate).getTime())
       formData.append("prescriptionRequired", prescriptionRequired)
@@ -100,6 +97,7 @@ const Add = ({ token }) => {
         setSaltComposition("")
         setManufacturer("")
         setPackSize("")
+        setBatchNumber("") // --- RESET ---
         setStock("")
         setExpiryDate("")
         setCategory("Tablet")
@@ -165,7 +163,7 @@ const Add = ({ token }) => {
         </div>
       </div>
 
-      {/* --- DYNAMIC DROPDOWNS WITH CUSTOM 'OTHER' --- */}
+      {/* --- DYNAMIC DROPDOWNS --- */}
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
          <div className='w-full'>
             <p className='mb-2'>Category</p>
@@ -178,8 +176,6 @@ const Add = ({ token }) => {
 
         <div className='w-full'>
             <p className='mb-2'>Type (Sub-Category)</p>
-            
-            {/* Logic: Agar Category 'Other' hai to Input dikhao, warna Dropdown */}
             {category === "Other" ? (
                 <input 
                     type="text" 
@@ -212,11 +208,17 @@ const Add = ({ token }) => {
         </div>
       </div>
 
-      {/* Extra Details Row */}
+      {/* --- INVENTORY DETAILS (Now Includes Batch Number) --- */}
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
           <div className='w-full'>
             <p className='mb-2'>Pack Size</p>
-            <input onChange={(e) => setPackSize(e.target.value)} value={packSize} className='w-full px-3 py-2 border border-gray-300 rounded' type="text" placeholder='10 Tablets/Strip' required />
+            <input onChange={(e) => setPackSize(e.target.value)} value={packSize} className='w-full px-3 py-2 border border-gray-300 rounded' type="text" placeholder='10 Tabs/Strip' required />
+          </div>
+
+          {/* --- BATCH NUMBER FIELD ADDED HERE --- */}
+          <div className='w-full'>
+            <p className='mb-2'>Batch Number</p>
+            <input onChange={(e) => setBatchNumber(e.target.value)} value={batchNumber} className='w-full px-3 py-2 border border-gray-300 rounded uppercase' type="text" placeholder='BN-123X' />
           </div>
 
            <div className='w-full'>

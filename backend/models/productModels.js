@@ -16,6 +16,7 @@ const productSchema = new mongoose.Schema({
     packSize: { type: String, required: true },
     stock: { type: Number, required: true },
     expiryDate: { type: Number },
+    batchNumber: { type: String },
     prescriptionRequired: { type: Boolean, default: false },
 
     date: { type: Number, required: true }

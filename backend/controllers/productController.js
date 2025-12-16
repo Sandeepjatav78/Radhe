@@ -1,12 +1,14 @@
 import { v2 as cloudinary } from "cloudinary";
-import productModel from "../models/productModels.js"; // Path check kar lena
+import productModel from "../models/productModels.js"; 
 
 // Add Product
 const addProduct = async (req, res) => {
   try {
     const {
       name, description, price, mrp, category, subCategory, bestsellar,
-      saltComposition, manufacturer, packSize, stock, expiryDate, prescriptionRequired
+      saltComposition, manufacturer, packSize, 
+      batchNumber, // <--- 1. YAHAN RECEIVE KIYA
+      stock, expiryDate, prescriptionRequired
     } = req.body;
 
     // Handling Images
@@ -31,7 +33,7 @@ const addProduct = async (req, res) => {
       category,
       subCategory,
       price: Number(price),
-      mrp: Number(mrp), // <--- Important
+      mrp: Number(mrp),
       bestsellar: bestsellar === "true" ? true : false,
       image: imagesUrl,
 
@@ -39,6 +41,7 @@ const addProduct = async (req, res) => {
       saltComposition,
       manufacturer,
       packSize,
+      batchNumber, // <--- 2. YAHAN DATABASE OBJECT ME DAALA
       stock: Number(stock),
       expiryDate: Number(expiryDate),
       prescriptionRequired: prescriptionRequired === "true" ? true : false,
@@ -46,7 +49,7 @@ const addProduct = async (req, res) => {
       date: Date.now()
     }
 
-    console.log(productData); // Console me check karne ke liye
+    console.log(productData); 
 
     const product = new productModel(productData);
     await product.save();
@@ -58,6 +61,7 @@ const addProduct = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 }
+
 // List All Products
 const listProduct = async (req, res) => {
   try {
@@ -91,19 +95,15 @@ const singleProduct = async (req, res) => {
   }
 };
 
-// Update Product (Quick Edit)
 // Update Product (Full Edit)
 const updateProduct = async (req, res) => {
   try {
     const {
       id, name, description, price, mrp, category, subCategory, bestsellar,
-      saltComposition, manufacturer, packSize, stock, expiryDate, prescriptionRequired
+      saltComposition, manufacturer, packSize, 
+      batchNumber, // <--- 3. UPDATE ME BHI RECEIVE KIYA
+      stock, expiryDate, prescriptionRequired
     } = req.body;
-
-    // Note: Hum abhi Images update nahi kar rahe complex logic se bachne ke liye.
-    // Agar images change karni hain to delete karke naya product add karna behtar rehta hai, 
-    // ya fir complex image replacement logic lagana padta hai.
-    // Abhi hum sirf TEXT DATA update kar rahe hain jo sabse jaruri hai.
 
     await productModel.findByIdAndUpdate(id, {
       name,
@@ -113,9 +113,11 @@ const updateProduct = async (req, res) => {
       category,
       subCategory,
       bestsellar: bestsellar === "true" || bestsellar === true,
+      
       saltComposition,
       manufacturer,
       packSize,
+      batchNumber, // <--- 4. UPDATE QUERY ME ADD KIYA
       stock: Number(stock),
       expiryDate: Number(expiryDate),
       prescriptionRequired: prescriptionRequired === "true" || prescriptionRequired === true
