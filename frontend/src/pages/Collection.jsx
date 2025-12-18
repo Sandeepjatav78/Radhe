@@ -3,6 +3,7 @@ import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets";
 import Title from "../components/Title";
 import ProductItem from "../components/ProductItem";
+import RequestMedicine from "../components/RequestMedicine"; // <--- 1. IMPORT KIYA
 
 const Collection = () => {
   const { products, search, showSearch } = useContext(ShopContext);
@@ -32,7 +33,8 @@ const Collection = () => {
   };
 
   const applyFilter = () => {
-    let productsCopy = products.slice();
+    // --- 2. CHANGE HERE: Reverse kar diya taaki Newest upar aaye ---
+    let productsCopy = products.slice().reverse(); 
 
     if (showSearch && search) {
       const regex = new RegExp(`\\b${search.toLowerCase()}\\b`);
@@ -100,7 +102,7 @@ const Collection = () => {
           />
         </p>
 
-        {/* Filter 1: Category (Updated with Sexual Wellness & Devices) */}
+        {/* Filter 1: Category */}
         <div
           className={`border border-gray-300 pl-5 py-3 mt-6 ${
             showFilter ? "" : "hidden"
@@ -114,8 +116,9 @@ const Collection = () => {
               "Injection",
               "Cream",
               "Drops",
-              "Sexual Wellness", // New
-              "Devices", // New
+              "Sexual Wellness",
+              "Devices",
+              "Other"
             ].map((type) => (
               <label
                 key={type}
@@ -133,7 +136,7 @@ const Collection = () => {
           </div>
         </div>
 
-        {/* Filter 2: Type/Health Concern (Updated with New Types) */}
+        {/* Filter 2: Type/Health Concern */}
         <div
           className={`border border-gray-300 pl-5 py-3 mt-5 ${
             showFilter ? "" : "hidden"
@@ -142,24 +145,9 @@ const Collection = () => {
           <p className="mb-3 text-sm font-medium">HEALTH CONCERN / TYPE</p>
           <div className="flex flex-col gap-2 text-sm font-light text-gray-700 max-h-96 overflow-y-auto pr-2 custom-scrollbar">
             {[
-              // Common
-              "Pain Relief",
-              "Gastric",
-              "Cold & Cough",
-              "Vitamins",
-              "Antibiotic",
-              // Skin
-              "Skin Care",
-              // Sexual Wellness
-              "Condoms",
-              "Lubricants",
-              "Performance Supplements",
-              // Chronic
-              "Diabetes",
-              "Heart",
-              // Devices
-              "BP Monitor",
-              "Thermometer",
+              "Pain Relief", "Gastric", "Cold & Cough", "Vitamins", "Antibiotic",
+              "Skin Care", "Condoms", "Lubricants", "Performance Supplements",
+              "Diabetes", "Heart", "BP Monitor", "Thermometer", "Other"
             ].map((sub) => (
               <label
                 key={sub}
@@ -187,7 +175,7 @@ const Collection = () => {
             onClick={(e) => setSortType(e.target.value)}
             className="border-2 border-gray-300 text-sm px-2 py-1 rounded outline-emerald-500"
           >
-            <option value="relevant">Sort By: Relevant</option>
+            <option value="relevant">Sort By: Newest First</option>
             <option value="low-high">Sort By: Low to High</option>
             <option value="high-low">Sort By: High To Low</option>
           </select>
@@ -202,7 +190,7 @@ const Collection = () => {
                 id={item._id}
                 name={item.name}
                 price={item.price}
-                mrp={item.mrp} // <--- YE PASS KARNA MAT BHULNA
+                mrp={item.mrp}
                 image={item.image}
                 salt={item.saltComposition}
                 packSize={item.packSize}
@@ -210,9 +198,14 @@ const Collection = () => {
               />
             ))
           ) : (
-            <p className="col-span-full text-center text-gray-500 text-lg mt-10">
-              No medicines found matching filters.
-            </p>
+            // --- 3. CHANGE HERE: Show Request Form if No Product Found ---
+            <div className="col-span-full flex flex-col items-center justify-center w-full">
+               <p className="text-gray-500 text-lg mt-4 mb-4 text-center">
+                 No medicines found matching your search.
+               </p>
+               {/* Yahan Form component call kiya hai */}
+               <RequestMedicine />
+            </div>
           )}
         </div>
       </div>
