@@ -43,21 +43,37 @@ const PlaceOrder = () => {
     }
 
     const items = [];
+    
+    // --- UPDATED LOOP FOR VARIANTS ---
     for (const itemId in cartItems) {
-      if (cartItems[itemId] > 0) {
         const product = products.find((p) => p._id === itemId);
+        
         if (product) {
-          items.push({
-            productId: product._id,
-            name: product.name,
-            price: product.price,
-            image: product.image,
-            packSize: product.packSize,
-            quantity: cartItems[itemId],
-            prescriptionRequired: product.prescriptionRequired,
-          });
+            // cartItems[itemId] ab ek object hai: { "50ml": 1, "100ml": 2 }
+            const sizes = cartItems[itemId];
+
+            for (const size in sizes) {
+                if (sizes[size] > 0) {
+                    
+                    // Find correct Variant Price
+                    let itemPrice = product.price;
+                    if (product.variants && product.variants.length > 0) {
+                         const variant = product.variants.find(v => v.size === size);
+                         if (variant) itemPrice = variant.price;
+                    }
+
+                    items.push({
+                        productId: product._id,
+                        name: product.name,
+                        price: itemPrice,
+                        image: product.image,
+                        size: size, // <--- SAVING SIZE
+                        quantity: sizes[size],
+                        prescriptionRequired: product.prescriptionRequired,
+                    });
+                }
+            }
         }
-      }
     }
     setOrderItems(items);
   }, [cartItems, products, location.state, navigate]);
@@ -65,7 +81,7 @@ const PlaceOrder = () => {
   const onChangeHandler = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  // --- Payment Functions (Kept your logic) ---
+  // --- Payment Functions ---
   const initPay = (order, orderData) => {
     const options = {
       key: import.meta.env.VITE_RAZORPAY_KEY_ID,
@@ -116,7 +132,8 @@ const PlaceOrder = () => {
         address: finalAddress, 
         items: orderItems,
         amount: finalAmount,
-        prescriptionUploaded: isRxRequired ? true : false,
+        // Note: Actual image file is not being uploaded here, just the flag
+        prescriptionUploaded: isRxRequired ? true : false, 
       };
 
       switch (method) {
@@ -135,32 +152,10 @@ const PlaceOrder = () => {
 
         case "razorpay":
           toast.info("Razorpay Payment Coming Soon!");
-          // Your existing commented code logic remains here...
-          /*
-          const responseRazorpay = await axios.post(
-            backendUrl + "/api/order/razorpay",
-            orderData,
-            { headers: { token } }
-          );
-          if (responseRazorpay.data.success)
-            initPay(responseRazorpay.data.order, orderData);
-          else toast.error("Razorpay Failed");
-          */
           break;
 
         case "stripe":
             toast.info("Stripe Payment Coming Soon!");
-            // Your existing commented code logic...
-            /*
-            const responseStripe = await axios.post(
-             backendUrl + "/api/order/stripe",
-             orderData,
-             { headers: { token } }
-            );
-            if (responseStripe.data.success)
-             window.location.replace(responseStripe.data.session_url);
-            else toast.error(responseStripe.data.message);
-            */
           break;
 
         default:
@@ -188,16 +183,16 @@ const PlaceOrder = () => {
         
         {/* Address (Pre-filled but Editable) */}
         <div className="mt-4">
-             <p className="text-sm font-bold text-gray-700 mb-2">Address (Detected from Map)</p>
-             <input required name="street" value={formData.street} onChange={onChangeHandler} type="text" placeholder="Street Address" className="border border-gray-300 rounded px-3.5 py-2.5 w-full mb-3 bg-white" />
-             <div className="grid grid-cols-2 gap-3">
-                <input required name="city" value={formData.city} onChange={onChangeHandler} type="text" placeholder="City" className="border border-gray-300 rounded px-3.5 py-2.5 w-full bg-white" />
-                <input required name="state" value={formData.state} onChange={onChangeHandler} type="text" placeholder="State" className="border border-gray-300 rounded px-3.5 py-2.5 w-full bg-white" />
-             </div>
-             <div className="grid grid-cols-2 gap-3 mt-3">
-                <input required name="zipcode" value={formData.zipcode} onChange={onChangeHandler} type="number" placeholder="Zipcode" className="border border-gray-300 rounded px-3.5 py-2.5 w-full bg-white" />
-                <input name="country" value={formData.country} readOnly type="text" placeholder="Country" className="border border-gray-300 rounded px-3.5 py-2.5 w-full bg-gray-50 text-gray-500" />
-             </div>
+              <p className="text-sm font-bold text-gray-700 mb-2">Address (Detected from Map)</p>
+              <input required name="street" value={formData.street} onChange={onChangeHandler} type="text" placeholder="Street Address" className="border border-gray-300 rounded px-3.5 py-2.5 w-full mb-3 bg-white" />
+              <div className="grid grid-cols-2 gap-3">
+                 <input required name="city" value={formData.city} onChange={onChangeHandler} type="text" placeholder="City" className="border border-gray-300 rounded px-3.5 py-2.5 w-full bg-white" />
+                 <input required name="state" value={formData.state} onChange={onChangeHandler} type="text" placeholder="State" className="border border-gray-300 rounded px-3.5 py-2.5 w-full bg-white" />
+              </div>
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                 <input required name="zipcode" value={formData.zipcode} onChange={onChangeHandler} type="number" placeholder="Zipcode" className="border border-gray-300 rounded px-3.5 py-2.5 w-full bg-white" />
+                 <input name="country" value={formData.country} readOnly type="text" placeholder="Country" className="border border-gray-300 rounded px-3.5 py-2.5 w-full bg-gray-50 text-gray-500" />
+              </div>
         </div>
       </div>
 
@@ -226,26 +221,26 @@ const PlaceOrder = () => {
 
         {/* Order Summary */}
         <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm sticky top-20">
-             <Title text1="ORDER" text2="TOTAL" />
-             <div className="flex flex-col gap-3 mt-4 text-sm text-gray-600">
-                <div className="flex justify-between">
+              <Title text1="ORDER" text2="TOTAL" />
+              <div className="flex flex-col gap-3 mt-4 text-sm text-gray-600">
+                 <div className="flex justify-between">
                     <span>Subtotal</span>
                     <span>{currency}{cartTotal}.00</span>
-                </div>
-                <div className="flex justify-between">
+                 </div>
+                 <div className="flex justify-between">
                     <span>Delivery Fee ({distance}km)</span>
                     <span className={deliveryFee === 0 ? "text-green-600 font-bold" : ""}>
                         {deliveryFee === 0 ? "FREE" : `${currency}${deliveryFee}.00`}
                     </span>
-                </div>
-                <hr className="border-gray-100 my-2" />
-                <div className="flex justify-between text-lg font-bold text-gray-900">
+                 </div>
+                 <hr className="border-gray-100 my-2" />
+                 <div className="flex justify-between text-lg font-bold text-gray-900">
                     <span>Grand Total</span>
                     <span>{currency}{cartTotal + deliveryFee}.00</span>
-                </div>
-             </div>
+                 </div>
+              </div>
 
-             <div className="mt-8">
+              <div className="mt-8">
                 <Title text1="PAYMENT" text2="METHOD" />
                 <div className="flex flex-col gap-3 mt-3">
                     {/* Stripe */}

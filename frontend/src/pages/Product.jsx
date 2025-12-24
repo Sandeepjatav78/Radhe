@@ -11,7 +11,9 @@ const Product = () => {
   const [productData, setProductData] = useState(null);
   const [image, setImage] = useState("");
   const [activeTab, setActiveTab] = useState("description");
-  const navigate = useNavigate();
+  
+  // --- NEW STATE: ACTIVE VARIANT ---
+  const [activeVariant, setActiveVariant] = useState(null);
 
   const defaultSafetyAdvice = {
       alcohol: "Unsafe. It is advisable not to consume alcohol along with this medicine.",
@@ -27,20 +29,30 @@ const Product = () => {
     if (product) {
       setProductData(product);
       setImage(product.image[0]);
+      
+      // --- SET DEFAULT VARIANT (First one) ---
+      if (product.variants && product.variants.length > 0) {
+          setActiveVariant(product.variants[0]);
+      }
     }
   }, [productId, products]);
 
-  if (!productData) return <div className="min-h-[70vh] flex items-center justify-center text-gray-500 animate-pulse">Loading...</div>;
+  if (!productData || !activeVariant) return <div className="min-h-[70vh] flex items-center justify-center text-gray-500 animate-pulse">Loading...</div>;
 
-  const discount = productData.mrp && productData.price && productData.mrp > productData.price
-    ? Math.floor(((productData.mrp - productData.price) / productData.mrp) * 100) : 0;
+  // --- DYNAMIC CALCULATIONS BASED ON ACTIVE VARIANT ---
+  const currentPrice = activeVariant.price;
+  const currentMrp = activeVariant.mrp;
+  const currentSize = activeVariant.size;
+  const currentStock = activeVariant.stock;
+
+  const discount = currentMrp > currentPrice
+    ? Math.floor(((currentMrp - currentPrice) / currentMrp) * 100) : 0;
 
   const safety = { ...defaultSafetyAdvice, ...productData.safety_advice };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 mb-20 transition-opacity opacity-100 duration-500">
       
-      {/* --- Main Product Section --- */}
       <div className="flex flex-col md:flex-row gap-10 lg:gap-16">
         
         {/* LEFT: Images */}
@@ -61,7 +73,6 @@ const Product = () => {
           <p className="text-sm text-emerald-600 font-bold uppercase tracking-wider mb-1">{productData.manufacturer || "Generic"}</p>
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">{productData.name}</h1>
           
-          {/* --- CHANGE 1: SALT CHECK (Sirf tab dikhega jab value ho) --- */}
           {productData.saltComposition && productData.saltComposition.trim() !== "" && (
               <p className="text-gray-500 text-sm mt-2 font-medium">
                   Salt: <span className="text-gray-700">{productData.saltComposition}</span>
@@ -71,12 +82,33 @@ const Product = () => {
           <div className="flex items-center gap-2 mt-3 mb-4"><div className="flex text-amber-400 text-sm">★★★★☆</div><p className="text-xs text-gray-400">(122 Verified Reviews)</p></div>
           <hr className="border-gray-100 mb-5" />
 
+          {/* --- PRICE DISPLAY (Dynamic) --- */}
           <div className="flex flex-col gap-1">
              <div className="flex items-end gap-3">
-                 <span className="text-3xl font-bold text-gray-900">{currency}{productData.price}</span>
-                 {discount > 0 && <span className="text-lg text-gray-400 line-through mb-1">MRP {currency}{productData.mrp}</span>}
+                 <span className="text-3xl font-bold text-gray-900">{currency}{currentPrice}</span>
+                 {discount > 0 && <span className="text-lg text-gray-400 line-through mb-1">MRP {currency}{currentMrp}</span>}
              </div>
-             <p className="text-xs text-gray-500">Inclusive of all taxes • Pack Size: <span className="font-semibold text-gray-700">{productData.packSize}</span></p>
+             <p className="text-xs text-gray-500">Inclusive of all taxes • Pack Size: <span className="font-semibold text-gray-700">{currentSize}</span></p>
+          </div>
+
+          {/* --- NEW: VARIANT SELECTOR --- */}
+          <div className="mt-6">
+              <p className="text-sm font-semibold text-gray-800 mb-3">Select Pack Size:</p>
+              <div className="flex flex-wrap gap-3">
+                  {productData.variants.map((variant, index) => (
+                      <button 
+                        key={index}
+                        onClick={() => setActiveVariant(variant)}
+                        className={`px-4 py-2 rounded-lg border text-sm font-medium transition-all ${
+                            activeVariant.size === variant.size 
+                            ? "border-emerald-600 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600" 
+                            : "border-gray-200 text-gray-600 hover:border-emerald-300"
+                        }`}
+                      >
+                          {variant.size}
+                      </button>
+                  ))}
+              </div>
           </div>
 
           {productData.prescriptionRequired && (
@@ -86,9 +118,26 @@ const Product = () => {
             </div>
           )}
 
+          {/* --- STOCK CHECK & ADD TO CART --- */}
           <div className="mt-8 flex gap-4">
-            <button onClick={() => { if (!token) { toast.error("Please login first"); return; } addToCart(productData._id); }} className="flex-1 bg-black text-white py-4 px-6 rounded-xl hover:bg-gray-800 transition-transform active:scale-95 font-semibold shadow-lg">Add to Cart</button>
+             {currentStock > 0 ? (
+                <button 
+                    onClick={() => { 
+                        if (!token) { toast.error("Please login first"); return; } 
+                        // Passing Size is important now
+                        addToCart(productData._id, currentSize); 
+                    }} 
+                    className="flex-1 bg-black text-white py-4 px-6 rounded-xl hover:bg-gray-800 transition-transform active:scale-95 font-semibold shadow-lg"
+                >
+                    Add to Cart
+                </button>
+             ) : (
+                <button disabled className="flex-1 bg-gray-300 text-gray-500 py-4 px-6 rounded-xl font-bold cursor-not-allowed">
+                    Out of Stock
+                </button>
+             )}
           </div>
+
           <div className="mt-8 grid grid-cols-3 gap-2 text-center">
              <div className="flex flex-col items-center gap-1 p-2 bg-gray-50 rounded-lg"><img src={assets.quality_icon} className="w-6 h-6 opacity-70" alt="" /><p className="text-[10px] text-gray-600 font-medium">Genuine</p></div>
              <div className="flex flex-col items-center gap-1 p-2 bg-gray-50 rounded-lg"><img src={assets.exchange_icon} className="w-6 h-6 opacity-70" alt="" /><p className="text-[10px] text-gray-600 font-medium">Fast</p></div>
@@ -97,22 +146,11 @@ const Product = () => {
         </div>
       </div>
 
-      {/* --- TABS SECTION --- */}
+      {/* --- TABS SECTION (Same as before) --- */}
       <div className="mt-16">
         <div className="flex gap-6 border-b border-gray-200">
-           {/* --- CHANGE 2: Added 'cursor-pointer' explicitly --- */}
-           <button 
-             onClick={() => setActiveTab("description")} 
-             className={`pb-3 border-b-2 font-bold text-sm sm:text-base transition-colors cursor-pointer ${activeTab === "description" ? "border-emerald-600 text-gray-800" : "border-transparent text-gray-500 hover:text-gray-700"}`}
-           >
-             Description
-           </button>
-           <button 
-             onClick={() => setActiveTab("safety")} 
-             className={`pb-3 border-b-2 font-bold text-sm sm:text-base transition-colors cursor-pointer ${activeTab === "safety" ? "border-emerald-600 text-gray-800" : "border-transparent text-gray-500 hover:text-gray-700"}`}
-           >
-             Safety Advice
-           </button>
+           <button onClick={() => setActiveTab("description")} className={`pb-3 border-b-2 font-bold text-sm sm:text-base transition-colors cursor-pointer ${activeTab === "description" ? "border-emerald-600 text-gray-800" : "border-transparent text-gray-500 hover:text-gray-700"}`}>Description</button>
+           <button onClick={() => setActiveTab("safety")} className={`pb-3 border-b-2 font-bold text-sm sm:text-base transition-colors cursor-pointer ${activeTab === "safety" ? "border-emerald-600 text-gray-800" : "border-transparent text-gray-500 hover:text-gray-700"}`}>Safety Advice</button>
         </div>
 
         <div className="py-6 text-gray-600 text-sm leading-7 space-y-4">
@@ -131,7 +169,6 @@ const Product = () => {
         </div>
       </div>
 
-      {/* --- CHANGE 3: Passed productId to exclude same item --- */}
       <RelatedProducts 
         category={productData.category} 
         subCategory={productData.subCategory} 

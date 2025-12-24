@@ -1,17 +1,22 @@
 import { v2 as cloudinary } from "cloudinary";
-import productModel from "../models/productModels.js"; 
+import productModel from "../models/productModels.js";
 
 // Add Product
 const addProduct = async (req, res) => {
   try {
     const {
-      name, description, price, mrp, category, subCategory, bestsellar,
-      saltComposition, manufacturer, packSize, 
-      batchNumber, // <--- 1. YAHAN RECEIVE KIYA
-      stock, expiryDate, prescriptionRequired
+      name,
+      description,
+      category,
+      subCategory,
+      bestsellar,
+      saltComposition,
+      manufacturer,
+      prescriptionRequired,
+      variants // <--- Main Data yahan hai ab
     } = req.body;
 
-    // Handling Images
+    // --- 1. Handling Images ---
     const image1 = req.files.image1 && req.files.image1[0];
     const image2 = req.files.image2 && req.files.image2[0];
     const image3 = req.files.image3 && req.files.image3[0];
@@ -26,30 +31,39 @@ const addProduct = async (req, res) => {
       })
     );
 
-    // Data Preparation
+    // --- 2. Parse Variants ---
+    let parsedVariants = [];
+    try {
+        parsedVariants = JSON.parse(variants); 
+    } catch (error) {
+        console.log("Variant Parsing Error", error);
+        parsedVariants = [];
+    }
+
+    // --- 3. Data Preparation ---
+    // Note: Maine yahan se price, mrp, stock, expiryDate hata diye hain
+    // Kyunki wo ab 'variants' array ke andar hain.
+    
     const productData = {
       name,
       description,
       category,
       subCategory,
-      price: Number(price),
-      mrp: Number(mrp),
       bestsellar: bestsellar === "true" ? true : false,
       image: imagesUrl,
-
-      // Pharmacy Data Save
+      
+      // Pharmacy Data
       saltComposition,
       manufacturer,
-      packSize,
-      batchNumber, // <--- 2. YAHAN DATABASE OBJECT ME DAALA
-      stock: Number(stock),
-      expiryDate: Number(expiryDate),
       prescriptionRequired: prescriptionRequired === "true" ? true : false,
+
+      // Variants Data (Isme Price, Stock, MRP, Batch sab hai)
+      variants: parsedVariants, 
 
       date: Date.now()
     }
 
-    console.log(productData); 
+    console.log(productData); // Ab NaN nahi dikhega
 
     const product = new productModel(productData);
     await product.save();
@@ -61,7 +75,6 @@ const addProduct = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 }
-
 // List All Products
 const listProduct = async (req, res) => {
   try {
@@ -94,33 +107,53 @@ const singleProduct = async (req, res) => {
     res.json({ success: false, message: error.message });
   }
 };
-
 // Update Product (Full Edit)
 const updateProduct = async (req, res) => {
   try {
     const {
-      id, name, description, price, mrp, category, subCategory, bestsellar,
-      saltComposition, manufacturer, packSize, 
-      batchNumber, // <--- 3. UPDATE ME BHI RECEIVE KIYA
-      stock, expiryDate, prescriptionRequired
+      id, 
+      name, 
+      description, 
+      category, 
+      subCategory, 
+      bestsellar,
+      saltComposition, 
+      manufacturer, 
+      prescriptionRequired,
+      expiryDate,
+      variants // <--- 1. IMPORTANT: Variants receive karein
     } = req.body;
 
+    // --- 2. Handle Variants Data ---
+    // Frontend (Update.jsx) JSON bhej raha hai, to ye direct Array ho sakta hai.
+    // Lekin safety ke liye check kar rahe hain.
+    let parsedVariants = [];
+    
+    if (typeof variants === 'string') {
+        try {
+            parsedVariants = JSON.parse(variants);
+        } catch (e) {
+            parsedVariants = [];
+        }
+    } else {
+        parsedVariants = variants; // Agar direct Array aaya to waisa hi le lo
+    }
+
+    // --- 3. Update Query ---
     await productModel.findByIdAndUpdate(id, {
       name,
       description,
-      price: Number(price),
-      mrp: Number(mrp),
       category,
       subCategory,
       bestsellar: bestsellar === "true" || bestsellar === true,
       
       saltComposition,
       manufacturer,
-      packSize,
-      batchNumber, // <--- 4. UPDATE QUERY ME ADD KIYA
-      stock: Number(stock),
+      prescriptionRequired: prescriptionRequired === "true" || prescriptionRequired === true,
       expiryDate: Number(expiryDate),
-      prescriptionRequired: prescriptionRequired === "true" || prescriptionRequired === true
+
+      // Price/Stock fields hata diye, sirf variants update honge
+      variants: parsedVariants 
     });
 
     res.json({ success: true, message: "Product Details Updated" });

@@ -6,25 +6,18 @@ import { ShopContext } from "../context/ShopContext";
 const Navbar = () => {
   const [profileOpen, setProfileOpen] = useState(false);
   const [visible, setVisible] = useState(false); // Mobile Menu State
-  const { setShowSearch, cartItems, setToken, token, setCartItems, setUserOrders } = useContext(ShopContext);
-  const navigate = useNavigate();
 
-  const getTotalCartItems = () => {
-    let total = 0;
-    for (const itemId in cartItems) {
-       if (cartItems[itemId] > 0) {
-          total += cartItems[itemId];
-       }
-    }
-    return total;
-  };
+  // ⚠️ FIX: 'getCartCount' ko context se nikala
+  const { setShowSearch, getCartCount, setToken, token, setCartItems, setUserOrders } = useContext(ShopContext);
+  
+  const navigate = useNavigate();
 
   const logout = () => {
     navigate("/login");
     localStorage.removeItem("token");
     setToken("");
     setCartItems({});
-    setUserOrders([]);
+    // setUserOrders([]); // Agar ye context me nahi hai to hata dein
   };
 
   return (
@@ -82,8 +75,10 @@ const Navbar = () => {
 
           <Link to="/cart" className="relative">
             <img src={assets.cart_icon} className="w-5 min-w-5 hover:opacity-80" alt="Cart" />
+            
+            {/* ⚠️ FIX: Ab Context wala function use kiya */}
             <p className="absolute right-[-5px] bottom-[-5px] w-4 text-center leading-4 bg-emerald-600 text-white aspect-square rounded-full text-[8px]">
-              {getTotalCartItems()}
+              {getCartCount()}
             </p>
           </Link>
 
@@ -96,7 +91,7 @@ const Navbar = () => {
       <div 
         className={`fixed top-0 right-0 bottom-0 z-50 bg-white w-full h-screen transition-transform duration-300 ease-in-out ${visible ? 'translate-x-0' : 'translate-x-full'}`}
       >
-          {/* Main Sidebar Container - h-screen ensure karta hai height full ho */}
+          {/* Main Sidebar Container */}
           <div className="flex flex-col h-full bg-white text-gray-800">
               
               {/* Back Button */}

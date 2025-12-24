@@ -67,9 +67,13 @@ const Orders = ({ token }) => {
               <div>
                 <div className="text-sm font-medium text-gray-800">
                   {order.items.map((item, index) => (
-                     <p key={index} className="py-0.5">
-                       {item.name} x {item.quantity} <span className="text-gray-500 text-xs">[{item.packSize}]</span>
-                     </p>
+                      <p key={index} className="py-0.5">
+                        {item.name} x {item.quantity} 
+                        {/* ⚠️ CHANGED: Show Variant Size (e.g. 50ml) instead of generic PackSize */}
+                        <span className="text-gray-500 text-xs ml-1">
+                            [{item.size || item.packSize}]
+                        </span>
+                      </p>
                   ))}
                 </div>
 
@@ -83,7 +87,7 @@ const Orders = ({ token }) => {
                         <p>{order.address.street}, {order.address.city}, {order.address.zipcode}</p>
                         <p className="mt-1">Tel: {order.address.phone}</p>
                         
-                        {/* --- VIEW LOCATION BUTTON --- */}
+                        {/* --- FIXED: GOOGLE MAPS LINK --- */}
                         {order.address.lat && order.address.lng ? (
                             <a 
                                 href={`https://www.google.com/maps/search/?api=1&query=${order.address.lat},${order.address.lng}`}

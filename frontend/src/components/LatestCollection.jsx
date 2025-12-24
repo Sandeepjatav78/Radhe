@@ -11,9 +11,12 @@ const LatestCollection = () => {
 
   useEffect(() => {
     setLoading(true);
-    // Pharmacy: Show latest added medicines
+    
     if (products && products.length > 0) {
-        setLatestProduct(products.slice(0, 10));
+        // 1. slice() creates a copy
+        // 2. reverse() makes newest appear first
+        // 3. slice(0, 10) takes the top 10
+        setLatestProduct(products.slice().reverse().slice(0, 10));
         setLoading(false);
     }
   }, [products]);
@@ -50,17 +53,23 @@ const LatestCollection = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
               >
-                {/* --- UPDATED PROPS HERE --- */}
+                {/* --- PASS VARIANTS HERE --- */}
                 <ProductItem
                   id={item._id}
                   image={item.image}
                   name={item.name}
+                  
+                  // Keep these as fallbacks for old products
                   price={item.price}
-                  mrp={item.mrp}  // <--- MRP ADDED
+                  mrp={item.mrp} 
+                  packSize={item.packSize}
+                  
                   // Pharmacy Specific Data
                   salt={item.saltComposition}
-                  packSize={item.packSize}
                   isRx={item.prescriptionRequired}
+                  
+                  // ✅ IMPORTANT: Pass Variants Array
+                  variants={item.variants} 
                 />
               </motion.div>
             ))}

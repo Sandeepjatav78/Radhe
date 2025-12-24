@@ -1,5 +1,4 @@
-import React from "react";
-import { createContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -13,32 +12,39 @@ const ShopContextProvider = (props) => {
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   
-  // Cart Items State
   const [cartItems, setCartItems] = useState({});
-  
   const [products, setProducts] = useState([]);
   const [token, setToken] = useState("");
   const navigate = useNavigate();
 
-  // --- 1. Add To Cart (Simple Logic) ---
-  const addToCart = async (itemId) => {
+  // --- 1. Add To Cart (UPDATED FOR SIZE) ---
+  const addToCart = async (itemId, size) => {
+    
+    if (!size) {
+        toast.error("Please Select Size");
+        return;
+    }
+
     let cartData = structuredClone(cartItems);
 
     if (cartData[itemId]) {
-      cartData[itemId] += 1;
+      if (cartData[itemId][size]) {
+        cartData[itemId][size] += 1;
+      } else {
+        cartData[itemId][size] = 1;
+      }
     } else {
-      cartData[itemId] = 1;
+      cartData[itemId] = {};
+      cartData[itemId][size] = 1;
     }
     
-    // State update immediately for UI speed
     setCartItems(cartData);
 
-    // Backend update
     if (token) {
       try {
         await axios.post(
           backendUrl + "/api/cart/add",
-          { itemId },
+          { itemId, size }, // Size bhejna zaroori hai
           { headers: { token } }
         );
         toast.success("Added to Cart");
@@ -47,37 +53,39 @@ const ShopContextProvider = (props) => {
         toast.error(error.message);
       }
     } else {
-      toast.success("Added to Cart (Local)");
+      toast.success("Added to Cart");
     }
   };
 
-  // --- 2. Get Cart Count ---
+  // --- 2. Get Cart Count (UPDATED LOOP) ---
   const getCartCount = () => {
     let totalCount = 0;
-    // Iterate over simple object { itemId: quantity }
     for (const items in cartItems) {
-      try {
-        if (cartItems[items] > 0) {
-          totalCount += cartItems[items];
+      for (const item in cartItems[items]) {
+        try {
+          if (cartItems[items][item] > 0) {
+            totalCount += cartItems[items][item];
+          }
+        } catch (error) {
+           console.log(error);
         }
-      } catch (error) {
-        console.log(error);
       }
     }
     return totalCount;
   };
 
-  // --- 3. Update Quantity ---
-  const updateQuantity = async (itemId, quantity) => {
+  // --- 3. Update Quantity (UPDATED FOR SIZE) ---
+  const updateQuantity = async (itemId, size, quantity) => {
     let cartData = structuredClone(cartItems);
-    cartData[itemId] = quantity;
+    
+    cartData[itemId][size] = quantity;
     setCartItems(cartData);
 
     if (token) {
       try {
         await axios.post(
           backendUrl + "/api/cart/update",
-          { itemId, quantity },
+          { itemId, size, quantity },
           { headers: { token } }
         );
       } catch (error) {
@@ -87,18 +95,29 @@ const ShopContextProvider = (props) => {
     }
   };
 
-  // --- 4. Get Cart Amount ---
+  // --- 4. Get Cart Amount (UPDATED FOR VARIANT PRICE) ---
   const getCartAmount = () => {
     let totalAmount = 0;
-    for (const items in cartItems) {
-      let itemInfo = products.find((product) => product._id === items);
+    for (const itemId in cartItems) {
+      let itemInfo = products.find((product) => product._id === itemId);
       if (itemInfo) {
-        try {
-          if (cartItems[items] > 0) {
-            totalAmount += itemInfo.price * cartItems[items];
-          }
-        } catch (error) {
-          console.log(error);
+        for (const size in cartItems[itemId]) {
+            try {
+                if (cartItems[itemId][size] > 0) {
+                    // Find correct price for this size
+                    let variantPrice = itemInfo.price; // Default (Fallback)
+                    
+                    // Agar product me variants hain, to sahi variant ka price nikalo
+                    if(itemInfo.variants && itemInfo.variants.length > 0) {
+                        const variant = itemInfo.variants.find(v => v.size === size);
+                        if(variant) variantPrice = variant.price;
+                    }
+
+                    totalAmount += variantPrice * cartItems[itemId][size];
+                }
+            } catch (error) {
+                console.log(error);
+            }
         }
       }
     }
@@ -120,7 +139,7 @@ const ShopContextProvider = (props) => {
     }
   };
 
-  // --- 6. Fetch User Cart from DB (CRITICAL FIX) ---
+  // --- 6. Fetch User Cart ---
   const getUserCart = async (userToken) => {
     try {
       const response = await axios.post(
@@ -130,8 +149,6 @@ const ShopContextProvider = (props) => {
       );
       
       if (response.data.success) {
-        // Console log taaki pata chale data aaya ya nahi
-        console.log("🛒 DB Cart Loaded:", response.data.cartData);
         setCartItems(response.data.cartData);
       }
     } catch (error) {
@@ -140,42 +157,24 @@ const ShopContextProvider = (props) => {
     }
   };
 
-  // Initial Load
   useEffect(() => {
     getProductsData();
   }, []);
 
-  // Token & Cart Sync Logic
   useEffect(() => {
-    // 1. Check LocalStorage on Load
     if (!token && localStorage.getItem("token")) {
       setToken(localStorage.getItem("token"));
       getUserCart(localStorage.getItem("token"));
     }
-    // 2. Fetch Cart whenever token changes (Login/Logout)
-    if (token) {
-      getUserCart(token);
-    }
-  }, [token]);
+  }, []);
 
   const value = {
-    products,
-    currency,
-    delivery_fee,
-    search,
-    setSearch,
-    showSearch,
-    setShowSearch,
-    cartItems,
-    addToCart,
-    setCartItems,
-    getCartCount,
-    updateQuantity,
-    getCartAmount,
-    navigate,
-    backendUrl,
-    setToken,
-    token,
+    products, currency, delivery_fee,
+    search, setSearch, showSearch, setShowSearch,
+    cartItems, addToCart, setCartItems,
+    getCartCount, updateQuantity,
+    getCartAmount, navigate, backendUrl,
+    setToken, token,
   };
 
   return (

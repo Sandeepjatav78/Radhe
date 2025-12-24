@@ -3,19 +3,20 @@ import { ShopContext } from '../context/ShopContext';
 import Title from './Title';
 import ProductItem from './ProductItem';
 
-const RelatedProducts = ({ category, subCategory, productId }) => { // <--- Receive productId
+const RelatedProducts = ({ category, subCategory, productId }) => {
   const { products } = useContext(ShopContext);
   const [related, setRelated] = useState([]);
 
   useEffect(() => {
     if (products.length > 0) {
-        let productsCopy = products.slice();
+        // Reverse to show Newest items first
+        let productsCopy = products.slice().reverse();
         
-        // Filter: Category match AND SubCategory match AND ID NOT matching current product
+        // Filter: Match Category & SubCategory, Exclude Current Product
         productsCopy = productsCopy.filter((item) => 
             category === item.category && 
             subCategory === item.subCategory &&
-            item._id !== productId // <--- Exclude current product
+            item._id !== productId
         );
         
         setRelated(productsCopy.slice(0, 5));
@@ -41,6 +42,7 @@ const RelatedProducts = ({ category, subCategory, productId }) => { // <--- Rece
               
               salt={item.saltComposition}
               packSize={item.packSize}
+              variants={item.variants} // Passing variants here too
               isRx={item.prescriptionRequired}
             />
           ))

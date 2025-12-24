@@ -3,7 +3,7 @@ import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets";
 import Title from "../components/Title";
 import ProductItem from "../components/ProductItem";
-import RequestMedicine from "../components/RequestMedicine"; // <--- 1. IMPORT KIYA
+import RequestMedicine from "../components/RequestMedicine"; 
 
 const Collection = () => {
   const { products, search, showSearch } = useContext(ShopContext);
@@ -33,7 +33,7 @@ const Collection = () => {
   };
 
   const applyFilter = () => {
-    // --- 2. CHANGE HERE: Reverse kar diya taaki Newest upar aaye ---
+    // Reverse array to show Newest Products first by default
     let productsCopy = products.slice().reverse(); 
 
     if (showSearch && search) {
@@ -189,21 +189,21 @@ const Collection = () => {
                 key={index}
                 id={item._id}
                 name={item.name}
-                price={item.price}
+                price={item.price} // Variants logic ProductItem sambhal lega
                 mrp={item.mrp}
                 image={item.image}
                 salt={item.saltComposition}
                 packSize={item.packSize}
+                variants={item.variants} // Passing variants for price extraction
                 isRx={item.prescriptionRequired}
               />
             ))
           ) : (
-            // --- 3. CHANGE HERE: Show Request Form if No Product Found ---
+            // --- SHOW REQUEST FORM IF NOT FOUND ---
             <div className="col-span-full flex flex-col items-center justify-center w-full">
                <p className="text-gray-500 text-lg mt-4 mb-4 text-center">
                  No medicines found matching your search.
                </p>
-               {/* Yahan Form component call kiya hai */}
                <RequestMedicine />
             </div>
           )}

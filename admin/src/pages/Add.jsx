@@ -13,18 +13,41 @@ const Add = ({ token }) => {
 
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [price, setPrice] = useState("");
-  const [mrp, setMrp] = useState(""); 
   const [bestsellar, setBestsellar] = useState(false);
   
-  // Pharmacy Specific States
+  // Pharmacy Details
   const [saltComposition, setSaltComposition] = useState("");
   const [manufacturer, setManufacturer] = useState("");
-  const [packSize, setPackSize] = useState("");
-  const [batchNumber, setBatchNumber] = useState(""); // --- NEW STATE ---
-  const [stock, setStock] = useState("");
-  const [expiryDate, setExpiryDate] = useState("");
   const [prescriptionRequired, setPrescriptionRequired] = useState(false);
+
+  // --- NEW: VARIANTS STATE ---
+  const [variants, setVariants] = useState([]); // List of added variants
+  
+  // Temporary state for the input fields
+  const [variantInput, setVariantInput] = useState({
+      size: "",      // e.g. "50ml", "10 Tabs"
+      price: "",
+      mrp: "",
+      stock: "",
+      batchNumber: ""
+  });
+
+  // Function to add variant to the list
+  const addVariant = () => {
+      if(!variantInput.size || !variantInput.price || !variantInput.mrp || !variantInput.stock) {
+          toast.error("Please fill all variant details");
+          return;
+      }
+      setVariants([...variants, variantInput]);
+      // Reset inputs
+      setVariantInput({ size: "", price: "", mrp: "", stock: "", batchNumber: "" });
+  };
+
+  // Function to remove variant
+  const removeVariant = (index) => {
+      const newVariants = variants.filter((_, i) => i !== index);
+      setVariants(newVariants);
+  };
 
   const categoryData = {
       "Tablet": ["Pain Relief", "Gastric", "Antibiotic", "Vitamins", "Cold & Cough", "Heart"],
@@ -54,14 +77,18 @@ const Add = ({ token }) => {
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
+    
+    // Check if at least one variant is added
+    if (variants.length === 0) {
+        toast.error("Please add at least one product variant (Size/Price)");
+        return;
+    }
 
     try {
       const formData = new FormData()
 
       formData.append("name", name)
       formData.append("description", description)
-      formData.append("price", price)
-      formData.append("mrp", mrp)
       formData.append("category", category)
       
       const finalSubCategory = category === "Other" ? customSubCategory : subCategory;
@@ -70,11 +97,10 @@ const Add = ({ token }) => {
       formData.append("bestsellar", bestsellar)
       formData.append("saltComposition", saltComposition)
       formData.append("manufacturer", manufacturer)
-      formData.append("packSize", packSize)
-      formData.append("batchNumber", batchNumber) // --- ADDED TO FORM DATA ---
-      formData.append("stock", stock)
-      formData.append("expiryDate", new Date(expiryDate).getTime())
       formData.append("prescriptionRequired", prescriptionRequired)
+
+      // --- SEND VARIANTS AS JSON STRING ---
+      formData.append("variants", JSON.stringify(variants));
 
       image1 && formData.append("image1", image1)
       image2 && formData.append("image2", image2)
@@ -92,14 +118,9 @@ const Add = ({ token }) => {
         setImage2(false)
         setImage3(false)
         setImage4(false)
-        setPrice("")
-        setMrp("")
         setSaltComposition("")
         setManufacturer("")
-        setPackSize("")
-        setBatchNumber("") // --- RESET ---
-        setStock("")
-        setExpiryDate("")
+        setVariants([]) // Reset variants
         setCategory("Tablet")
         setSubCategory(categoryData["Tablet"][0])
         setCustomSubCategory("")
@@ -114,7 +135,7 @@ const Add = ({ token }) => {
   }
 
   return (
-    <form onSubmit={onSubmitHandler} className='flex flex-col w-full items-start gap-3'>
+    <form onSubmit={onSubmitHandler} className='flex flex-col w-full items-start gap-3 pb-10'>
       
       {/* Image Upload Section */}
       <div>
@@ -139,10 +160,9 @@ const Add = ({ token }) => {
         </div>
       </div>
 
-      {/* Basic Details */}
       <div className='w-full'>
         <p className='mb-2'>Medicine Name</p>
-        <input onChange={(e) => setName(e.target.value)} value={name} className='w-full max-w-[500px] px-3 py-2 border border-gray-300 rounded' type="text" placeholder='Type here (e.g. Dolo 650)' required />
+        <input onChange={(e) => setName(e.target.value)} value={name} className='w-full max-w-[500px] px-3 py-2 border border-gray-300 rounded' type="text" placeholder='e.g. Dolo 650 or Detol Soap' required />
       </div>
 
       <div className='w-full'>
@@ -150,20 +170,17 @@ const Add = ({ token }) => {
         <textarea onChange={(e) => setDescription(e.target.value)} value={description} className='w-full max-w-[500px] px-3 py-2 border border-gray-300 rounded' type="text" placeholder='Uses, Side effects, etc.' required />
       </div>
 
-      {/* --- PHARMACY SPECIFIC FIELDS --- */}
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
         <div className='w-full'>
           <p className='mb-2'>Salt Composition</p>
           <input onChange={(e) => setSaltComposition(e.target.value)} value={saltComposition} className='w-full px-3 py-2 border border-gray-300 rounded' type="text" placeholder='e.g. Paracetamol' />
         </div>
-
         <div className='w-full'>
           <p className='mb-2'>Manufacturer</p>
           <input onChange={(e) => setManufacturer(e.target.value)} value={manufacturer} className='w-full px-3 py-2 border border-gray-300 rounded' type="text" placeholder='e.g. Cipla' required />
         </div>
       </div>
 
-      {/* --- DYNAMIC DROPDOWNS --- */}
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
          <div className='w-full'>
             <p className='mb-2'>Category</p>
@@ -173,18 +190,10 @@ const Add = ({ token }) => {
               ))}
             </select>
         </div>
-
         <div className='w-full'>
-            <p className='mb-2'>Type (Sub-Category)</p>
+            <p className='mb-2'>Type</p>
             {category === "Other" ? (
-                <input 
-                    type="text" 
-                    value={customSubCategory} 
-                    onChange={(e) => setCustomSubCategory(e.target.value)} 
-                    placeholder="Type custom category..." 
-                    className='w-full px-3 py-2 border border-emerald-500 rounded bg-emerald-50 outline-none'
-                    required
-                />
+                <input type="text" value={customSubCategory} onChange={(e) => setCustomSubCategory(e.target.value)} placeholder="Type custom category..." className='w-full px-3 py-2 border border-emerald-500 rounded bg-emerald-50 outline-none' required />
             ) : (
                 <select onChange={(e) => setSubCategory(e.target.value)} value={subCategory} className='w-full px-3 py-2 border border-gray-300 rounded bg-white'>
                    {categoryData[category].map((sub) => (
@@ -195,50 +204,61 @@ const Add = ({ token }) => {
         </div>
       </div>
 
-      {/* --- PRICE & MRP SECTION --- */}
-      <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
-        <div className='w-full'>
-          <p className='mb-2'>MRP (₹)</p>
-          <input onChange={(e) => setMrp(e.target.value)} value={mrp} className='w-full px-3 py-2 border border-red-300 rounded text-red-600 font-medium' type="number" placeholder='100' required />
-        </div>
+      {/* --- VARIANT SECTION STARTS --- */}
+      <div className='w-full mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg'>
+          <p className='font-bold text-gray-700 mb-3'>Product Variants (Size & Prices)</p>
+          
+          <div className='grid grid-cols-2 md:grid-cols-5 gap-3 mb-3'>
+              <div>
+                  <p className='text-xs mb-1'>Size/Pack (e.g. 50ml, 10 Tabs)</p>
+                  <input type="text" value={variantInput.size} onChange={(e) => setVariantInput({...variantInput, size: e.target.value})} className='w-full px-2 py-1 border rounded' placeholder="Size" />
+              </div>
+              <div>
+                  <p className='text-xs mb-1'>MRP (₹)</p>
+                  <input type="number" value={variantInput.mrp} onChange={(e) => setVariantInput({...variantInput, mrp: e.target.value})} className='w-full px-2 py-1 border rounded text-red-500' placeholder="100" />
+              </div>
+              <div>
+                  <p className='text-xs mb-1'>Selling Price (₹)</p>
+                  <input type="number" value={variantInput.price} onChange={(e) => setVariantInput({...variantInput, price: e.target.value})} className='w-full px-2 py-1 border rounded text-green-600' placeholder="80" />
+              </div>
+              <div>
+                  <p className='text-xs mb-1'>Stock</p>
+                  <input type="number" value={variantInput.stock} onChange={(e) => setVariantInput({...variantInput, stock: e.target.value})} className='w-full px-2 py-1 border rounded' placeholder="Qty" />
+              </div>
+              <div className='flex items-end'>
+                  <button type="button" onClick={addVariant} className='w-full bg-emerald-600 text-white py-1.5 rounded hover:bg-emerald-700'>+ ADD</button>
+              </div>
+          </div>
 
-        <div className='w-full'>
-          <p className='mb-2'>Selling Price (₹)</p>
-          <input onChange={(e) => setPrice(e.target.value)} value={price} className='w-full px-3 py-2 border border-green-300 rounded text-green-700 font-bold' type="number" placeholder='80' required />
-        </div>
+          {/* Added Variants List */}
+          {variants.length > 0 && (
+              <div className='bg-white border rounded mt-2'>
+                  <div className='grid grid-cols-5 bg-gray-100 p-2 text-xs font-bold border-b'>
+                      <span>Size</span>
+                      <span>MRP</span>
+                      <span>Price</span>
+                      <span>Stock</span>
+                      <span>Action</span>
+                  </div>
+                  {variants.map((item, index) => (
+                      <div key={index} className='grid grid-cols-5 p-2 text-sm border-b last:border-0 items-center'>
+                          <span>{item.size}</span>
+                          <span className='text-red-500 line-through'>₹{item.mrp}</span>
+                          <span className='text-green-600 font-bold'>₹{item.price}</span>
+                          <span>{item.stock}</span>
+                          <span onClick={() => removeVariant(index)} className='text-red-600 cursor-pointer hover:underline'>Remove</span>
+                      </div>
+                  ))}
+              </div>
+          )}
       </div>
+      {/* --- VARIANT SECTION ENDS --- */}
 
-      {/* --- INVENTORY DETAILS (Now Includes Batch Number) --- */}
-      <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
-          <div className='w-full'>
-            <p className='mb-2'>Pack Size</p>
-            <input onChange={(e) => setPackSize(e.target.value)} value={packSize} className='w-full px-3 py-2 border border-gray-300 rounded' type="text" placeholder='10 Tabs/Strip' required />
-          </div>
-
-          {/* --- BATCH NUMBER FIELD ADDED HERE --- */}
-          <div className='w-full'>
-            <p className='mb-2'>Batch Number</p>
-            <input onChange={(e) => setBatchNumber(e.target.value)} value={batchNumber} className='w-full px-3 py-2 border border-gray-300 rounded uppercase' type="text" placeholder='BN-123X' />
-          </div>
-
-           <div className='w-full'>
-            <p className='mb-2'>Stock Quantity</p>
-            <input onChange={(e) => setStock(e.target.value)} value={stock} className='w-full px-3 py-2 border border-gray-300 rounded' type="number" placeholder='100' required />
-          </div>
-
-          <div className='w-full'>
-            <p className='mb-2'>Expiry Date</p>
-            <input onChange={(e) => setExpiryDate(e.target.value)} value={expiryDate} className='w-full px-3 py-2 border border-gray-300 rounded' type="date" required />
-          </div>
-      </div>
-
-      {/* Checkboxes */}
       <div className='flex gap-4 mt-2'>
         <div className='flex gap-2 items-center cursor-pointer'>
           <input onChange={() => setBestsellar(prev => !prev)} checked={bestsellar} type="checkbox" id="bestseller" className='w-4 h-4 cursor-pointer' />
           <label className='cursor-pointer select-none' htmlFor="bestseller">Add to Bestseller</label>
         </div>
-        
         <div className='flex gap-2 items-center cursor-pointer'>
           <input onChange={() => setPrescriptionRequired(prev => !prev)} checked={prescriptionRequired} type="checkbox" id="presc" className='w-4 h-4 cursor-pointer' />
           <label className='cursor-pointer text-red-600 font-medium select-none' htmlFor="presc">Prescription Required?</label>

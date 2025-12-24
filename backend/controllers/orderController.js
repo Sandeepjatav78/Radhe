@@ -3,7 +3,7 @@ import userModel from "../models/userModel.js";
 import Stripe from 'stripe';
 import razorpay from 'razorpay';
 
-// Global variables (Ensure environment variables are set)
+// Global variables
 const currency = 'inr';
 const deliveryCharge = 10;
 
@@ -17,11 +17,10 @@ const razorpayInstance = new razorpay({
 // 1. Placing Order using COD
 const placeOrder = async (req, res) => {
     try {
-        // userId middleware se aayega
         const { userId, items, amount, address } = req.body;
 
         const orderData = {
-            userId, // <--- Ye field database me save honi chahiye
+            userId, 
             items,
             address,
             amount,
@@ -33,7 +32,6 @@ const placeOrder = async (req, res) => {
         const newOrder = new orderModel(orderData);
         await newOrder.save();
 
-        // Cart clear karna
         await userModel.findByIdAndUpdate(userId, { cartData: {} });
 
         res.json({ success: true, message: "Order Placed" });
@@ -44,7 +42,7 @@ const placeOrder = async (req, res) => {
     }
 };
 
-// 2. Placing Order using Stripe
+// 2. Placing Order using Stripe (UPDATED FOR SIZE)
 const placeOrderStripe = async (req, res) => {
     try {
         const { userId, items, amount, address } = req.body;
@@ -66,7 +64,10 @@ const placeOrderStripe = async (req, res) => {
         const line_items = items.map((item) => ({
             price_data: {
                 currency: currency,
-                product_data: { name: item.name },
+                product_data: { 
+                    // ⚠️ CHANGE: Name ke saath Size bhi dikhao
+                    name: `${item.name} (${item.size})` 
+                },
                 unit_amount: item.price * 100
             },
             quantity: item.quantity
@@ -96,7 +97,8 @@ const placeOrderStripe = async (req, res) => {
     }
 };
 
-// 3. Verify Stripe
+// ... (Baaki saare functions same rahenge - Verify, Razorpay, Admin Orders, etc.) ...
+
 const verifyStripe = async (req, res) => {
     const { orderId, success, userId } = req.body;
     try {
@@ -114,7 +116,6 @@ const verifyStripe = async (req, res) => {
     }
 };
 
-// 4. Place Order using Razorpay
 const placeOrderRazorpay = async (req, res) => {
     try {
         const { userId, items, amount, address } = req.body;
@@ -169,7 +170,6 @@ const verifyRazorpay = async (req, res) => {
     }
 };
 
-// 5. All Orders (Admin Panel)
 const allorders = async (req, res) => {
     try {
         const orders = await orderModel.find({});
@@ -180,19 +180,10 @@ const allorders = async (req, res) => {
     }
 };
 
-// 6. User Orders (Frontend - User Side)
-// --- YE WALA FUNCTION ORDERS SHOW KARTA HAI ---
 const userorders = async (req, res) => {
     try {
-        const { userId } = req.body; // ye userId auth middleware se aayi hai
-
-        console.log("Searching orders for UserID:", userId); // Debugging ke liye
-
-        // Database me us ID ke saare orders dhundo
+        const { userId } = req.body;
         const orders = await orderModel.find({ userId });
-        
-        console.log("Orders found:", orders.length); // Debugging ke liye
-
         res.json({ success: true, orders });
     } catch (error) {
         console.log(error);
@@ -200,7 +191,6 @@ const userorders = async (req, res) => {
     }
 };
 
-// 7. Update Status (Admin Panel)
 const updateStatus = async (req, res) => {
     try {
         const { orderId, status } = req.body;

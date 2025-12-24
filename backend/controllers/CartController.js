@@ -3,25 +3,34 @@ import userModel from "../models/userModel.js"
 // Add to Cart
 const addToCart = async (req, res) => {
     try {
-        const { userId, itemId } = req.body;
+        const { userId, itemId, size } = req.body;
 
         const userData = await userModel.findById(userId);
         
-        // --- SAFETY CHECK START ---
         if (!userData) {
-            return res.json({ success: false, message: "User not found. Please login again." });
+            return res.json({ success: false, message: "User not found" });
         }
-        // --- SAFETY CHECK END ---
 
         let cartData = await userData.cartData;
 
+        // Logic to add nested size
         if (cartData[itemId]) {
-            cartData[itemId] += 1;
+            if (cartData[itemId][size]) {
+                cartData[itemId][size] += 1;
+            } else {
+                cartData[itemId][size] = 1;
+            }
         } else {
-            cartData[itemId] = 1;
+            cartData[itemId] = {};
+            cartData[itemId][size] = 1;
         }
 
-        await userModel.findByIdAndUpdate(userId, { cartData });
+        // ⚠️👇 YEH LINE MISSING THI - ISKE BINA DATA SAVE NAHI HOGA 👇⚠️
+        userData.markModified('cartData'); 
+        // -----------------------------------------------------------
+
+        await userModel.findByIdAndUpdate(userId, { cartData }); 
+
         res.json({ success: true, message: "Added to Cart" });
 
     } catch (error) {
@@ -30,24 +39,32 @@ const addToCart = async (req, res) => {
     }
 }
 
-
 // Update Cart
 const updateCart = async (req, res) => {
     try {
-        const { userId, itemId, quantity } = req.body;
+        const { userId, itemId, size, quantity } = req.body;
         
         const userData = await userModel.findById(userId);
 
-        // --- SAFETY CHECK ---
         if (!userData) {
             return res.json({ success: false, message: "User not found" });
         }
 
         let cartData = await userData.cartData;
 
-        cartData[itemId] = quantity;
+        // Ensure item object exists
+        if (!cartData[itemId]) {
+            cartData[itemId] = {};
+        }
+
+        cartData[itemId][size] = quantity;
+
+        // ⚠️👇 YEH LINE MISSING THI - ISKE BINA DATA SAVE NAHI HOGA 👇⚠️
+        userData.markModified('cartData');
+        // -----------------------------------------------------------
 
         await userModel.findByIdAndUpdate(userId, { cartData });
+        
         res.json({ success: true, message: "Cart Updated" });
 
     } catch (error) {
@@ -63,7 +80,6 @@ const getUserCart = async (req, res) => {
 
         const userData = await userModel.findById(userId);
 
-        // --- SAFETY CHECK (Yehi line error de rahi thi) ---
         if (!userData) {
             return res.json({ success: false, message: "User not found" });
         }

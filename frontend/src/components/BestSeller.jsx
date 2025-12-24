@@ -78,17 +78,24 @@ const BestSeller = () => {
           ? Array.from({ length: 5 }).map((_, idx) => <ProductSkeleton key={idx} />)
           : bestSeller.map((item, index) => (
               <motion.div key={item._id || index} variants={itemVariants}>
+                
                 {/* --- UPDATED PROPS HERE --- */}
                 <ProductItem
                   id={item._id}
                   image={item.image}
                   name={item.name}
+                  
+                  // Old props fallback
                   price={item.price}
-                  mrp={item.mrp}  // <--- MRP ADDED
+                  mrp={item.mrp} 
+                  packSize={item.packSize}
+                  
                   // Pharmacy Specific Data
                   salt={item.saltComposition}
-                  packSize={item.packSize}
                   isRx={item.prescriptionRequired}
+                  
+                  // ✅ IMPORTANT: Pass Variants Array
+                  variants={item.variants}
                 />
               </motion.div>
             ))}

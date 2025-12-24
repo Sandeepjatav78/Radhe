@@ -15,7 +15,7 @@ const Home = () => {
       </section>
       <OurTerms />
       <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <NewsLetterBox />
+        {/* <NewsLetterBox /> */}
       </section>
     </div>
   );

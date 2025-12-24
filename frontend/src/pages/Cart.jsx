@@ -36,21 +36,49 @@ const Cart = () => {
     return parseFloat((R * c).toFixed(1));
   };
 
+  // --- 1. NEW CART DATA LOGIC (HANDLES VARIANTS) ---
   useEffect(() => {
-    let total = 0;
-    const tempData = [];
-    for (const itemId in cartItems) {
-        if (cartItems[itemId] > 0) {
-           const product = products.find((p) => p._id === itemId);
-           if (product) {
-              tempData.push({ _id: itemId, quantity: cartItems[itemId] });
-              total += product.price * cartItems[itemId];
-           }
-        }
-    }
-    setCartData(tempData);
-    setCartTotal(total);
+    if (products.length > 0) {
+      const tempData = [];
+      let total = 0;
 
+      for (const itemId in cartItems) {
+        // Iterate through Sizes (Variants)
+        for (const size in cartItems[itemId]) {
+          if (cartItems[itemId][size] > 0) {
+            
+            const product = products.find((p) => p._id === itemId);
+            
+            if (product) {
+               // Find correct price for this size
+               let variantPrice = 0;
+               if (product.variants && product.variants.length > 0) {
+                   const variant = product.variants.find(v => v.size === size);
+                   variantPrice = variant ? variant.price : product.price; // Fallback
+               } else {
+                   variantPrice = product.price; // Old products
+               }
+
+               tempData.push({
+                 _id: itemId,
+                 size: size,
+                 quantity: cartItems[itemId][size],
+                 price: variantPrice // Specific price for size
+               });
+
+               total += variantPrice * cartItems[itemId][size];
+            }
+          }
+        }
+      }
+      
+      setCartData(tempData);
+      setCartTotal(total);
+    }
+  }, [cartItems, products]);
+
+  // --- DELIVERY CALCULATION (Same as before) ---
+  useEffect(() => {
     if (coordinates) {
         const dist = getDistanceFromLatLonInKm(STORE_COORDS.lat, STORE_COORDS.lng, coordinates.lat, coordinates.lng);
         setDistance(dist);
@@ -63,27 +91,27 @@ const Cart = () => {
             deliverable = false;
         } 
         else if (dist <= 2) {
-            if (total > 150) fee = 0;
-            else { fee = 20; msg = `Add items worth ${currency}${151 - total} more for FREE delivery!`; }
+            if (cartTotal > 150) fee = 0;
+            else { fee = 20; msg = `Add items worth ${currency}${151 - cartTotal} more for FREE delivery!`; }
         } 
         else if (dist <= 5) {
-            if (total > 250) fee = 0;
-            else { fee = 40; msg = `Add items worth ${currency}${251 - total} more for FREE delivery!`; }
+            if (cartTotal > 250) fee = 0;
+            else { fee = 40; msg = `Add items worth ${currency}${251 - cartTotal} more for FREE delivery!`; }
         } 
         else if (dist <= 10) {
-            if (total > 450) fee = 0;
-            else { fee = 70; msg = `Add items worth ${currency}${451 - total} more for FREE delivery!`; }
+            if (cartTotal > 450) fee = 0;
+            else { fee = 70; msg = `Add items worth ${currency}${451 - cartTotal} more for FREE delivery!`; }
         } 
         else { 
-            if (total > 550) fee = 0;
-            else { fee = 100; msg = `Add items worth ${currency}${551 - total} more for FREE delivery!`; }
+            if (cartTotal > 550) fee = 0;
+            else { fee = 100; msg = `Add items worth ${currency}${551 - cartTotal} more for FREE delivery!`; }
         }
 
         setDeliveryFee(fee);
         setFreeDeliveryMsg(fee === 0 ? "🎉 You have unlocked FREE Delivery!" : msg);
         setIsDeliverable(deliverable);
     }
-  }, [cartItems, products, coordinates]);
+  }, [cartTotal, coordinates]);
 
   const handleAddressFromMap = (addressObj) => {
     setDetectedAddress(addressObj);
@@ -135,34 +163,42 @@ const Cart = () => {
                   {cartData.map((item, index) => {
                     const productData = products.find((p) => p._id === item._id);
                     if (!productData) return null;
+                    
                     return (
                       <div key={index} className="py-4 border border-gray-100 rounded-xl px-4 flex items-center gap-4 bg-white shadow-sm">
                         <div className="w-20 h-20 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200 p-1 flex-shrink-0">
                             <img src={productData.image?.[0]} alt={productData.name} className="w-full h-full object-contain" />
                         </div>
                         <div className="flex-1">
-                            <p className="text-base font-bold text-gray-800 line-clamp-1">{productData.name}</p>
-                            <p className="text-xs text-gray-500 mb-1">{productData.packSize}</p>
-                            <div className="flex justify-between items-center mt-2">
-                                <p className="text-emerald-700 font-bold">{currency}{productData.price}</p>
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="text-base font-bold text-gray-800 line-clamp-1">{productData.name}</p>
+                                    <div className="flex items-center gap-2 mt-1">
+                                        {/* SHOW SIZE BADGE */}
+                                        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded border border-gray-200">{item.size}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div className="flex justify-between items-center mt-3">
+                                <p className="text-emerald-700 font-bold">{currency}{item.price}</p>
                                 <div className="flex items-center gap-3">
-                                    {/* --- INPUT FIX START --- */}
+                                    {/* --- QUANTITY INPUT --- */}
                                     <input 
                                       type="number" 
                                       min={1} 
                                       defaultValue={item.quantity} 
                                       onChange={(e) => {
                                           const value = e.target.value;
-                                          // Agar empty hai ya '0' hai, to update mat karo (wait karo)
                                           if (value === '' || value === '0') return; 
-                                          // Valid number hone par hi update karo
-                                          updateQuantity(item._id, Number(value));
+                                          // Update with Size
+                                          updateQuantity(item._id, item.size, Number(value));
                                       }} 
                                       className="border border-gray-300 px-2 py-1 w-14 text-center rounded focus:outline-emerald-500"
                                     />
-                                    {/* --- INPUT FIX END --- */}
 
-                                    <img src={assets.bin_icon} onClick={() => updateQuantity(item._id, 0)} className="w-5 cursor-pointer opacity-60 hover:text-red-500" alt="Delete"/>
+                                    {/* --- DELETE BUTTON (Pass Size) --- */}
+                                    <img src={assets.bin_icon} onClick={() => updateQuantity(item._id, item.size, 0)} className="w-5 cursor-pointer opacity-60 hover:text-red-500" alt="Delete"/>
                                 </div>
                             </div>
                         </div>
@@ -178,7 +214,6 @@ const Cart = () => {
               >
                 <span className="text-xl leading-none">+</span> Add More Medicines
               </Link>
-
           </div>
 
           {/* --- RIGHT: LOCATION & TOTAL --- */}
@@ -194,9 +229,9 @@ const Cart = () => {
                   <LocationPicker setLocation={setCoordinates} onAddressSelect={handleAddressFromMap} />
                   
                   <div className="mt-4 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm">
-                     <p className="text-gray-500 text-xs font-bold uppercase mb-1">Delivering To:</p>
-                     <p className="text-gray-800">{detectedAddress.street ? `${detectedAddress.street}, ${detectedAddress.city}` : "Please pin location above"}</p>
-                     {detectedAddress.zipcode && <p className="text-gray-600 text-xs">{detectedAddress.state} - {detectedAddress.zipcode}</p>}
+                      <p className="text-gray-500 text-xs font-bold uppercase mb-1">Delivering To:</p>
+                      <p className="text-gray-800">{detectedAddress.street ? `${detectedAddress.street}, ${detectedAddress.city}` : "Please pin location above"}</p>
+                      {detectedAddress.zipcode && <p className="text-gray-600 text-xs">{detectedAddress.state} - {detectedAddress.zipcode}</p>}
                   </div>
               </div>
 

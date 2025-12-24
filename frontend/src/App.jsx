@@ -16,22 +16,17 @@ import Profile from "./pages/Profile";
 import Verify from "./pages/Verify";
 import { ToastContainer } from "react-toastify";
 import Chatbot from "./chatbot/chatbot";
+import ScrollToTop from './components/ScrollToTop'
 
 const App = () => {
   return (
     // Change: Added 'overflow-x-hidden' and 'min-h-screen'
     <div className="w-full min-h-screen overflow-x-hidden">
-      
+      <ScrollToTop />
       <Navbar />
       <SearchBar />
       
-      <ToastContainer
-        position="top-right"
-        toastClassName={() =>
-          "relative flex p-5 sm:px-7 rounded-md justify-between overflow-hidden cursor-pointer shadow-lg bg-white text-black"
-        }
-        style={{ top: "10px", right: "10px" }}
-      />
+      
 
       <div className="px-4 sm:px-[3vw] md:px-[5vw] lg:px-[6vw]">
         <Routes>
