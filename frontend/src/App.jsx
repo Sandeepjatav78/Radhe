@@ -15,18 +15,22 @@ import SearchBar from "./components/SearchBar";
 import Profile from "./pages/Profile";
 import Verify from "./pages/Verify";
 import { ToastContainer } from "react-toastify";
-import Chatbot from "./chatbot/chatbot";
-import ScrollToTop from './components/ScrollToTop'
+import ScrollToTop from './components/ScrollToTop';
+
+// 👇 Import New Component
+import SiteInfoBanner from "./components/SiteInfoBanner"; 
 
 const App = () => {
   return (
-    // Change: Added 'overflow-x-hidden' and 'min-h-screen'
     <div className="w-full min-h-screen overflow-x-hidden">
       <ScrollToTop />
       <Navbar />
       <SearchBar />
       
+      {/* 👇 Add This Line Here (Navbar/Search ke niche) */}
+      <SiteInfoBanner /> 
       
+      <ToastContainer />
 
       <div className="px-4 sm:px-[3vw] md:px-[5vw] lg:px-[6vw]">
         <Routes>

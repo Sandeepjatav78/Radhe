@@ -8,12 +8,15 @@ const orderSchema = new mongoose.Schema({
     status: { type: String, required: true, default: 'Order Placed' },
     paymentMethod: { type: String, required: true },
     payment: { type: Boolean, required: true, default: false },
+    slot: { type: String, required: true, default: "Standard Delivery" },
     date: { type: Number, required: true },
     
-    // --- New Field ---
-    // Agar user ne prescription upload kiya hai to uska URL yaha aayega
+    // 👇 ADD THIS LINE (To store the rejection reason)
+    cancelReason: { type: String, default: "" },
+    
+    // 👇 Ensure this exists to store the prescription Image URL
     prescriptionUrl: { type: String, default: "" } 
 })
 
-const orderModel = mongoose.models.order || mongoose.model('order', orderSchema)
+const orderModel = mongoose.models.order || mongoose.model("order", orderSchema);
 export default orderModel;

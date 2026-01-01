@@ -13,6 +13,7 @@ const Orders = () => {
     'shipped': 'bg-yellow-500',
     'out for delivery': 'bg-orange-500',
     'delivered': 'bg-emerald-600',
+    'cancelled': 'bg-red-500',
   };
 
   const loadOrderData = async () => {
@@ -40,6 +41,9 @@ const Orders = () => {
               payment: order.payment,
               paymentMethod: order.paymentMethod,
               date: order.date,
+              slot: order.slot,
+              cancelReason: order.cancelReason,
+              orderId: order._id, // ✅ SAVING ORDER ID HERE
             });
           });
         });
@@ -74,7 +78,6 @@ const Orders = () => {
         {orderData.map((item, index) => {
           
           // --- SAFETY CHECK FOR IMAGE ---
-          // Agar image array hai to 0 index lo, agar string hai to direct lo
           const itemImage = Array.isArray(item.image) 
               ? item.image[0] 
               : item.image || "https://via.placeholder.com/150";
@@ -90,15 +93,20 @@ const Orders = () => {
                 <img src={itemImage} className="w-16 sm:w-20 rounded-lg object-contain bg-gray-50 border" alt={item.name} />
                 
                 <div className="flex flex-col gap-1">
+                  
+                  {/* --- ✅ ORDER ID DISPLAY --- */}
+                  <span className="text-[10px] text-gray-400 font-mono">
+                      ID: {item.orderId}
+                  </span>
+
                   <p className="font-bold text-gray-800 text-base">{item.name}</p>
                   <div className="flex flex-wrap items-center gap-3 text-gray-600 text-sm">
                     <p className='font-semibold text-emerald-700'>
                       {currency}{item.price}
                     </p>
                     <p>Qty: {item.quantity}</p>
-                    {/* Show Pack Size */}
                     <p className='bg-gray-100 px-2 rounded text-xs py-0.5'>
-                      {item.packSize || "Unit"}
+                      {item.size || item.packSize || "Unit"}
                     </p>
                   </div>
                   
@@ -111,18 +119,46 @@ const Orders = () => {
 
               {/* Right side: Status & Track */}
               <div className="flex flex-col md:flex-row md:items-center md:gap-6 mt-2 md:mt-0">
-                <div className="flex items-center gap-2">
+                
+                {/* --- 1. CANCELLATION REASON (Show if Cancelled) --- */}
+                {item.status === 'cancelled' ? (
+                     <div className="md:text-right bg-red-50 px-3 py-2 rounded-lg border border-red-100 inline-block self-start md:self-auto max-w-[220px]">
+                        <div className="flex items-center gap-1 text-red-600 mb-1">
+                            <span className="text-sm">🚫</span>
+                            <p className="text-[10px] font-bold uppercase tracking-wide">Order Cancelled</p>
+                        </div>
+                        <p className="text-red-700 text-xs font-medium leading-tight">
+                            Reason: {item.cancelReason || "Prescription Invalid / Other"}
+                        </p>
+                    </div>
+                ) : (
+                    /* --- 2. DELIVERY TIME SLOT (Show if Active) --- */
+                    item.status !== 'delivered' && item.slot && (
+                        <div className="md:text-right bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 inline-block self-start md:self-auto">
+                            <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Expected Arrival</p>
+                            <p className="text-blue-700 font-bold text-xs flex items-center gap-1">
+                                🕒 {item.slot}
+                            </p>
+                        </div>
+                    )
+                )}
+
+                <div className="flex items-center gap-2 mt-2 md:mt-0">
                   <span
                     className={`w-3 h-3 rounded-full ${statusColors[item.status] || 'bg-gray-400'}`}
                   ></span>
                   <p className="text-sm md:text-base font-medium capitalize text-gray-700">{item.status}</p>
                 </div>
-                <button
-                  onClick={loadOrderData}
-                  className="border border-gray-300 px-4 py-2 text-sm font-medium rounded-full hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition mt-2 md:mt-0"
-                >
-                  Track Order
-                </button>
+
+                {/* Hide Track Button if Cancelled */}
+                {item.status !== 'cancelled' && (
+                    <button
+                    onClick={loadOrderData}
+                    className="border border-gray-300 px-4 py-2 text-sm font-medium rounded-full hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition mt-2 md:mt-0"
+                    >
+                    Track Order
+                    </button>
+                )}
               </div>
             </div>
           );

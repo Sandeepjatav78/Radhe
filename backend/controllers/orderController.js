@@ -17,21 +17,23 @@ const razorpayInstance = new razorpay({
 // 1. Placing Order using COD
 const placeOrder = async (req, res) => {
     try {
-        const { userId, items, amount, address } = req.body;
+        const { userId, items, amount, address, slot, prescriptionUrl } = req.body;
 
         const orderData = {
-            userId, 
+            userId,
             items,
             address,
             amount,
+            slot: slot || "Standard Delivery",
+            prescriptionUrl: prescriptionUrl || "", 
+            prescriptionUploaded: !!prescriptionUrl, 
             paymentMethod: "COD",
             payment: false,
             date: Date.now()
-        };
+        }
 
         const newOrder = new orderModel(orderData);
         await newOrder.save();
-
         await userModel.findByIdAndUpdate(userId, { cartData: {} });
 
         res.json({ success: true, message: "Order Placed" });
@@ -40,12 +42,13 @@ const placeOrder = async (req, res) => {
         console.log(error);
         res.json({ success: false, message: error.message });
     }
-};
+}
 
-// 2. Placing Order using Stripe (UPDATED FOR SIZE)
+// 2. Placing Order using Stripe (✅ FIXED)
 const placeOrderStripe = async (req, res) => {
     try {
-        const { userId, items, amount, address } = req.body;
+        // 👇 ADDED slot and prescriptionUrl
+        const { userId, items, amount, address, slot, prescriptionUrl } = req.body;
         const { origin } = req.headers;
 
         const orderData = {
@@ -53,6 +56,9 @@ const placeOrderStripe = async (req, res) => {
             items,
             address,
             amount,
+            slot: slot || "Standard Delivery", // ✅ Added
+            prescriptionUrl: prescriptionUrl || "", // ✅ Added
+            prescriptionUploaded: !!prescriptionUrl, // ✅ Added
             paymentMethod: "Stripe",
             payment: false,
             date: Date.now()
@@ -65,8 +71,7 @@ const placeOrderStripe = async (req, res) => {
             price_data: {
                 currency: currency,
                 product_data: { 
-                    // ⚠️ CHANGE: Name ke saath Size bhi dikhao
-                    name: `${item.name} (${item.size})` 
+                    name: `${item.name} (${item.size || 'Unit'})` // Added size to name
                 },
                 unit_amount: item.price * 100
             },
@@ -97,34 +102,20 @@ const placeOrderStripe = async (req, res) => {
     }
 };
 
-// ... (Baaki saare functions same rahenge - Verify, Razorpay, Admin Orders, etc.) ...
-
-const verifyStripe = async (req, res) => {
-    const { orderId, success, userId } = req.body;
-    try {
-        if (success === "true") {
-            await orderModel.findByIdAndUpdate(orderId, { payment: true });
-            await userModel.findByIdAndUpdate(userId, { cartData: {} });
-            res.json({ success: true });
-        } else {
-            await orderModel.findByIdAndDelete(orderId);
-            res.json({ success: false });
-        }
-    } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: error.message });
-    }
-};
-
+// 3. Placing Order using Razorpay (✅ FIXED)
 const placeOrderRazorpay = async (req, res) => {
     try {
-        const { userId, items, amount, address } = req.body;
+        // 👇 ADDED slot and prescriptionUrl
+        const { userId, items, amount, address, slot, prescriptionUrl } = req.body;
 
         const orderData = {
             userId,
             items,
             address,
             amount,
+            slot: slot || "Standard Delivery", // ✅ Added
+            prescriptionUrl: prescriptionUrl || "", // ✅ Added
+            prescriptionUploaded: !!prescriptionUrl, // ✅ Added
             paymentMethod: "Razorpay",
             payment: false,
             date: Date.now()
@@ -147,6 +138,24 @@ const placeOrderRazorpay = async (req, res) => {
             res.json({ success: true, order });
         });
 
+    } catch (error) {
+        console.log(error);
+        res.json({ success: false, message: error.message });
+    }
+};
+
+// ... (Verify, UserOrders, AllOrders, UpdateStatus remain same) ...
+const verifyStripe = async (req, res) => {
+    const { orderId, success, userId } = req.body;
+    try {
+        if (success === "true") {
+            await orderModel.findByIdAndUpdate(orderId, { payment: true });
+            await userModel.findByIdAndUpdate(userId, { cartData: {} });
+            res.json({ success: true });
+        } else {
+            await orderModel.findByIdAndDelete(orderId);
+            res.json({ success: false });
+        }
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
@@ -193,14 +202,18 @@ const userorders = async (req, res) => {
 
 const updateStatus = async (req, res) => {
     try {
-        const { orderId, status } = req.body;
-        await orderModel.findByIdAndUpdate(orderId, { status });
+        const { orderId, status, reason } = req.body;
+        if (status === "Cancelled") {
+            await orderModel.findByIdAndUpdate(orderId, { status: status, cancelReason: reason });
+        } else {
+            await orderModel.findByIdAndUpdate(orderId, { status: status });
+        }
         res.json({ success: true, message: 'Status Updated' });
     } catch (error) {
         console.log(error);
         res.json({ success: false, message: error.message });
     }
-};
+}
 
 export { 
     verifyRazorpay, 
