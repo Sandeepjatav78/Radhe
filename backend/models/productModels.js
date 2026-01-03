@@ -11,12 +11,12 @@ const productSchema = new mongoose.Schema({
     saltComposition: { type: String },
     manufacturer: { type: String },
     prescriptionRequired: { type: Boolean, default: false },
-    bestsellar: { type: Boolean },
+    bestsellar: { type: Boolean, default: false },
     
-    // --- CHANGE: SINGLE FIELDS REMOVED, VARIANTS ADDED ---
+    // Variants Array
     variants: [
         {
-            size: { type: String, required: true }, // e.g. "50ml", "10 Tabs", "3 Pack"
+            size: { type: String, required: true }, 
             price: { type: Number, required: true },
             mrp: { type: Number, required: true },
             stock: { type: Number, required: true },

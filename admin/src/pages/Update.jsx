@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import { assets } from '../assets/assets' // ✅ Need assets for upload icon
 import axios from 'axios'
 import { backendURL } from '../App'
 import { toast } from 'react-toastify'
@@ -9,9 +10,18 @@ const Update = ({ token }) => {
   const navigate = useNavigate();
   const { productId } = useParams();
 
-  const [image1, setImage1] = useState(false) // View Only
-  
-  // Basic States
+  // --- IMAGES STATE (File Objects for Upload) ---
+  const [image1, setImage1] = useState(false);
+  const [image2, setImage2] = useState(false);
+  const [image3, setImage3] = useState(false);
+  const [image4, setImage4] = useState(false);
+
+  // --- PREVIEW URLS (To show existing images) ---
+  const [prevImg1, setPrevImg1] = useState("");
+  const [prevImg2, setPrevImg2] = useState("");
+  const [prevImg3, setPrevImg3] = useState("");
+  const [prevImg4, setPrevImg4] = useState("");
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [bestsellar, setBestsellar] = useState(false);
@@ -20,14 +30,8 @@ const Update = ({ token }) => {
   const [prescriptionRequired, setPrescriptionRequired] = useState(false);
   const [expiryDate, setExpiryDate] = useState("");
 
-  // --- NEW: VARIANTS STATE ---
-  const [variants, setVariants] = useState([]); 
-  const [variantInput, setVariantInput] = useState({
-      size: "", price: "", mrp: "", stock: "", batchNumber: ""
-  });
-
-  // ✅ UPDATED CATEGORY DATA (Same as Add.jsx)
-  const categoryData = {
+  // --- 1. HARDCODED DEFAULT CATEGORIES ---
+  const defaultCategoryData = {
       "Tablet": ["Pain Relief", "Gastric", "Antibiotic", "Vitamins", "Cold & Cough", "Heart", "Other"],
       "Syrup": ["Cough Syrup", "Digestion", "Multivitamin", "Antacid", "Other"],
       "Injection": ["Pain Killer", "Antibiotic", "Diabetes", "Vaccine", "Other"],
@@ -35,146 +39,194 @@ const Update = ({ token }) => {
       "Drops": ["Eye Drops", "Ear Drops", "Pediatric Drops", "Other"],
       "Sexual Wellness": ["Condoms", "Lubricants", "Performance Supplements", "Test Kits", "Hygiene", "Other"],
       "Devices": ["BP Monitor", "Glucometer", "Thermometer", "Oximeter", "Other"],
-      "Health & Nutrition": ["Daily Supplements", "Protein Supplements", "Weight Management", "Energy Drinks", "Multivitamins", "Other"], // ✅ New
-      "Other": [] 
+      "Health & Nutrition": ["Daily Supplements", "Protein Supplements", "Weight Management", "Energy Drinks", "Multivitamins", "Other"]
   };
 
-  const [category, setCategory] = useState("Tablet");
+  // --- HYBRID CATEGORY STATES ---
+  const [dbCategories, setDbCategories] = useState([]);
+  const [mergedCategories, setMergedCategories] = useState([]);
+  
+  const [category, setCategory] = useState("");
   const [subCategory, setSubCategory] = useState("");
-  const [customSubCategory, setCustomSubCategory] = useState(""); // ✅ For 'Other' input
+  
+  const [newCategoryInput, setNewCategoryInput] = useState("");
+  const [newSubCategoryInput, setNewSubCategoryInput] = useState("");
+  
+  const [isNewCategoryMode, setIsNewCategoryMode] = useState(false);
+  const [isNewSubCategoryMode, setIsNewSubCategoryMode] = useState(false);
 
-  // --- HELPER: ADD VARIANT ---
-  const addVariant = () => {
-    if(!variantInput.size || !variantInput.price || !variantInput.mrp || !variantInput.stock) {
-        toast.error("Please fill all variant details");
-        return;
-    }
-    setVariants([...variants, variantInput]);
-    setVariantInput({ size: "", price: "", mrp: "", stock: "", batchNumber: "" });
+  // --- VARIANTS ---
+  const [variants, setVariants] = useState([]); 
+  const [variantInput, setVariantInput] = useState({ size: "", price: "", mrp: "", stock: "", batchNumber: "" });
+
+  // --- HELPER: Get Subcategories (Hybrid) ---
+  const getSubCategoriesFor = (catName) => {
+      if (defaultCategoryData[catName]) return defaultCategoryData[catName];
+      const dbCat = dbCategories.find(c => c.name === catName);
+      return dbCat ? dbCat.subCategories : [];
   };
 
-  // --- HELPER: REMOVE VARIANT ---
-  const removeVariant = (index) => {
-    const newVariants = variants.filter((_, i) => i !== index);
-    setVariants(newVariants);
-  };
+  // --- FETCH DATA ---
+  useEffect(() => {
+      if(token && productId) {
+          fetchData();
+      }
+  }, [token, productId]);
 
-  // --- 1. FETCH OLD DATA ---
-  const fetchProductData = async () => {
+  const fetchData = async () => {
       try {
-          const response = await axios.post(backendURL + '/api/product/single', { productId });
-          if(response.data.success) {
-              const data = response.data.product;
+          // 1. Fetch Categories first
+          const catRes = await axios.get(backendURL + "/api/product/categories");
+          let fetchedCats = [];
+          if(catRes.data.success) {
+              fetchedCats = catRes.data.categories;
+              setDbCategories(fetchedCats);
+              // Merge Logic
+              const hardcodedKeys = Object.keys(defaultCategoryData);
+              const dbKeys = fetchedCats.map(c => c.name);
+              setMergedCategories(Array.from(new Set([...hardcodedKeys, ...dbKeys])));
+          }
+
+          // 2. Fetch Product Data
+          const prodRes = await axios.post(backendURL + '/api/product/single', { productId });
+          if(prodRes.data.success) {
+              const data = prodRes.data.product;
               
               setName(data.name);
               setDescription(data.description);
               setBestsellar(data.bestsellar);
-              
               setSaltComposition(data.saltComposition);
               setManufacturer(data.manufacturer);
               setPrescriptionRequired(data.prescriptionRequired);
               
-              // --- CATEGORY LOGIC FOR UPDATE ---
-              setCategory(data.category);
-              
-              const predefinedSubs = categoryData[data.category] || [];
-              
-              // Check if the fetched subCategory exists in our predefined list
-              if (data.category === "Other") {
-                  setSubCategory("Other");
-                  setCustomSubCategory(data.subCategory);
-              } else if (predefinedSubs.includes(data.subCategory) && data.subCategory !== "Other") {
-                  // Standard case: It's in the list
-                  setSubCategory(data.subCategory);
-                  setCustomSubCategory("");
-              } else {
-                  // It's a custom value (so set dropdown to 'Other' and fill custom input)
-                  setSubCategory("Other");
-                  setCustomSubCategory(data.subCategory);
-              }
+              // Set Images for Preview
+              if(data.image && data.image.length > 0) setPrevImg1(data.image[0]);
+              if(data.image && data.image.length > 1) setPrevImg2(data.image[1]);
+              if(data.image && data.image.length > 2) setPrevImg3(data.image[2]);
+              if(data.image && data.image.length > 3) setPrevImg4(data.image[3]);
 
               // Handle Date
               if(data.expiryDate) {
-                  const date = new Date(Number(data.expiryDate) || data.expiryDate); 
-                  if(!isNaN(date)) {
-                    setExpiryDate(date.toISOString().split('T')[0]);
-                  }
+                  const date = new Date(Number(data.expiryDate)); 
+                  if(!isNaN(date)) setExpiryDate(date.toISOString().split('T')[0]);
               }
 
-              // --- LOAD VARIANTS ---
+              // Handle Variants
               if (data.variants && data.variants.length > 0) {
                   setVariants(data.variants);
-              } else {
-                  if (data.price) {
-                      setVariants([{
-                          size: data.packSize || "Standard",
-                          price: data.price,
-                          mrp: data.mrp,
-                          stock: data.stock,
-                          batchNumber: data.batchNumber || ""
-                      }]);
-                  }
+              } else if (data.price) {
+                  setVariants([{ size: data.packSize || "Standard", price: data.price, mrp: data.mrp, stock: data.stock, batchNumber: "" }]);
               }
 
-              if(data.image && data.image.length > 0) setImage1(data.image[0]);
+              // --- POPULATE CATEGORY LOGIC ---
+              setCategory(data.category);
+              setSubCategory(data.subCategory);
+
+              // Check if the current category is "New" (not in merged list)
+              // But since we just merged them, it should be there unless it's totally custom
+              // Logic check:
+              const isKnownCat = Object.keys(defaultCategoryData).includes(data.category) || fetchedCats.some(c => c.name === data.category);
+              
+              if (!isKnownCat && data.category) {
+                  // It's a custom category not in our lists yet? Treat as New Input Mode
+                  setIsNewCategoryMode(true);
+                  setNewCategoryInput(data.category);
+                  setIsNewSubCategoryMode(true);
+                  setNewSubCategoryInput(data.subCategory);
+              } else {
+                  // Known Category. Check Subcategory.
+                  const knownSubs = getSubCategoriesFor(data.category) || [];
+                  // We need to re-run getSubCategoriesFor logic here because dbCategories state update might be slightly delayed in React batching
+                  // Use 'fetchedCats' for immediate check
+                  let subs = [];
+                  if(defaultCategoryData[data.category]) subs = defaultCategoryData[data.category];
+                  else {
+                      const c = fetchedCats.find(x => x.name === data.category);
+                      if(c) subs = c.subCategories;
+                  }
+
+                  if (!subs.includes(data.subCategory)) {
+                      setIsNewSubCategoryMode(true);
+                      setNewSubCategoryInput(data.subCategory);
+                  }
+              }
           }
       } catch (error) {
           console.log(error);
-          toast.error("Could not fetch product data");
+          toast.error("Error loading data");
       }
   }
 
-  useEffect(() => {
-      if(token && productId) {
-          fetchProductData();
-      }
-  }, [token, productId]);
-
+  // --- HANDLERS ---
   const handleCategoryChange = (e) => {
-    const selectedCategory = e.target.value;
-    setCategory(selectedCategory);
-    
-    if (selectedCategory === "Other") {
-        setSubCategory("Other");
-        setCustomSubCategory("");
-    } else {
-        setSubCategory(categoryData[selectedCategory][0]); // Reset to first option
-        setCustomSubCategory("");
-    }
+      const val = e.target.value;
+      if (val === "new_cat_option") {
+          setIsNewCategoryMode(true); setIsNewSubCategoryMode(true);
+          setCategory(""); setSubCategory("");
+      } else {
+          setIsNewCategoryMode(false);
+          setCategory(val);
+          const subs = getSubCategoriesFor(val);
+          if (subs.length > 0) {
+              setIsNewSubCategoryMode(false);
+              setSubCategory(subs[0]);
+          } else {
+              setIsNewSubCategoryMode(true);
+              setSubCategory("");
+          }
+      }
   };
 
-  // --- 2. UPDATE FUNCTION ---
+  const handleSubCategoryChange = (e) => {
+      const val = e.target.value;
+      if (val === "new_sub_option") {
+          setIsNewSubCategoryMode(true);
+          setSubCategory("");
+      } else {
+          setIsNewSubCategoryMode(false);
+          setSubCategory(val);
+      }
+  };
+
+  const addVariant = () => {
+    if(!variantInput.size || !variantInput.price || !variantInput.mrp || !variantInput.stock) {
+        toast.error("Fill details"); return;
+    }
+    setVariants([...variants, variantInput]);
+    setVariantInput({ size: "", price: "", mrp: "", stock: "", batchNumber: "" });
+  };
+  const removeVariant = (i) => setVariants(variants.filter((_, idx) => idx !== i));
+
+  // --- SUBMIT ---
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
-    if (variants.length === 0) {
-        toast.error("Please add at least one product variant.");
-        return;
-    }
+    const finalCategory = isNewCategoryMode ? newCategoryInput : category;
+    const finalSubCategory = isNewSubCategoryMode ? newSubCategoryInput : subCategory;
+
+    if (variants.length === 0) { toast.error("Add variants"); return; }
 
     try {
-      // Logic to determine which subCategory value to send
-      const finalSubCategory = (category === "Other" || subCategory === "Other") 
-          ? customSubCategory 
-          : subCategory;
+      const formData = new FormData()
+      formData.append("id", productId); // Important for Update
+      formData.append("name", name);
+      formData.append("description", description);
+      formData.append("category", finalCategory);
+      formData.append("subCategory", finalSubCategory);
+      formData.append("bestsellar", bestsellar);
+      formData.append("saltComposition", saltComposition);
+      formData.append("manufacturer", manufacturer);
+      formData.append("prescriptionRequired", prescriptionRequired);
+      formData.append("expiryDate", new Date(expiryDate).getTime());
+      formData.append("variants", JSON.stringify(variants));
 
-      if ((category === "Other" || subCategory === "Other") && !finalSubCategory.trim()) {
-          toast.error("Please specify the custom sub-category/type");
-          return;
-      }
+      // Append Images IF selected (Otherwise backend keeps old ones)
+      image1 && formData.append("image1", image1);
+      image2 && formData.append("image2", image2);
+      image3 && formData.append("image3", image3);
+      image4 && formData.append("image4", image4);
 
-      const updatedData = {
-          id: productId,
-          name, description, category, 
-          subCategory: finalSubCategory, // ✅ Sending correct sub category
-          bestsellar,
-          saltComposition, manufacturer, 
-          expiryDate: new Date(expiryDate).getTime(),
-          prescriptionRequired,
-          variants 
-      }
-
-      const response = await axios.post(backendURL + "/api/product/update", updatedData, { headers: { token } })
+      const response = await axios.post(backendURL + "/api/product/update", formData, { headers: { token } })
 
       if (response.data.success) {
         toast.success("Product Updated Successfully");
@@ -190,122 +242,87 @@ const Update = ({ token }) => {
 
   return (
     <form onSubmit={onSubmitHandler} className='flex flex-col w-full items-start gap-3 p-4 bg-white shadow rounded-lg mb-20'>
-      <h2 className='text-2xl font-bold mb-4'>Update Medicine Details</h2>
+      <h2 className='text-2xl font-bold mb-4'>Update Medicine</h2>
       
-      {/* Current Image View */}
-      <div className='mb-4'>
-        <p className='mb-2 text-gray-500'>Current Image (Cannot be changed here)</p>
-        {image1 && <img src={image1} className='w-24 h-24 object-contain border' alt="Product" />}
-      </div>
-
-      <div className='w-full'>
-        <p className='mb-2'>Medicine Name</p>
-        <input onChange={(e) => setName(e.target.value)} value={name} className='w-full max-w-[500px] px-3 py-2 border border-gray-300 rounded' type="text" required />
-      </div>
-
-      <div className='w-full'>
-        <p className='mb-2'>Product Description</p>
-        <textarea onChange={(e) => setDescription(e.target.value)} value={description} className='w-full max-w-[500px] px-3 py-2 border border-gray-300 rounded' type="text" required />
-      </div>
-
-      {/* Categories */}
-      <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
-         <div className='w-full'>
-            <p className='mb-2'>Category</p>
-            <select onChange={handleCategoryChange} value={category} className='w-full px-3 py-2 border border-gray-300 rounded'>
-              {Object.keys(categoryData).map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
+      {/* --- IMAGE UPLOAD SECTION (Allows Changing Images) --- */}
+      <div>
+        <p className='mb-2'>Update Images (Click to change)</p>
+        <div className='flex gap-2'>
+          <label htmlFor="image1">
+            {/* Logic: Show New File Preview ? OR Show Old URL ? OR Show Upload Placeholder */}
+            <img className='w-20 h-20 object-cover border' src={image1 ? URL.createObjectURL(image1) : (prevImg1 || assets.upload_area)} alt="" />
+            <input onChange={(e) => setImage1(e.target.files[0])} type="file" id="image1" hidden />
+          </label>
+          <label htmlFor="image2">
+            <img className='w-20 h-20 object-cover border' src={image2 ? URL.createObjectURL(image2) : (prevImg2 || assets.upload_area)} alt="" />
+            <input onChange={(e) => setImage2(e.target.files[0])} type="file" id="image2" hidden />
+          </label>
+          <label htmlFor="image3">
+            <img className='w-20 h-20 object-cover border' src={image3 ? URL.createObjectURL(image3) : (prevImg3 || assets.upload_area)} alt="" />
+            <input onChange={(e) => setImage3(e.target.files[0])} type="file" id="image3" hidden />
+          </label>
+          <label htmlFor="image4">
+            <img className='w-20 h-20 object-cover border' src={image4 ? URL.createObjectURL(image4) : (prevImg4 || assets.upload_area)} alt="" />
+            <input onChange={(e) => setImage4(e.target.files[0])} type="file" id="image4" hidden />
+          </label>
         </div>
-        <div className='w-full'>
-            <p className='mb-2'>Type / Sub-Category</p>
-            
-            {/* Show Dropdown if Category is NOT 'Other' */}
-            {category !== "Other" && (
-                <select onChange={(e) => setSubCategory(e.target.value)} value={subCategory} className='w-full px-3 py-2 border border-gray-300 rounded mb-2'>
-                   {categoryData[category] && categoryData[category].map((sub) => (
-                      <option key={sub} value={sub}>{sub}</option>
-                   ))}
+      </div>
+
+      <div className='w-full'><p>Name</p><input onChange={(e) => setName(e.target.value)} value={name} className='w-full border p-2 rounded' required /></div>
+      <div className='w-full'><p>Description</p><textarea onChange={(e) => setDescription(e.target.value)} value={description} className='w-full border p-2 rounded' required /></div>
+
+      <div className='flex gap-2 w-full'>
+          <div className='w-full'><p>Salt</p><input onChange={(e)=>setSaltComposition(e.target.value)} value={saltComposition} className='w-full border p-2 rounded' /></div>
+          <div className='w-full'><p>Manufacturer</p><input onChange={(e)=>setManufacturer(e.target.value)} value={manufacturer} className='w-full border p-2 rounded' /></div>
+      </div>
+      <div className='w-full max-w-[200px]'><p>Expiry</p><input type="date" onChange={(e)=>setExpiryDate(e.target.value)} value={expiryDate} className='w-full border p-2 rounded' /></div>
+
+      {/* --- HYBRID CATEGORY --- */}
+      <div className='flex gap-2 w-full'>
+         <div className='w-full'>
+            <p>Category</p>
+            {isNewCategoryMode ? (
+                <div className='flex gap-2'><input value={newCategoryInput} onChange={(e)=>setNewCategoryInput(e.target.value)} className='w-full border border-emerald-500 p-2 rounded' /><button type="button" onClick={()=>setIsNewCategoryMode(false)} className='text-red-500'>Cancel</button></div>
+            ) : (
+                <select onChange={handleCategoryChange} value={category} className='w-full border p-2 rounded'>
+                    {mergedCategories.map((c, i) => <option key={i} value={c}>{c}</option>)}
+                    <option value="new_cat_option" className='text-emerald-600 font-bold'>+ New Category</option>
                 </select>
             )}
-
-            {/* Show Input if Category is 'Other' OR SubCategory is 'Other' */}
-            {(category === "Other" || subCategory === "Other") && (
-                <input 
-                    type="text" 
-                    value={customSubCategory} 
-                    onChange={(e) => setCustomSubCategory(e.target.value)} 
-                    placeholder="Type custom category..." 
-                    className='w-full px-3 py-2 border border-emerald-500 rounded bg-emerald-50 outline-none' 
-                    required 
-                />
+        </div>
+        <div className='w-full'>
+            <p>Sub Category</p>
+            {isNewSubCategoryMode ? (
+                <div className='flex gap-2'><input value={newSubCategoryInput} onChange={(e)=>setNewSubCategoryInput(e.target.value)} className='w-full border border-emerald-500 p-2 rounded' /><button type="button" onClick={()=>setIsNewSubCategoryMode(false)} className='text-red-500'>Cancel</button></div>
+            ) : (
+                <select onChange={handleSubCategoryChange} value={subCategory} className='w-full border p-2 rounded'>
+                   {getSubCategoriesFor(category).map((s, i) => <option key={i} value={s}>{s}</option>)}
+                   <option value="new_sub_option" className='text-emerald-600 font-bold'>+ New Sub-Category</option>
+                </select>
             )}
         </div>
       </div>
 
-      {/* Pharmacy Fields */}
-      <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
-        <div className='w-full'><p className='mb-2'>Salt</p><input onChange={(e) => setSaltComposition(e.target.value)} value={saltComposition} className='w-full px-3 py-2 border border-gray-300 rounded' type="text" /></div>
-        <div className='w-full'><p className='mb-2'>Manufacturer</p><input onChange={(e) => setManufacturer(e.target.value)} value={manufacturer} className='w-full px-3 py-2 border border-gray-300 rounded' type="text" /></div>
-      </div>
-
-      <div className='w-full max-w-[500px]'>
-          <p className='mb-2'>Expiry Date</p>
-          <input onChange={(e) => setExpiryDate(e.target.value)} value={expiryDate} className='w-full px-3 py-2 border border-gray-300 rounded' type="date" />
-      </div>
-
-      {/* --- VARIANTS SECTION --- */}
-      <div className='w-full mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg'>
-          <p className='font-bold text-gray-700 mb-3'>Manage Variants (Size, Price & Stock)</p>
-          
-          <div className='grid grid-cols-2 md:grid-cols-5 gap-3 mb-3'>
-              <div>
-                  <p className='text-xs mb-1'>Size (e.g. 50ml)</p>
-                  <input type="text" value={variantInput.size} onChange={(e) => setVariantInput({...variantInput, size: e.target.value})} className='w-full px-2 py-1 border rounded' placeholder="Size" />
-              </div>
-              <div>
-                  <p className='text-xs mb-1'>MRP</p>
-                  <input type="number" value={variantInput.mrp} onChange={(e) => setVariantInput({...variantInput, mrp: e.target.value})} className='w-full px-2 py-1 border rounded text-red-500' placeholder="0" />
-              </div>
-              <div>
-                  <p className='text-xs mb-1'>Selling Price</p>
-                  <input type="number" value={variantInput.price} onChange={(e) => setVariantInput({...variantInput, price: e.target.value})} className='w-full px-2 py-1 border rounded text-green-600' placeholder="0" />
-              </div>
-              <div>
-                  <p className='text-xs mb-1'>Stock</p>
-                  <input type="number" value={variantInput.stock} onChange={(e) => setVariantInput({...variantInput, stock: e.target.value})} className='w-full px-2 py-1 border rounded' placeholder="Qty" />
-              </div>
-              <div className='flex items-end'>
-                  <button type="button" onClick={addVariant} className='w-full bg-emerald-600 text-white py-1.5 rounded hover:bg-emerald-700'>+ ADD</button>
-              </div>
+      {/* --- VARIANTS --- */}
+      <div className='w-full mt-4 p-4 bg-gray-50 border rounded'>
+          <p className='font-bold mb-2'>Variants</p>
+          <div className='grid grid-cols-5 gap-2 mb-2'>
+              <input placeholder="Size" value={variantInput.size} onChange={(e)=>setVariantInput({...variantInput, size:e.target.value})} className='border p-1' />
+              <input type="number" placeholder="MRP" value={variantInput.mrp} onChange={(e)=>setVariantInput({...variantInput, mrp:e.target.value})} className='border p-1' />
+              <input type="number" placeholder="Price" value={variantInput.price} onChange={(e)=>setVariantInput({...variantInput, price:e.target.value})} className='border p-1' />
+              <input type="number" placeholder="Stock" value={variantInput.stock} onChange={(e)=>setVariantInput({...variantInput, stock:e.target.value})} className='border p-1' />
+              <button type="button" onClick={addVariant} className='bg-black text-white rounded'>Add</button>
           </div>
-
-          {variants.length > 0 && (
-              <div className='bg-white border rounded mt-2'>
-                  <div className='grid grid-cols-5 bg-gray-100 p-2 text-xs font-bold border-b'>
-                      <span>Size</span>
-                      <span>MRP</span>
-                      <span>Price</span>
-                      <span>Stock</span>
-                      <span>Action</span>
-                  </div>
-                  {variants.map((item, index) => (
-                      <div key={index} className='grid grid-cols-5 p-2 text-sm border-b last:border-0 items-center'>
-                          <span>{item.size}</span>
-                          <span className='text-red-500 line-through'>₹{item.mrp}</span>
-                          <span className='text-green-600 font-bold'>₹{item.price}</span>
-                          <span>{item.stock}</span>
-                          <span onClick={() => removeVariant(index)} className='text-red-600 cursor-pointer hover:underline'>Remove</span>
-                      </div>
-                  ))}
+          {variants.map((v, i) => (
+              <div key={i} className='grid grid-cols-5 gap-2 text-sm border-b p-1'>
+                  <span>{v.size}</span><span>{v.mrp}</span><span>{v.price}</span><span>{v.stock}</span><span onClick={()=>removeVariant(i)} className='text-red-500 cursor-pointer'>Remove</span>
               </div>
-          )}
+          ))}
       </div>
 
       <div className='flex gap-4 mt-4'>
-        <div className='flex gap-2 cursor-pointer'><input onChange={() => setBestsellar(!bestsellar)} checked={bestsellar} type="checkbox" /><label>Bestseller</label></div>
-        <div className='flex gap-2 cursor-pointer'><input onChange={() => setPrescriptionRequired(!prescriptionRequired)} checked={prescriptionRequired} type="checkbox" /><label className='text-red-500'>Rx Required?</label></div>
+        <div className='flex gap-2'><input onChange={() => setBestsellar(!bestsellar)} checked={bestsellar} type="checkbox" /><label>Bestseller</label></div>
+        <div className='flex gap-2'><input onChange={() => setPrescriptionRequired(!prescriptionRequired)} checked={prescriptionRequired} type="checkbox" /><label>Rx Required</label></div>
       </div>
 
       <button type='submit' className='w-40 py-3 mt-4 bg-black text-white font-bold rounded hover:bg-gray-800'>UPDATE PRODUCT</button>
