@@ -18,7 +18,15 @@ import { ToastContainer } from "react-toastify";
 import ScrollToTop from './components/ScrollToTop';
 
 // 👇 Import New Component
-import SiteInfoBanner from "./components/SiteInfoBanner"; 
+import SiteInfoBanner from "./components/SiteInfoBanner";
+
+// ✅ Import Legal Pages (New)
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsConditions from './pages/TermsConditions';
+import ReturnPolicy from './pages/ReturnPolicy';
+import CancellationPolicy from './pages/CancellationPolicy';
+import PrescriptionPolicy from './pages/PrescriptionPolicy';
+import GrievanceRedressal from './pages/GrievanceRedressal';
 
 const App = () => {
   return (
@@ -27,13 +35,14 @@ const App = () => {
       <Navbar />
       <SearchBar />
       
-      {/* 👇 Add This Line Here (Navbar/Search ke niche) */}
+      {/* 👇 Site Info Banner (Navbar/Search ke niche) */}
       <SiteInfoBanner /> 
       
       <ToastContainer />
 
       <div className="px-4 sm:px-[3vw] md:px-[5vw] lg:px-[6vw]">
         <Routes>
+          {/* Main Pages */}
           <Route path="/" element={<Home />} />
           <Route path="/collection" element={<Collection />} />
           <Route path="/about" element={<About />} />
@@ -45,6 +54,15 @@ const App = () => {
           <Route path="/verify" element={<Verify />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/profile" element={<Profile />} />
+
+          {/* ✅ Legal Policy Routes */}
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-conditions" element={<TermsConditions />} />
+          <Route path="/return-policy" element={<ReturnPolicy />} />
+          <Route path="/cancellation-policy" element={<CancellationPolicy />} />
+          <Route path="/prescription-policy" element={<PrescriptionPolicy />} />
+          <Route path="/grievance-redressal" element={<GrievanceRedressal />} />
+
         </Routes>
         
         <Footer />
