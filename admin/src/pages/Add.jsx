@@ -49,15 +49,17 @@ const Add = ({ token }) => {
       setVariants(newVariants);
   };
 
+  // ✅ UPDATED CATEGORY DATA
   const categoryData = {
-      "Tablet": ["Pain Relief", "Gastric", "Antibiotic", "Vitamins", "Cold & Cough", "Heart"],
-      "Syrup": ["Cough Syrup", "Digestion", "Multivitamin", "Antacid"],
-      "Injection": ["Pain Killer", "Antibiotic", "Diabetes", "Vaccine"],
-      "Cream": ["Antifungal", "Antibiotic", "Pain Relief", "Moisturizer", "Skin Care"],
-      "Drops": ["Eye Drops", "Ear Drops", "Pediatric Drops"],
-      "Sexual Wellness": ["Condoms", "Lubricants", "Performance Supplements", "Test Kits", "Hygiene"],
-      "Devices": ["BP Monitor", "Glucometer", "Thermometer", "Oximeter"],
-      "Other": [] 
+      "Tablet": ["Pain Relief", "Gastric", "Antibiotic", "Vitamins", "Cold & Cough", "Heart", "Other"],
+      "Syrup": ["Cough Syrup", "Digestion", "Multivitamin", "Antacid", "Other"],
+      "Injection": ["Pain Killer", "Antibiotic", "Diabetes", "Vaccine", "Other"],
+      "Cream": ["Antifungal", "Antibiotic", "Pain Relief", "Moisturizer", "Skin Care", "Other"],
+      "Drops": ["Eye Drops", "Ear Drops", "Pediatric Drops", "Other"],
+      "Sexual Wellness": ["Condoms", "Lubricants", "Performance Supplements", "Test Kits", "Hygiene", "Other"],
+      "Devices": ["BP Monitor", "Glucometer", "Thermometer", "Oximeter", "Other"],
+      "Health & Nutrition": ["Daily Supplements", "Protein Supplements", "Weight Management", "Energy Drinks", "Multivitamins", "Other"], // ✅ New Category
+      "Other": [] // Remains empty for fully custom input
   };
 
   const [category, setCategory] = useState("Tablet");
@@ -67,10 +69,13 @@ const Add = ({ token }) => {
   const handleCategoryChange = (e) => {
       const selectedCategory = e.target.value;
       setCategory(selectedCategory);
+      
+      // If "Other" (Main Category) is selected, clear subcategory
       if (selectedCategory === "Other") {
           setSubCategory("Other");
           setCustomSubCategory("");
       } else {
+          // Default to the first item in the list
           setSubCategory(categoryData[selectedCategory][0]);
       }
   };
@@ -78,7 +83,6 @@ const Add = ({ token }) => {
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     
-    // Check if at least one variant is added
     if (variants.length === 0) {
         toast.error("Please add at least one product variant (Size/Price)");
         return;
@@ -91,6 +95,8 @@ const Add = ({ token }) => {
       formData.append("description", description)
       formData.append("category", category)
       
+      // If user selected "Other" as main category, send the custom typed input
+      // If user selected a normal category but chose "Other" as sub-category, it sends the string "Other"
       const finalSubCategory = category === "Other" ? customSubCategory : subCategory;
       formData.append("subCategory", finalSubCategory)
       
@@ -99,7 +105,6 @@ const Add = ({ token }) => {
       formData.append("manufacturer", manufacturer)
       formData.append("prescriptionRequired", prescriptionRequired)
 
-      // --- SEND VARIANTS AS JSON STRING ---
       formData.append("variants", JSON.stringify(variants));
 
       image1 && formData.append("image1", image1)
@@ -111,7 +116,6 @@ const Add = ({ token }) => {
 
       if (response.data.success) {
         toast.success(response.data.message)
-        // Reset Form
         setName("")
         setDescription("")
         setImage1(false)
@@ -120,7 +124,7 @@ const Add = ({ token }) => {
         setImage4(false)
         setSaltComposition("")
         setManufacturer("")
-        setVariants([]) // Reset variants
+        setVariants([]) 
         setCategory("Tablet")
         setSubCategory(categoryData["Tablet"][0])
         setCustomSubCategory("")
@@ -191,7 +195,7 @@ const Add = ({ token }) => {
             </select>
         </div>
         <div className='w-full'>
-            <p className='mb-2'>Type</p>
+            <p className='mb-2'>Sub Category</p>
             {category === "Other" ? (
                 <input type="text" value={customSubCategory} onChange={(e) => setCustomSubCategory(e.target.value)} placeholder="Type custom category..." className='w-full px-3 py-2 border border-emerald-500 rounded bg-emerald-50 outline-none' required />
             ) : (

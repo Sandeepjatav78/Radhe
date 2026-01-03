@@ -26,19 +26,22 @@ const Update = ({ token }) => {
       size: "", price: "", mrp: "", stock: "", batchNumber: ""
   });
 
-  // Category Logic
+  // ✅ UPDATED CATEGORY DATA (Same as Add.jsx)
   const categoryData = {
-      "Tablet": ["Pain Relief", "Gastric", "Antibiotic", "Vitamins", "Cold & Cough", "Heart"],
-      "Syrup": ["Cough Syrup", "Digestion", "Multivitamin", "Antacid"],
-      "Injection": ["Pain Killer", "Antibiotic", "Diabetes", "Vaccine"],
-      "Cream": ["Antifungal", "Antibiotic", "Pain Relief", "Moisturizer", "Skin Care"],
-      "Drops": ["Eye Drops", "Ear Drops", "Pediatric Drops"],
-      "Sexual Wellness": ["Condoms", "Lubricants", "Performance Supplements", "Test Kits", "Hygiene"],
-      "Devices": ["BP Monitor", "Glucometer", "Thermometer", "Oximeter"]
+      "Tablet": ["Pain Relief", "Gastric", "Antibiotic", "Vitamins", "Cold & Cough", "Heart", "Other"],
+      "Syrup": ["Cough Syrup", "Digestion", "Multivitamin", "Antacid", "Other"],
+      "Injection": ["Pain Killer", "Antibiotic", "Diabetes", "Vaccine", "Other"],
+      "Cream": ["Antifungal", "Antibiotic", "Pain Relief", "Moisturizer", "Skin Care", "Other"],
+      "Drops": ["Eye Drops", "Ear Drops", "Pediatric Drops", "Other"],
+      "Sexual Wellness": ["Condoms", "Lubricants", "Performance Supplements", "Test Kits", "Hygiene", "Other"],
+      "Devices": ["BP Monitor", "Glucometer", "Thermometer", "Oximeter", "Other"],
+      "Health & Nutrition": ["Daily Supplements", "Protein Supplements", "Weight Management", "Energy Drinks", "Multivitamins", "Other"], // ✅ New
+      "Other": [] 
   };
 
   const [category, setCategory] = useState("Tablet");
   const [subCategory, setSubCategory] = useState("");
+  const [customSubCategory, setCustomSubCategory] = useState(""); // ✅ For 'Other' input
 
   // --- HELPER: ADD VARIANT ---
   const addVariant = () => {
@@ -65,17 +68,33 @@ const Update = ({ token }) => {
               
               setName(data.name);
               setDescription(data.description);
-              setCategory(data.category);
-              setSubCategory(data.subCategory);
               setBestsellar(data.bestsellar);
               
               setSaltComposition(data.saltComposition);
               setManufacturer(data.manufacturer);
               setPrescriptionRequired(data.prescriptionRequired);
               
+              // --- CATEGORY LOGIC FOR UPDATE ---
+              setCategory(data.category);
+              
+              const predefinedSubs = categoryData[data.category] || [];
+              
+              // Check if the fetched subCategory exists in our predefined list
+              if (data.category === "Other") {
+                  setSubCategory("Other");
+                  setCustomSubCategory(data.subCategory);
+              } else if (predefinedSubs.includes(data.subCategory) && data.subCategory !== "Other") {
+                  // Standard case: It's in the list
+                  setSubCategory(data.subCategory);
+                  setCustomSubCategory("");
+              } else {
+                  // It's a custom value (so set dropdown to 'Other' and fill custom input)
+                  setSubCategory("Other");
+                  setCustomSubCategory(data.subCategory);
+              }
+
               // Handle Date
               if(data.expiryDate) {
-                  // Check if it's a number (timestamp) or string
                   const date = new Date(Number(data.expiryDate) || data.expiryDate); 
                   if(!isNaN(date)) {
                     setExpiryDate(date.toISOString().split('T')[0]);
@@ -86,8 +105,6 @@ const Update = ({ token }) => {
               if (data.variants && data.variants.length > 0) {
                   setVariants(data.variants);
               } else {
-                  // FALLBACK: Agar purana product hai jisme variants nahi the
-                  // To purane fields se ek variant bana do
                   if (data.price) {
                       setVariants([{
                           size: data.packSize || "Standard",
@@ -116,7 +133,14 @@ const Update = ({ token }) => {
   const handleCategoryChange = (e) => {
     const selectedCategory = e.target.value;
     setCategory(selectedCategory);
-    setSubCategory(categoryData[selectedCategory] ? categoryData[selectedCategory][0] : "");
+    
+    if (selectedCategory === "Other") {
+        setSubCategory("Other");
+        setCustomSubCategory("");
+    } else {
+        setSubCategory(categoryData[selectedCategory][0]); // Reset to first option
+        setCustomSubCategory("");
+    }
   };
 
   // --- 2. UPDATE FUNCTION ---
@@ -129,13 +153,25 @@ const Update = ({ token }) => {
     }
 
     try {
+      // Logic to determine which subCategory value to send
+      const finalSubCategory = (category === "Other" || subCategory === "Other") 
+          ? customSubCategory 
+          : subCategory;
+
+      if ((category === "Other" || subCategory === "Other") && !finalSubCategory.trim()) {
+          toast.error("Please specify the custom sub-category/type");
+          return;
+      }
+
       const updatedData = {
           id: productId,
-          name, description, category, subCategory, bestsellar,
+          name, description, category, 
+          subCategory: finalSubCategory, // ✅ Sending correct sub category
+          bestsellar,
           saltComposition, manufacturer, 
           expiryDate: new Date(expiryDate).getTime(),
           prescriptionRequired,
-          variants // <--- Sending the Array
+          variants 
       }
 
       const response = await axios.post(backendURL + "/api/product/update", updatedData, { headers: { token } })
@@ -183,12 +219,28 @@ const Update = ({ token }) => {
             </select>
         </div>
         <div className='w-full'>
-            <p className='mb-2'>Type</p>
-            <select onChange={(e) => setSubCategory(e.target.value)} value={subCategory} className='w-full px-3 py-2 border border-gray-300 rounded'>
-               {categoryData[category] && categoryData[category].map((sub) => (
-                  <option key={sub} value={sub}>{sub}</option>
-              ))}
-            </select>
+            <p className='mb-2'>Type / Sub-Category</p>
+            
+            {/* Show Dropdown if Category is NOT 'Other' */}
+            {category !== "Other" && (
+                <select onChange={(e) => setSubCategory(e.target.value)} value={subCategory} className='w-full px-3 py-2 border border-gray-300 rounded mb-2'>
+                   {categoryData[category] && categoryData[category].map((sub) => (
+                      <option key={sub} value={sub}>{sub}</option>
+                   ))}
+                </select>
+            )}
+
+            {/* Show Input if Category is 'Other' OR SubCategory is 'Other' */}
+            {(category === "Other" || subCategory === "Other") && (
+                <input 
+                    type="text" 
+                    value={customSubCategory} 
+                    onChange={(e) => setCustomSubCategory(e.target.value)} 
+                    placeholder="Type custom category..." 
+                    className='w-full px-3 py-2 border border-emerald-500 rounded bg-emerald-50 outline-none' 
+                    required 
+                />
+            )}
         </div>
       </div>
 
@@ -203,11 +255,10 @@ const Update = ({ token }) => {
           <input onChange={(e) => setExpiryDate(e.target.value)} value={expiryDate} className='w-full px-3 py-2 border border-gray-300 rounded' type="date" />
       </div>
 
-      {/* --- UPDATED: VARIANTS SECTION --- */}
+      {/* --- VARIANTS SECTION --- */}
       <div className='w-full mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg'>
           <p className='font-bold text-gray-700 mb-3'>Manage Variants (Size, Price & Stock)</p>
           
-          {/* Input Row */}
           <div className='grid grid-cols-2 md:grid-cols-5 gap-3 mb-3'>
               <div>
                   <p className='text-xs mb-1'>Size (e.g. 50ml)</p>
@@ -230,7 +281,6 @@ const Update = ({ token }) => {
               </div>
           </div>
 
-          {/* List Row */}
           {variants.length > 0 && (
               <div className='bg-white border rounded mt-2'>
                   <div className='grid grid-cols-5 bg-gray-100 p-2 text-xs font-bold border-b'>
@@ -253,7 +303,6 @@ const Update = ({ token }) => {
           )}
       </div>
 
-      {/* Checkboxes */}
       <div className='flex gap-4 mt-4'>
         <div className='flex gap-2 cursor-pointer'><input onChange={() => setBestsellar(!bestsellar)} checked={bestsellar} type="checkbox" /><label>Bestseller</label></div>
         <div className='flex gap-2 cursor-pointer'><input onChange={() => setPrescriptionRequired(!prescriptionRequired)} checked={prescriptionRequired} type="checkbox" /><label className='text-red-500'>Rx Required?</label></div>
