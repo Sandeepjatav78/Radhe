@@ -8,7 +8,7 @@ const Footer = () => {
     <footer className="bg-gray-900 text-gray-300 py-8 md:py-12 mt-16 border-t border-gray-800 font-sans">
       <div className="container mx-auto px-5 grid grid-cols-2 md:grid-cols-3 gap-8 md:gap-10">
         
-        {/* 1. Brand & Description (Full Width on Mobile, Centered) */}
+        {/* 1. Brand & Description & LICENSE INFO */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -18,12 +18,22 @@ const Footer = () => {
           <h1 className="text-white text-2xl font-bold mb-3 flex items-center gap-2">
             <span className="text-emerald-500">Radhe</span> Pharmacy
           </h1>
-          <p className="text-xs sm:text-sm leading-relaxed max-w-sm text-gray-400">
+          <p className="text-xs sm:text-sm leading-relaxed max-w-sm text-gray-400 mb-6">
             Your trusted partner in health. 100% genuine medicines delivered directly to your home in Panipat.
           </p>
+
+          {/* ✅ MANDATORY REGULATORY DETAILS (Updated with GST & FSSAI) */}
+          <div className="text-xs text-gray-500 space-y-1 border-l-2 border-emerald-600 pl-3 text-left">
+             <p><span className="text-gray-400 font-semibold">Drug Lic. No:</span> 20B/1234/24 & 21B/1235/24</p>
+             <p><span className="text-gray-400 font-semibold">Pharmacist:</span> Mr. Rahul Sharma</p>
+             <p><span className="text-gray-400 font-semibold">Reg. No:</span> PMC/54321</p>
+             {/* 👇 NEW ADDITIONS 👇 */}
+             <p><span className="text-gray-400 font-semibold">GSTIN:</span> 06ABCDE1234F1Z5</p>
+             <p><span className="text-gray-400 font-semibold">FSSAI Lic:</span> 10821000000000</p>
+          </div>
         </motion.div>
 
-        {/* 2. Quick Links (Left Side on Mobile) */}
+        {/* 2. Quick Links */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -36,10 +46,11 @@ const Footer = () => {
             <li><Link to="/collection" className="hover:text-emerald-400 transition-colors">Medicines</Link></li>
             <li><Link to="/about" className="hover:text-emerald-400 transition-colors">About Us</Link></li>
             <li><Link to="/contact" className="hover:text-emerald-400 transition-colors">Contact</Link></li>
+            <li><Link to="/privacy-policy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link></li>
           </ul>
         </motion.div>
 
-        {/* 3. Contact & Social (Right Side on Mobile) */}
+        {/* 3. Contact & Social */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

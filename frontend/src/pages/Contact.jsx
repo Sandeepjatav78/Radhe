@@ -17,24 +17,22 @@ const Contact = () => {
 
     const formData = new FormData(event.target);
     
-    // --- STEP 1: UPLOAD IMAGE TO CLOUDINARY (Agar file select kiya hai to) ---
+    // --- STEP 1: UPLOAD IMAGE TO CLOUDINARY ---
     if (file) {
         const imageFormData = new FormData();
         imageFormData.append("file", file);
         imageFormData.append("upload_preset", upload_preset);
 
         try {
-            // Uploading to Cloudinary
             const cloudinaryRes = await fetch(`https://api.cloudinary.com/v1_1/${cloud_name}/image/upload`, {
                 method: "POST",
                 body: imageFormData
             });
             const cloudinaryData = await cloudinaryRes.json();
             
-            // Agar upload successful hai, to URL le lo
             if (cloudinaryData.secure_url) {
                 formData.append("prescription_link", cloudinaryData.secure_url);
-                formData.delete("attachment"); // File hata do taaki Web3Forms error na de
+                formData.delete("attachment");
             } else {
                 console.error("Cloudinary Error:", cloudinaryData);
                 toast.error("Image upload failed. Check preset settings.");
@@ -85,12 +83,12 @@ const Contact = () => {
       </div>
 
       {/* --- INFO CARDS --- */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div className="bg-emerald-50/50 p-8 rounded-2xl text-center border border-emerald-100 hover:shadow-md transition group">
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-2xl group-hover:scale-110 transition-transform">📞</div>
           <h3 className="font-bold text-gray-900 mb-2">Call Us</h3>
           <p className="text-gray-600 text-sm font-medium">98175-00669</p>
-          <p className="text-gray-400 text-xs mt-2">Available 6:00 AM - 10:00 PM</p>
+          <p className="text-gray-400 text-xs mt-2">Available 9:00 AM - 10:00 PM</p>
         </div>
 
         <div className="bg-blue-50/50 p-8 rounded-2xl text-center border border-blue-100 hover:shadow-md transition group">
@@ -106,6 +104,50 @@ const Contact = () => {
           <p className="text-gray-600 text-sm">Hari Singh Chowk, Devi Mandir Road,</p>
           <p className="text-gray-600 text-sm">Panipat, Haryana - 132103</p>
         </div>
+      </div>
+
+      {/* --- OPERATING HOURS & REGULATORY INFO --- */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-20">
+          <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm flex flex-col justify-center">
+              <h3 className="text-lg font-bold text-emerald-800 mb-3 flex items-center gap-2">🕒 Operating Hours</h3>
+              <ul className="space-y-2 text-sm text-gray-600">
+                  <li className="flex justify-between border-b border-gray-100 pb-2">
+                      <span>Mon - Sat</span>
+                      <span className="font-medium">09:00 AM - 10:00 PM</span>
+                  </li>
+                  <li className="flex justify-between pt-1">
+                      <span>Sunday</span>
+                      <span className="font-medium">10:00 AM - 02:00 PM</span>
+                  </li>
+              </ul>
+          </div>
+
+          <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm">
+              <h3 className="text-lg font-bold text-emerald-800 mb-3 flex items-center gap-2">📜 Regulatory Information</h3>
+              <ul className="text-sm text-gray-600 space-y-2">
+                  <li className="flex gap-2">
+                      <span className="font-semibold min-w-[120px]">Drug Lic. No:</span>
+                      <span>20B/1234/24 & 21B/1235/24</span>
+                  </li>
+                  <li className="flex gap-2">
+                      <span className="font-semibold min-w-[120px]">Pharmacist:</span>
+                      <span>Mr. Rahul Sharma</span>
+                  </li>
+                  <li className="flex gap-2">
+                      <span className="font-semibold min-w-[120px]">Reg. Number:</span>
+                      <span>PMC/54321</span>
+                  </li>
+                  {/* ✅ ADDED GST & FSSAI HERE */}
+                  <li className="flex gap-2">
+                      <span className="font-semibold min-w-[120px]">GSTIN:</span>
+                      <span>06ABCDE1234F1Z5</span>
+                  </li>
+                  <li className="flex gap-2">
+                      <span className="font-semibold min-w-[120px]">FSSAI Lic:</span>
+                      <span>10821000000000</span>
+                  </li>
+              </ul>
+          </div>
       </div>
 
       {/* --- FORM SECTION --- */}
