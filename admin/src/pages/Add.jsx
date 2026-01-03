@@ -18,7 +18,7 @@ const Add = ({ token }) => {
   const [manufacturer, setManufacturer] = useState("");
   const [prescriptionRequired, setPrescriptionRequired] = useState(false);
 
-  // --- 1. DEFAULT HARDCODED DATA (Jo pehle tha) ---
+  // --- 1. DEFAULT HARDCODED DATA ---
   const defaultCategoryData = {
       "Tablet": ["Pain Relief", "Gastric", "Antibiotic", "Vitamins", "Cold & Cough", "Heart", "Other"],
       "Syrup": ["Cough Syrup", "Digestion", "Multivitamin", "Antacid", "Other"],
@@ -31,22 +31,21 @@ const Add = ({ token }) => {
   };
 
   // --- 2. DYNAMIC STATES ---
-  const [dbCategories, setDbCategories] = useState([]); // Fetched from DB
-  const [mergedCategories, setMergedCategories] = useState([]); // Hardcoded + DB Merged
+  const [dbCategories, setDbCategories] = useState([]); 
+  const [mergedCategories, setMergedCategories] = useState([]); 
 
-  // Selection States
   const [category, setCategory] = useState("Tablet");
   const [subCategory, setSubCategory] = useState(defaultCategoryData["Tablet"][0]);
   
-  // Inputs for Creating New
   const [newCategoryInput, setNewCategoryInput] = useState("");
   const [newSubCategoryInput, setNewSubCategoryInput] = useState("");
 
-  // Mode Toggles
   const [isNewCategoryMode, setIsNewCategoryMode] = useState(false);
   const [isNewSubCategoryMode, setIsNewSubCategoryMode] = useState(false);
 
-  // Variants
+  // Suggestions State
+  const [filteredSuggestions, setFilteredSuggestions] = useState([]);
+
   const [variants, setVariants] = useState([]); 
   const [variantInput, setVariantInput] = useState({ size: "", price: "", mrp: "", stock: "", batchNumber: "" });
 
@@ -58,11 +57,9 @@ const Add = ({ token }) => {
               const fetchedCats = response.data.categories;
               setDbCategories(fetchedCats);
 
-              // MERGE: Hardcoded keys + DB Category Names
               const hardcodedKeys = Object.keys(defaultCategoryData);
               const dbKeys = fetchedCats.map(c => c.name);
               
-              // Unique Set banaya taaki duplicate na ho (agar 'Tablet' DB me bhi hai to ek hi baar dikhe)
               const uniqueKeys = Array.from(new Set([...hardcodedKeys, ...dbKeys]));
               setMergedCategories(uniqueKeys);
           }
@@ -75,19 +72,41 @@ const Add = ({ token }) => {
       fetchCategories();
   }, []);
 
-  // --- 4. HELPER: GET SUB-CATEGORIES ---
-  // Ye function check karega ki category Hardcoded me hai ya DB me
+  // --- 4. HELPER: SUGGESTION LOGIC ---
+  
+  // Jab user new category type kare, tab suggestions filter karo
+  useEffect(() => {
+      if (isNewCategoryMode && newCategoryInput) {
+          const matches = mergedCategories.filter(cat => 
+              cat.toLowerCase().includes(newCategoryInput.toLowerCase())
+          );
+          setFilteredSuggestions(matches);
+      } else {
+          setFilteredSuggestions([]);
+      }
+  }, [newCategoryInput, isNewCategoryMode, mergedCategories]);
+
+  // Jab user suggestion pe click kare
+  const handleSelectSuggestion = (suggestedCat) => {
+      setCategory(suggestedCat);        // Main state set karo
+      setIsNewCategoryMode(false);      // New mode band karo
+      setNewCategoryInput("");          // Input clear karo
+      
+      // Auto-select first subcategory
+      const subs = getSubCategoriesFor(suggestedCat);
+      if (subs.length > 0) {
+          setSubCategory(subs[0]);
+          setIsNewSubCategoryMode(false);
+      } else {
+          setSubCategory("");
+          setIsNewSubCategoryMode(true);
+      }
+  };
+
   const getSubCategoriesFor = (catName) => {
-      // 1. Check Hardcoded
-      if (defaultCategoryData[catName]) {
-          return defaultCategoryData[catName];
-      }
-      // 2. Check DB
+      if (defaultCategoryData[catName]) return defaultCategoryData[catName];
       const dbCat = dbCategories.find(c => c.name === catName);
-      if (dbCat) {
-          return dbCat.subCategories;
-      }
-      return [];
+      return dbCat ? dbCat.subCategories : [];
   };
 
   // --- 5. HANDLERS ---
@@ -102,14 +121,11 @@ const Add = ({ token }) => {
           setIsNewCategoryMode(false);
           setCategory(val);
           
-          // Get Subcats (Hybrid Logic)
           const subs = getSubCategoriesFor(val);
-          
           if (subs.length > 0) {
               setIsNewSubCategoryMode(false);
               setSubCategory(subs[0]);
           } else {
-              // Agar subcategory list khali hai (New DB Entry without subs), to input dikhao
               setIsNewSubCategoryMode(true);
               setSubCategory("");
           }
@@ -120,7 +136,7 @@ const Add = ({ token }) => {
       const val = e.target.value;
       if (val === "new_sub_option" || val === "Other") {
           setIsNewSubCategoryMode(true);
-          setSubCategory(""); // Clear value so user types it
+          setSubCategory(""); 
       } else {
           setIsNewSubCategoryMode(false);
           setSubCategory(val);
@@ -141,9 +157,18 @@ const Add = ({ token }) => {
   const onSubmitHandler = async (e) => {
     e.preventDefault();
     
-    // Final Values Logic
-    const finalCategory = isNewCategoryMode ? newCategoryInput : category;
-    const finalSubCategory = isNewSubCategoryMode ? newSubCategoryInput : subCategory;
+    // ✅ LOGIC: CASE SENSITIVITY HANDLE KARNA
+    let finalCategory = isNewCategoryMode ? newCategoryInput.trim() : category;
+    let finalSubCategory = isNewSubCategoryMode ? newSubCategoryInput.trim() : subCategory;
+
+    // Check if Category already exists (Case Insensitive)
+    // Example: User typed "tablet", existing is "Tablet". Use "Tablet".
+    const existingCat = mergedCategories.find(
+        c => c.toLowerCase() === finalCategory.toLowerCase()
+    );
+    if (existingCat) {
+        finalCategory = existingCat; // Replace with existing formatting
+    }
 
     if (!finalCategory || !finalSubCategory) {
         toast.error("Category & Sub-Category are required!");
@@ -175,18 +200,16 @@ const Add = ({ token }) => {
 
       if (response.data.success) {
         toast.success(response.data.message);
-        // Reset
+        
         setName(""); setDescription(""); setSaltComposition(""); setManufacturer("");
         setImage1(false); setImage2(false); setImage3(false); setImage4(false);
         setVariants([]);
         setNewCategoryInput(""); setNewSubCategoryInput("");
         
-        // Reset Modes
         setIsNewCategoryMode(false); setIsNewSubCategoryMode(false);
         setCategory("Tablet"); 
         setSubCategory(defaultCategoryData["Tablet"][0]);
 
-        // Refresh List (Jo nayi category add hui wo agli baar list me dikhegi)
         await fetchCategories(); 
 
       } else {
@@ -221,16 +244,41 @@ const Add = ({ token }) => {
       {/* --- HYBRID CATEGORY SECTION --- */}
       <div className='flex flex-col sm:flex-row gap-2 w-full sm:gap-8'>
          
-         <div className='w-full'>
+         <div className='w-full relative'>
             <p className='mb-2'>Category</p>
             {isNewCategoryMode ? (
-                <div className='flex gap-2'>
-                    <input type="text" value={newCategoryInput} onChange={(e)=>setNewCategoryInput(e.target.value)} placeholder="Type New Category" className='w-full border border-emerald-500 bg-emerald-50 p-2 rounded' autoFocus />
-                    <button type="button" onClick={() => setIsNewCategoryMode(false)} className='text-red-500 text-xs underline'>Cancel</button>
+                <div>
+                    <div className='flex gap-2'>
+                        <input 
+                            type="text" 
+                            value={newCategoryInput} 
+                            onChange={(e)=>setNewCategoryInput(e.target.value)} 
+                            placeholder="Type New Category" 
+                            className='w-full border border-emerald-500 bg-emerald-50 p-2 rounded' 
+                            autoFocus 
+                            autoComplete="off"
+                        />
+                        <button type="button" onClick={() => setIsNewCategoryMode(false)} className='text-red-500 text-xs underline'>Cancel</button>
+                    </div>
+                    
+                    {/* ✅ SUGGESTIONS LIST DROPDOWN */}
+                    {filteredSuggestions.length > 0 && (
+                        <div className='absolute z-10 w-full bg-white border border-gray-200 rounded shadow-lg max-h-40 overflow-y-auto mt-1'>
+                            <p className='text-[10px] text-gray-400 px-2 py-1 bg-gray-50'>Did you mean?</p>
+                            {filteredSuggestions.map((suggestion, idx) => (
+                                <div 
+                                    key={idx}
+                                    onClick={() => handleSelectSuggestion(suggestion)}
+                                    className='px-3 py-2 hover:bg-emerald-50 cursor-pointer text-sm text-gray-700'
+                                >
+                                    {suggestion}
+                                </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             ) : (
                 <select onChange={handleCategoryChange} value={category} className='w-full border p-2 rounded bg-white'>
-                    {/* Merged List of Default + DB Categories */}
                     {mergedCategories.map((cat, i) => (
                         <option key={i} value={cat}>{cat}</option>
                     ))}
