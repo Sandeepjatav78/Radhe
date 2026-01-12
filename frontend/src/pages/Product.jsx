@@ -1,10 +1,10 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom"; // ✅ useLocation added
 import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets";
 import RelatedProducts from "../components/RelatedProducts";
 import { toast } from "react-toastify";
-import { motion, AnimatePresence } from "framer-motion"; // <--- 1. IMPORT ADDED
+import { motion, AnimatePresence } from "framer-motion";
 
 const Product = () => {
   const { productId } = useParams();
@@ -14,8 +14,12 @@ const Product = () => {
   const [activeTab, setActiveTab] = useState("description");
   const [activeVariant, setActiveVariant] = useState(null);
 
+  // --- ROUTER HOOKS ---
+  const navigate = useNavigate();
+  const location = useLocation(); // ✅ To get current URL
+
   // --- ANIMATION STATES ---
-  const [direction, setDirection] = useState(0); // 1 for Next, -1 for Prev
+  const [direction, setDirection] = useState(0);
 
   // --- SWIPE LOGIC STATES ---
   const [touchStart, setTouchStart] = useState(null);
@@ -42,7 +46,6 @@ const Product = () => {
     }
   }, [productId, products]);
 
-  // --- HELPER: CHANGE IMAGE WITH ANIMATION ---
   const changeImage = (newImg, dir) => {
       setDirection(dir);
       setImage(newImg);
@@ -70,21 +73,18 @@ const Product = () => {
         let nextIndex;
 
         if (isLeftSwipe) {
-            // Swipe Left -> Next Image
             nextIndex = (currentIndex + 1) % productData.image.length;
-            changeImage(productData.image[nextIndex], 1); // Direction 1 (Right to Left)
+            changeImage(productData.image[nextIndex], 1);
         } else {
-            // Swipe Right -> Prev Image
             nextIndex = (currentIndex - 1 + productData.image.length) % productData.image.length;
-            changeImage(productData.image[nextIndex], -1); // Direction -1 (Left to Right)
+            changeImage(productData.image[nextIndex], -1);
         }
     }
   };
 
-  // --- ANIMATION VARIANTS ---
   const slideVariants = {
       enter: (direction) => ({
-          x: direction > 0 ? 300 : -300, // Right se aayega ya Left se
+          x: direction > 0 ? 300 : -300,
           opacity: 0,
           scale: 0.8
       }),
@@ -92,10 +92,10 @@ const Product = () => {
           x: 0,
           opacity: 1,
           scale: 1,
-          transition: { duration: 0.4, ease: "easeOut" } // Smooth Transition
+          transition: { duration: 0.4, ease: "easeOut" }
       },
       exit: (direction) => ({
-          x: direction > 0 ? -300 : 300, // Ulta jayega
+          x: direction > 0 ? -300 : 300,
           opacity: 0,
           scale: 0.8,
           transition: { duration: 0.3, ease: "easeIn" }
@@ -132,7 +132,7 @@ const Product = () => {
             ))}
           </div>
 
-          {/* --- MAIN IMAGE CONTAINER (Animated) --- */}
+          {/* MAIN IMAGE */}
           <div 
             className="flex-1 bg-white rounded-2xl border border-gray-100 flex items-center justify-center p-6 relative shadow-sm min-h-[300px] md:min-h-[450px] touch-pan-y overflow-hidden"
             onTouchStart={onTouchStart}
@@ -143,7 +143,7 @@ const Product = () => {
               
               <AnimatePresence initial={false} custom={direction} mode="wait">
                 <motion.img
-                    key={image} // Key change triggers animation
+                    key={image}
                     src={image}
                     custom={direction}
                     variants={slideVariants}
@@ -152,7 +152,7 @@ const Product = () => {
                     exit="exit"
                     alt={productData.name}
                     className="w-full h-full max-h-[400px] object-contain pointer-events-none select-none"
-                    drag="x" // Optional: Allows drag checking
+                    drag="x"
                     dragConstraints={{ left: 0, right: 0 }}
                 />
               </AnimatePresence>
@@ -177,16 +177,16 @@ const Product = () => {
           <div className="flex items-center gap-2 mt-3 mb-4"><div className="flex text-amber-400 text-sm">★★★★☆</div><p className="text-xs text-gray-400">(122 Verified Reviews)</p></div>
           <hr className="border-gray-100 mb-5" />
 
-          {/* --- PRICE --- */}
+          {/* PRICE */}
           <div className="flex flex-col gap-1">
-             <div className="flex items-end gap-3">
-                 <span className="text-3xl font-bold text-gray-900">{currency}{currentPrice}</span>
-                 {discount > 0 && <span className="text-lg text-gray-400 line-through mb-1">MRP {currency}{currentMrp}</span>}
-             </div>
-             <p className="text-xs text-gray-500">Inclusive of all taxes • Pack Size: <span className="font-semibold text-gray-700">{currentSize}</span></p>
+              <div className="flex items-end gap-3">
+                  <span className="text-3xl font-bold text-gray-900">{currency}{currentPrice}</span>
+                  {discount > 0 && <span className="text-lg text-gray-400 line-through mb-1">MRP {currency}{currentMrp}</span>}
+              </div>
+              <p className="text-xs text-gray-500">Inclusive of all taxes • Pack Size: <span className="font-semibold text-gray-700">{currentSize}</span></p>
           </div>
 
-          {/* --- VARIANTS --- */}
+          {/* VARIANTS */}
           <div className="mt-6">
               <p className="text-sm font-semibold text-gray-800 mb-3">Select Pack Size:</p>
               <div className="flex flex-wrap gap-3">
@@ -213,12 +213,17 @@ const Product = () => {
             </div>
           )}
 
-          {/* --- BUTTONS --- */}
+          {/* --- BUTTONS WITH REDIRECT LOGIC --- */}
           <div className="mt-8 flex gap-4">
              {currentStock > 0 ? (
                 <button 
                     onClick={() => { 
-                        if (!token) { toast.error("Please login first"); return; } 
+                        if (!token) { 
+                            toast.error("Please login to add to cart");
+                            // ✅ SAVE CURRENT LOCATION & REDIRECT
+                            navigate('/login', { state: { from: location.pathname } }); 
+                            return; 
+                        } 
                         addToCart(productData._id, currentSize); 
                     }} 
                     className="flex-1 bg-black text-white py-4 px-6 rounded-xl hover:bg-gray-800 transition-transform active:scale-95 font-semibold shadow-lg"
@@ -240,7 +245,7 @@ const Product = () => {
         </div>
       </div>
 
-      {/* --- TABS --- */}
+      {/* TABS */}
       <div className="mt-16">
         <div className="flex gap-6 border-b border-gray-200">
            <button onClick={() => setActiveTab("description")} className={`pb-3 border-b-2 font-bold text-sm sm:text-base transition-colors cursor-pointer ${activeTab === "description" ? "border-emerald-600 text-gray-800" : "border-transparent text-gray-500 hover:text-gray-700"}`}>Description</button>
