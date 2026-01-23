@@ -82,28 +82,34 @@ const Contact = () => {
         <p className="text-gray-500 mt-2">We are here to help you with your medicines and health queries.</p>
       </div>
 
-      {/* --- INFO CARDS --- */}
+      {/* --- INFO CARDS (NOW CLICKABLE) --- */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-        <div className="bg-emerald-50/50 p-8 rounded-2xl text-center border border-emerald-100 hover:shadow-md transition group">
+        
+        {/* ✅ CLICKABLE: CALL US */}
+        <a href="tel:+919817500669" className="bg-emerald-50/50 p-8 rounded-2xl text-center border border-emerald-100 hover:shadow-md hover:bg-emerald-100 transition group cursor-pointer block">
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-2xl group-hover:scale-110 transition-transform">📞</div>
           <h3 className="font-bold text-gray-900 mb-2">Call Us</h3>
-          <p className="text-gray-600 text-sm font-medium">98175-00669</p>
-          <p className="text-gray-400 text-xs mt-2">Available 9:00 AM - 10:00 PM</p>
-        </div>
+          <p className="text-gray-600 text-sm font-medium">98175-00669,</p>
+          <p className="text-gray-600 text-sm font-medium">82783-57882</p>
+          <p className="text-gray-400 text-xs mt-2">Available 6:30 AM - 10:30 PM</p>
+        </a>
 
-        <div className="bg-blue-50/50 p-8 rounded-2xl text-center border border-blue-100 hover:shadow-md transition group">
+        {/* ✅ CLICKABLE: EMAIL US */}
+        <a href="mailto:radhepharmacy099@gmail.com" className="bg-blue-50/50 p-8 rounded-2xl text-center border border-blue-100 hover:shadow-md hover:bg-blue-100 transition group cursor-pointer block">
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-2xl group-hover:scale-110 transition-transform">📧</div>
           <h3 className="font-bold text-gray-900 mb-2">Email Us</h3>
           <p className="text-gray-600 text-sm break-all">radhepharmacy099@gmail.com</p>
           <p className="text-gray-400 text-xs mt-2">We reply within 24 hours</p>
-        </div>
+        </a>
 
-        <div className="bg-orange-50/50 p-8 rounded-2xl text-center border border-orange-100 hover:shadow-md transition group">
+        {/* ✅ CLICKABLE: VISIT STORE (GOOGLE MAPS) */}
+        <a href="https://maps.app.goo.gl/gDk7z8M4edSj9irh6" target="_blank" rel="noopener noreferrer" className="bg-orange-50/50 p-8 rounded-2xl text-center border border-orange-100 hover:shadow-md hover:bg-orange-100 transition group cursor-pointer block">
           <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm text-2xl group-hover:scale-110 transition-transform">📍</div>
           <h3 className="font-bold text-gray-900 mb-2">Visit Store</h3>
           <p className="text-gray-600 text-sm">Hari Singh Chowk, Devi Mandir Road,</p>
           <p className="text-gray-600 text-sm">Panipat, Haryana - 132103</p>
-        </div>
+        </a>
+
       </div>
 
       {/* --- OPERATING HOURS & REGULATORY INFO --- */}
@@ -111,13 +117,9 @@ const Contact = () => {
           <div className="border border-gray-200 rounded-xl p-6 bg-white shadow-sm flex flex-col justify-center">
               <h3 className="text-lg font-bold text-emerald-800 mb-3 flex items-center gap-2">🕒 Operating Hours</h3>
               <ul className="space-y-2 text-sm text-gray-600">
-                  <li className="flex justify-between border-b border-gray-100 pb-2">
-                      <span>Mon - Sat</span>
-                      <span className="font-medium">09:00 AM - 10:00 PM</span>
-                  </li>
-                  <li className="flex justify-between pt-1">
-                      <span>Sunday</span>
-                      <span className="font-medium">10:00 AM - 02:00 PM</span>
+                  <li className="flex justify-between items-center bg-emerald-50 px-3 py-2 rounded-lg border border-emerald-100">
+                      <span className="font-semibold text-gray-700">All Days (Mon - Sun)</span>
+                      <span className="font-bold text-emerald-700 text-base">6:30 AM - 10:30 PM</span>
                   </li>
               </ul>
           </div>
@@ -127,24 +129,23 @@ const Contact = () => {
               <ul className="text-sm text-gray-600 space-y-2">
                   <li className="flex gap-2">
                       <span className="font-semibold min-w-[120px]">Drug Lic. No:</span>
-                      <span>20B/1234/24 & 21B/1235/24</span>
+                      <span>RLF20HR2025005933 & RLF21HR2025005925</span>
                   </li>
                   <li className="flex gap-2">
                       <span className="font-semibold min-w-[120px]">Pharmacist:</span>
-                      <span>Mr. Rahul Sharma</span>
+                      <span>Poonam</span>
                   </li>
                   <li className="flex gap-2">
                       <span className="font-semibold min-w-[120px]">Reg. Number:</span>
                       <span>PMC/54321</span>
                   </li>
-                  {/* ✅ ADDED GST & FSSAI HERE */}
                   <li className="flex gap-2">
                       <span className="font-semibold min-w-[120px]">GSTIN:</span>
-                      <span>06ABCDE1234F1Z5</span>
+                      <span>06NNTPS0144E1ZL</span>
                   </li>
                   <li className="flex gap-2">
                       <span className="font-semibold min-w-[120px]">FSSAI Lic:</span>
-                      <span>10821000000000</span>
+                      <span>20826016000067</span>
                   </li>
               </ul>
           </div>

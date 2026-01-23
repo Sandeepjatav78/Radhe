@@ -1,10 +1,13 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { ShopContext } from '../context/ShopContext';
 import Title from '../components/Title';
+import { useNavigate } from 'react-router-dom';
 
 const Orders = () => {
   const { currency, backendUrl, token } = useContext(ShopContext);
   const [orderData, setOrderData] = useState([]);
+  
+  const navigate = useNavigate();
 
   // Pharmacy Status Colors (Medical Theme)
   const statusColors = {
@@ -43,7 +46,7 @@ const Orders = () => {
               date: order.date,
               slot: order.slot,
               cancelReason: order.cancelReason,
-              orderId: order._id, // ✅ SAVING ORDER ID HERE
+              orderId: order._id, // SAVING ORDER ID HERE
             });
           });
         });
@@ -82,6 +85,12 @@ const Orders = () => {
               ? item.image[0] 
               : item.image || "https://via.placeholder.com/150";
 
+          // --- PAYMENT STATUS LOGIC ---
+          const isPaid = item.payment || item.status === 'delivered';
+
+          // ✅ GET CORRECT PRODUCT ID (It could be itemId, productId, or _id)
+          const actualProductId = item.itemId || item.productId || item._id;
+
           return (
             <div
               key={index}
@@ -90,16 +99,31 @@ const Orders = () => {
               {/* Left side: Medicine Info */}
               <div className="flex items-start gap-4 md:gap-6 text-sm md:text-base">
                 
-                <img src={itemImage} className="w-16 sm:w-20 rounded-lg object-contain bg-gray-50 border" alt={item.name} />
+                {/* ✅ CLICKABLE IMAGE FIXED */}
+                <img 
+                  onClick={() => navigate(`/product/${actualProductId}`)}
+                  src={itemImage} 
+                  className="w-16 sm:w-20 rounded-lg object-contain bg-gray-50 border cursor-pointer hover:brightness-95 transition-all" 
+                  alt={item.name} 
+                  title="View Product"
+                />
                 
                 <div className="flex flex-col gap-1">
                   
-                  {/* --- ✅ ORDER ID DISPLAY --- */}
+                  {/* --- ORDER ID DISPLAY --- */}
                   <span className="text-[10px] text-gray-400 font-mono">
                       ID: {item.orderId}
                   </span>
 
-                  <p className="font-bold text-gray-800 text-base">{item.name}</p>
+                  {/* ✅ CLICKABLE NAME FIXED */}
+                  <p 
+                    onClick={() => navigate(`/product/${actualProductId}`)}
+                    className="font-bold text-gray-800 text-base cursor-pointer hover:text-emerald-600 transition-colors"
+                    title="View Product"
+                  >
+                    {item.name}
+                  </p>
+
                   <div className="flex flex-wrap items-center gap-3 text-gray-600 text-sm">
                     <p className='font-semibold text-emerald-700'>
                       {currency}{item.price}
@@ -113,7 +137,17 @@ const Orders = () => {
                   <p className="text-gray-400 text-xs mt-1">
                     Ordered on: {new Date(item.date).toLocaleDateString()}
                   </p>
-                  <p className="text-gray-500 text-xs font-medium">Payment: {item.paymentMethod}</p>
+                  
+                  {/* --- PAYMENT METHOD & STATUS BADGE --- */}
+                  <div className="flex items-center gap-2 mt-1">
+                    <p className="text-gray-500 text-xs font-medium">Method: {item.paymentMethod}</p>
+                    <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${
+                        isPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-yellow-100 text-yellow-700'
+                    }`}>
+                      {isPaid ? 'Paid' : 'Pending'}
+                    </span>
+                  </div>
+
                 </div>
               </div>
 
@@ -150,8 +184,8 @@ const Orders = () => {
                   <p className="text-sm md:text-base font-medium capitalize text-gray-700">{item.status}</p>
                 </div>
 
-                {/* Hide Track Button if Cancelled */}
-                {item.status !== 'cancelled' && (
+                {/* Hide Track Button if Cancelled or Delivered */}
+                {item.status !== 'cancelled' && item.status !== 'delivered' && (
                     <button
                     onClick={loadOrderData}
                     className="border border-gray-300 px-4 py-2 text-sm font-medium rounded-full hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition mt-2 md:mt-0"

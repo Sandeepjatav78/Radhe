@@ -15,10 +15,8 @@ const PlaceOrder = () => {
   const [orderItems, setOrderItems] = useState([]);
   const [deliverySlot, setDeliverySlot] = useState(null);
   
-  // ✅ NEW: Loading state for upload
   const [isUploading, setIsUploading] = useState(false); 
 
-  // 👇 YOUR CLOUDINARY CONFIG (Same as Contact Page)
   const CLOUD_NAME = "drld9vkhw"; 
   const UPLOAD_PRESET = "radhePharmacy"; 
 
@@ -80,11 +78,9 @@ const PlaceOrder = () => {
   const onChangeHandler = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
-  // --- SUBMIT HANDLER (Updated with Upload Logic) ---
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
-    // 1. Validation
     if (isRxRequired && !prescriptionFile) {
       toast.error("Please upload doctor's prescription.");
       return;
@@ -94,12 +90,11 @@ const PlaceOrder = () => {
         return;
     }
 
-    setIsUploading(true); // Start Loading Spinner
+    setIsUploading(true); 
 
     try {
       let prescriptionUrl = "";
 
-      // 2. Upload to Cloudinary (If file selected)
       if (isRxRequired && prescriptionFile) {
           const imageFormData = new FormData();
           imageFormData.append("file", prescriptionFile);
@@ -113,7 +108,6 @@ const PlaceOrder = () => {
 
           if (cloudData.secure_url) {
               prescriptionUrl = cloudData.secure_url;
-              console.log("Uploaded Rx URL:", prescriptionUrl);
           } else {
               toast.error("Image upload failed. Try again.");
               setIsUploading(false);
@@ -121,7 +115,6 @@ const PlaceOrder = () => {
           }
       }
 
-      // 3. Prepare Order Data
       const finalAmount = cartTotal + deliveryFee;
 
       const orderData = {
@@ -133,15 +126,11 @@ const PlaceOrder = () => {
         items: orderItems,
         amount: finalAmount,
         prescriptionUploaded: isRxRequired ? true : false, 
-        
-        // 👇 SENDING THE URL TO BACKEND
         prescriptionUrl: prescriptionUrl, 
-        
         slot: deliverySlot, 
         date: Date.now()
       };
 
-      // 4. Send to Backend
       switch (method) {
         case "cod":
           const response = await axios.post(
@@ -172,49 +161,52 @@ const PlaceOrder = () => {
     } catch (error) {
       toast.error(error.message);
     } finally {
-        setIsUploading(false); // Stop Loading
+        setIsUploading(false); 
     }
   };
 
   return (
-    <form onSubmit={onSubmitHandler} className="flex flex-col lg:flex-row gap-8 min-h-[80vh] px-4 sm:px-8 pt-10 border-t mb-20 max-w-7xl mx-auto">
+    // ✅ MOBILE FIX: Reduced top-padding (pt-6) and gap for mobile. Added pb-24 so bottom-nav doesn't block.
+    <form onSubmit={onSubmitHandler} className="flex flex-col lg:flex-row gap-6 sm:gap-8 min-h-[80vh] px-4 sm:px-8 pt-6 sm:pt-10 mb-24 sm:mb-20 max-w-7xl mx-auto">
       
-      {/* --- Left Side: PERSONAL DETAILS --- */}
-      <div className="flex flex-col gap-6 w-full lg:w-1/2">
+      {/* ================= LEFT: DELIVERY INFO ================= */}
+      <div className="flex flex-col gap-5 sm:gap-6 w-full lg:w-1/2">
         <Title text1="DELIVERY" text2="INFORMATION" />
         
+        {/* ✅ MOBILE FIX: Inputs text-sm so iOS keyboard doesn't auto-zoom. */}
         <div className="grid grid-cols-2 gap-3">
-          <input required name="firstName" value={formData.firstName} onChange={onChangeHandler} type="text" placeholder="First Name" className="border border-gray-300 rounded px-3.5 py-2.5 outline-emerald-500" />
-          <input required name="lastName" value={formData.lastName} onChange={onChangeHandler} type="text" placeholder="Last Name" className="border border-gray-300 rounded px-3.5 py-2.5 outline-emerald-500" />
+          <input required name="firstName" value={formData.firstName} onChange={onChangeHandler} type="text" placeholder="First Name" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 outline-emerald-500" />
+          <input required name="lastName" value={formData.lastName} onChange={onChangeHandler} type="text" placeholder="Last Name" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 outline-emerald-500" />
         </div>
-        <input required name="email" value={formData.email} onChange={onChangeHandler} type="email" placeholder="Email Address" className="border border-gray-300 rounded px-3.5 py-2.5 w-full outline-emerald-500" />
-        <input required name="phone" value={formData.phone} onChange={onChangeHandler} type="number" placeholder="Phone Number" className="border border-gray-300 rounded px-3.5 py-2.5 w-full outline-emerald-500" />
+        <input required name="email" value={formData.email} onChange={onChangeHandler} type="email" placeholder="Email Address" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full outline-emerald-500" />
+        <input required name="phone" value={formData.phone} onChange={onChangeHandler} type="number" placeholder="Phone Number" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full outline-emerald-500" />
         
-        <div className="mt-4">
-              <p className="text-sm font-bold text-gray-700 mb-2">Address (Detected from Map)</p>
-              <input required name="street" value={formData.street} onChange={onChangeHandler} type="text" placeholder="Street Address" className="border border-gray-300 rounded px-3.5 py-2.5 w-full mb-3 bg-white" />
+        <div className="mt-2 sm:mt-4">
+              <p className="text-xs sm:text-sm font-bold text-gray-700 mb-2">Address (Detected from Map)</p>
+              <input required name="street" value={formData.street} onChange={onChangeHandler} type="text" placeholder="Street Address" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full mb-3 bg-white" />
               <div className="grid grid-cols-2 gap-3">
-                 <input required name="city" value={formData.city} onChange={onChangeHandler} type="text" placeholder="City" className="border border-gray-300 rounded px-3.5 py-2.5 w-full bg-white" />
-                 <input required name="state" value={formData.state} onChange={onChangeHandler} type="text" placeholder="State" className="border border-gray-300 rounded px-3.5 py-2.5 w-full bg-white" />
+                 <input required name="city" value={formData.city} onChange={onChangeHandler} type="text" placeholder="City" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full bg-white" />
+                 <input required name="state" value={formData.state} onChange={onChangeHandler} type="text" placeholder="State" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full bg-white" />
               </div>
               <div className="grid grid-cols-2 gap-3 mt-3">
-                 <input required name="zipcode" value={formData.zipcode} onChange={onChangeHandler} type="number" placeholder="Zipcode" className="border border-gray-300 rounded px-3.5 py-2.5 w-full bg-white" />
-                 <input name="country" value={formData.country} readOnly type="text" placeholder="Country" className="border border-gray-300 rounded px-3.5 py-2.5 w-full bg-gray-50 text-gray-500" />
+                 <input required name="zipcode" value={formData.zipcode} onChange={onChangeHandler} type="number" placeholder="Zipcode" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full bg-white" />
+                 <input name="country" value={formData.country} readOnly type="text" placeholder="Country" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full bg-gray-50 text-gray-500 cursor-not-allowed" />
               </div>
         </div>
 
         {/* --- Delivery Time Slot --- */}
-        <div className="mt-6">
-            <h3 className="text-gray-800 font-bold mb-4 text-lg">Preferred Delivery Time <span className="text-red-500">*</span></h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div className="mt-4 sm:mt-6">
+            <h3 className="text-gray-800 font-bold mb-3 sm:mb-4 text-base sm:text-lg">Preferred Delivery Time <span className="text-red-500">*</span></h3>
+            {/* ✅ MOBILE FIX: 2 Columns on mobile so it takes up less vertical space. Smaller text. */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 sm:gap-3">
                 {TIME_SLOTS.map((slot, index) => (
                     <div 
                         key={index}
                         onClick={() => setDeliverySlot(slot)}
-                        className={`border rounded-lg p-3 cursor-pointer text-center transition-all duration-200 text-sm ${
+                        className={`border rounded-lg p-2.5 sm:p-3 cursor-pointer text-center transition-all duration-200 text-[11px] sm:text-sm ${
                             deliverySlot === slot 
                             ? 'border-emerald-600 bg-emerald-50 text-emerald-700 font-bold ring-1 ring-emerald-500' 
-                            : 'border-gray-200 hover:border-emerald-300 text-gray-600'
+                            : 'border-gray-200 hover:border-emerald-300 text-gray-600 font-medium'
                         }`}
                     >
                         {slot}
@@ -224,33 +216,33 @@ const PlaceOrder = () => {
         </div>
       </div>
 
-      {/* --- Right Side: SUMMARY & PAYMENT --- */}
+      {/* ================= RIGHT: SUMMARY & PAYMENT ================= */}
       <div className="flex flex-col w-full lg:w-1/2 gap-6">
         
         {/* Rx Upload */}
         {isRxRequired && (
-          <div className="bg-red-50 border border-red-200 rounded-xl p-5 shadow-sm">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-2xl">⚠️</span>
-              <h3 className="text-red-700 font-bold text-lg">Prescription Required</h3>
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4 sm:p-5 shadow-sm">
+            <div className="flex items-center gap-2 mb-1 sm:mb-2">
+              <span className="text-xl sm:text-2xl">⚠️</span>
+              <h3 className="text-red-700 font-bold text-base sm:text-lg">Prescription Required</h3>
             </div>
-            <p className="text-sm text-gray-600 mb-4">
-              Upload doctor's prescription image.
+            <p className="text-xs sm:text-sm text-gray-600 mb-4">
+              Upload doctor's prescription image to proceed.
             </p>
             <div className="flex items-center gap-3">
-              <label htmlFor="rx-upload" className="cursor-pointer bg-white border border-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-50 transition">
+              <label htmlFor="rx-upload" className="cursor-pointer bg-white border border-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-lg hover:bg-gray-50 transition shadow-sm">
                 {prescriptionFile ? "Change File" : "Choose File"}
               </label>
               <input id="rx-upload" type="file" accept="image/*" className="hidden" onChange={(e) => setPrescriptionFile(e.target.files[0])} />
-              <span className="text-sm text-gray-500 italic">{prescriptionFile ? prescriptionFile.name : "No file chosen"}</span>
+              <span className="text-xs text-gray-500 italic max-w-[150px] truncate">{prescriptionFile ? prescriptionFile.name : "No file chosen"}</span>
             </div>
           </div>
         )}
 
         {/* Order Summary */}
-        <div className="bg-white p-6 rounded-2xl border border-gray-200 shadow-sm sticky top-20">
+        <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-200 shadow-sm lg:sticky lg:top-20">
               <Title text1="ORDER" text2="TOTAL" />
-              <div className="flex flex-col gap-3 mt-4 text-sm text-gray-600">
+              <div className="flex flex-col gap-2.5 mt-4 text-sm text-gray-600">
                  <div className="flex justify-between">
                     <span>Subtotal</span>
                     <span>{currency}{cartTotal}.00</span>
@@ -270,28 +262,28 @@ const PlaceOrder = () => {
 
               <div className="mt-8">
                 <Title text1="PAYMENT" text2="METHOD" />
-                <div className="flex flex-col gap-3 mt-3">
-                    {/* Payment Options (Stripe/Razorpay/COD) */}
-                    <div onClick={() => setMethod("stripe")} className={`flex items-center gap-3 p-3 border cursor-pointer rounded-lg ${method === "stripe" ? "border-emerald-500 bg-emerald-50" : ""}`}>
-                        <div className={`w-4 h-4 rounded-full border ${method === "stripe" ? "bg-emerald-500 border-emerald-500" : "border-gray-400"}`}></div>
-                        <p className="font-medium ml-2">Stripe</p>
+                <div className="flex flex-col gap-3 mt-4">
+                    {/* ✅ MOBILE FIX: Taller payment boxes (p-3.5) for easier thumb tapping. */}
+                    <div onClick={() => setMethod("stripe")} className={`flex items-center gap-3 p-3.5 sm:p-3 border cursor-pointer rounded-xl ${method === "stripe" ? "border-emerald-500 bg-emerald-50" : "border-gray-200"}`}>
+                        <div className={`w-4 h-4 rounded-full border flex-shrink-0 ${method === "stripe" ? "bg-emerald-500 border-emerald-500" : "border-gray-400"}`}></div>
+                        <p className="font-semibold text-sm sm:text-base text-gray-800">Stripe / Credit Card</p>
                     </div>
-                    <div onClick={() => setMethod("razorpay")} className={`flex items-center gap-3 p-3 border cursor-pointer rounded-lg ${method === "razorpay" ? "border-emerald-500 bg-emerald-50" : ""}`}>
-                        <div className={`w-4 h-4 rounded-full border ${method === "razorpay" ? "bg-emerald-500 border-emerald-500" : "border-gray-400"}`}></div>
-                        <p className="font-medium ml-2">Razorpay</p>
+                    <div onClick={() => setMethod("razorpay")} className={`flex items-center gap-3 p-3.5 sm:p-3 border cursor-pointer rounded-xl ${method === "razorpay" ? "border-emerald-500 bg-emerald-50" : "border-gray-200"}`}>
+                        <div className={`w-4 h-4 rounded-full border flex-shrink-0 ${method === "razorpay" ? "bg-emerald-500 border-emerald-500" : "border-gray-400"}`}></div>
+                        <p className="font-semibold text-sm sm:text-base text-gray-800">Razorpay / UPI</p>
                     </div>
-                    <div onClick={() => setMethod("cod")} className={`flex items-center gap-3 p-3 border cursor-pointer rounded-lg ${method === "cod" ? "border-emerald-500 bg-emerald-50" : ""}`}>
-                        <div className={`w-4 h-4 rounded-full border ${method === "cod" ? "bg-emerald-500 border-emerald-500" : "border-gray-400"}`}></div>
-                        <p className="font-medium ml-2">Cash on Delivery</p>
+                    <div onClick={() => setMethod("cod")} className={`flex items-center gap-3 p-3.5 sm:p-3 border cursor-pointer rounded-xl ${method === "cod" ? "border-emerald-500 bg-emerald-50" : "border-gray-200"}`}>
+                        <div className={`w-4 h-4 rounded-full border flex-shrink-0 ${method === "cod" ? "bg-emerald-500 border-emerald-500" : "border-gray-400"}`}></div>
+                        <p className="font-semibold text-sm sm:text-base text-gray-800">Cash on Delivery</p>
                     </div>
                 </div>
 
                 <button 
                     type="submit" 
                     disabled={isUploading}
-                    className="mt-8 w-full cursor-pointer bg-emerald-600 text-white py-4 rounded-lg hover:bg-emerald-700 transition-colors font-bold text-lg shadow-lg disabled:bg-gray-400"
+                    className="mt-8 w-full cursor-pointer bg-emerald-600 text-white py-4 rounded-xl hover:bg-emerald-700 transition-colors font-bold text-base sm:text-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] disabled:bg-gray-400"
                 >
-                    {isUploading ? "Uploading & Placing Order..." : "PLACE ORDER"}
+                    {isUploading ? "Processing..." : "PLACE ORDER"}
                 </button>
              </div>
         </div>

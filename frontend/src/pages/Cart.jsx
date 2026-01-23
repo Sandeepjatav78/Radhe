@@ -36,34 +36,70 @@ const Cart = () => {
     return parseFloat((R * c).toFixed(1));
   };
 
-  // --- 1. NEW CART DATA LOGIC (HANDLES VARIANTS) ---
+  // --- 🌟 NEW: AUTO FETCH LIVE LOCATION ON PAGE LOAD ---
+  useEffect(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+
+          // 1. Set Map Coordinates
+          setCoordinates({ lat, lng });
+
+          // 2. Fetch Text Address (Reverse Geocoding using free OpenStreetMap API)
+          try {
+            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
+            const data = await res.json();
+            if (data && data.address) {
+              setDetectedAddress({
+                street: data.address.road || data.address.suburb || data.address.neighbourhood || "Current Location",
+                city: data.address.city || data.address.town || data.address.village || data.address.county || "",
+                state: data.address.state || "",
+                zipcode: data.address.postcode || "",
+                country: data.address.country || "India"
+              });
+              toast.success("📍 Location auto-detected!", { autoClose: 1500 });
+            }
+          } catch (err) {
+            console.error("Error fetching address:", err);
+          }
+        },
+        (error) => {
+          console.warn("Geolocation blocked or error:", error);
+          // Don't show error toast here, let user manually select if they blocked location
+        },
+        { enableHighAccuracy: true } // Fetches precise GPS location
+      );
+    }
+  }, []); // Empty array means this runs only once when Cart opens
+
+  // --- 1. CART DATA LOGIC (HANDLES VARIANTS) ---
   useEffect(() => {
     if (products.length > 0) {
       const tempData = [];
       let total = 0;
 
       for (const itemId in cartItems) {
-        // Iterate through Sizes (Variants)
         for (const size in cartItems[itemId]) {
           if (cartItems[itemId][size] > 0) {
             
             const product = products.find((p) => p._id === itemId);
             
             if (product) {
-               // Find correct price for this size
                let variantPrice = 0;
                if (product.variants && product.variants.length > 0) {
                    const variant = product.variants.find(v => v.size === size);
-                   variantPrice = variant ? variant.price : product.price; // Fallback
+                   variantPrice = variant ? variant.price : product.price; 
                } else {
-                   variantPrice = product.price; // Old products
+                   variantPrice = product.price; 
                }
 
                tempData.push({
                  _id: itemId,
                  size: size,
                  quantity: cartItems[itemId][size],
-                 price: variantPrice // Specific price for size
+                 price: variantPrice 
                });
 
                total += variantPrice * cartItems[itemId][size];
@@ -77,7 +113,7 @@ const Cart = () => {
     }
   }, [cartItems, products]);
 
-  // --- DELIVERY CALCULATION (Same as before) ---
+  // --- DELIVERY CALCULATION ---
   useEffect(() => {
     if (coordinates) {
         const dist = getDistanceFromLatLonInKm(STORE_COORDS.lat, STORE_COORDS.lng, coordinates.lat, coordinates.lng);
@@ -174,7 +210,6 @@ const Cart = () => {
                                 <div>
                                     <p className="text-base font-bold text-gray-800 line-clamp-1">{productData.name}</p>
                                     <div className="flex items-center gap-2 mt-1">
-                                        {/* SHOW SIZE BADGE */}
                                         <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded border border-gray-200">{item.size}</span>
                                     </div>
                                 </div>
@@ -183,7 +218,6 @@ const Cart = () => {
                             <div className="flex justify-between items-center mt-3">
                                 <p className="text-emerald-700 font-bold">{currency}{item.price}</p>
                                 <div className="flex items-center gap-3">
-                                    {/* --- QUANTITY INPUT --- */}
                                     <input 
                                       type="number" 
                                       min={1} 
@@ -191,13 +225,10 @@ const Cart = () => {
                                       onChange={(e) => {
                                           const value = e.target.value;
                                           if (value === '' || value === '0') return; 
-                                          // Update with Size
                                           updateQuantity(item._id, item.size, Number(value));
                                       }} 
                                       className="border border-gray-300 px-2 py-1 w-14 text-center rounded focus:outline-emerald-500"
                                     />
-
-                                    {/* --- DELETE BUTTON (Pass Size) --- */}
                                     <img src={assets.bin_icon} onClick={() => updateQuantity(item._id, item.size, 0)} className="w-5 cursor-pointer opacity-60 hover:text-red-500" alt="Delete"/>
                                 </div>
                             </div>
@@ -226,11 +257,12 @@ const Cart = () => {
                       <h2 className="text-xl font-bold text-gray-800">Check Delivery</h2>
                   </div>
                   
+                  {/* Map will update automatically because setLocation receives new coords */}
                   <LocationPicker setLocation={setCoordinates} onAddressSelect={handleAddressFromMap} />
                   
                   <div className="mt-4 bg-gray-50 p-3 rounded-lg border border-gray-100 text-sm">
                       <p className="text-gray-500 text-xs font-bold uppercase mb-1">Delivering To:</p>
-                      <p className="text-gray-800">{detectedAddress.street ? `${detectedAddress.street}, ${detectedAddress.city}` : "Please pin location above"}</p>
+                      <p className="text-gray-800">{detectedAddress.street ? `${detectedAddress.street}, ${detectedAddress.city}` : "Detecting location..."}</p>
                       {detectedAddress.zipcode && <p className="text-gray-600 text-xs">{detectedAddress.state} - {detectedAddress.zipcode}</p>}
                   </div>
               </div>
@@ -253,7 +285,7 @@ const Cart = () => {
                                   {deliveryFee === 0 ? "FREE" : `${currency}${deliveryFee}`}
                               </p>
                           ) : (
-                              <span className="text-xs text-orange-500">Select location first</span>
+                              <span className="text-xs text-orange-500">Fetching location...</span>
                           )}
                       </div>
                   </div>

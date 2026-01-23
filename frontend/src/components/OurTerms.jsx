@@ -6,7 +6,7 @@ const items = [
   {
     img: 'quality_icon', // Ensure you have checkmark/star icon
     title: '100% Genuine Medicines',
-    desc: 'Sourced directly from manufacturers.',
+    desc: 'Providing high-quality, 100% authentic medicines for you and your family.',
   },
   {
     img: 'exchange_icon', // Use a truck or clock icon if possible

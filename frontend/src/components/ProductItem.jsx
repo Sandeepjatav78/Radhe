@@ -49,7 +49,8 @@ const ProductItem = ({ id, image, name, price, mrp, salt, packSize, isRx, varian
         <img
           src={productImage}
           alt={name}
-          className="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-110"
+          // ✅ ADDED brightness-105 here to make dull images pop
+          className="h-full w-full object-contain transition-transform duration-500 ease-out group-hover:scale-110 brightness-105"
         />
       </div>
 

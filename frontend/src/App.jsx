@@ -14,13 +14,13 @@ import Footer from "./components/Footer";
 import SearchBar from "./components/SearchBar";
 import Profile from "./pages/Profile";
 import Verify from "./pages/Verify";
-import { ToastContainer } from "react-toastify";
 import ScrollToTop from './components/ScrollToTop';
-
-// 👇 Import New Component
 import SiteInfoBanner from "./components/SiteInfoBanner";
 
-// ✅ Import Legal Pages (New)
+import { ToastContainer, Slide } from "react-toastify"; // ✅ Slide transition
+import 'react-toastify/dist/ReactToastify.css';
+
+// Legal Pages
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import TermsConditions from './pages/TermsConditions';
 import ReturnPolicy from './pages/ReturnPolicy';
@@ -35,10 +35,28 @@ const App = () => {
       <Navbar />
       <SearchBar />
       
-      {/* 👇 Site Info Banner (Navbar/Search ke niche) */}
+      {/* Site Info Banner */}
       <SiteInfoBanner /> 
       
-      <ToastContainer />
+      {/* ✅ ROUNDED PILL DESIGN TOAST CONFIGURATION */}
+      <ToastContainer 
+        position="top-right" 
+        autoClose={2500} 
+        hideProgressBar={true} 
+        newestOnTop={true} 
+        closeOnClick 
+        rtl={false} 
+        pauseOnFocusLoss={false} 
+        draggable 
+        pauseOnHover={false} 
+        theme="light"
+        transition={Slide} 
+        limit={2}
+        
+        // 🎨 Tailwind Custom Styling - PERFECT ROUNDED PILL SHAPE
+        toastClassName="mt-16 sm:mt-20 mr-4 sm:mr-6 relative flex px-4 py-3 rounded-full overflow-hidden cursor-pointer shadow-[0_3px_15px_rgb(0,0,0,0.1)] bg-white border border-gray-100 w-max max-w-[85vw] sm:max-w-md ml-auto text-sm font-medium text-gray-800 transition-all items-center"
+        bodyClassName="flex items-center gap-2 m-0 p-0"
+      />
 
       <div className="px-4 sm:px-[3vw] md:px-[5vw] lg:px-[6vw]">
         <Routes>
@@ -55,14 +73,13 @@ const App = () => {
           <Route path="/orders" element={<Orders />} />
           <Route path="/profile" element={<Profile />} />
 
-          {/* ✅ Legal Policy Routes */}
+          {/* Legal Policy Routes */}
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-conditions" element={<TermsConditions />} />
           <Route path="/return-policy" element={<ReturnPolicy />} />
           <Route path="/cancellation-policy" element={<CancellationPolicy />} />
           <Route path="/prescription-policy" element={<PrescriptionPolicy />} />
           <Route path="/grievance-redressal" element={<GrievanceRedressal />} />
-
         </Routes>
         
         <Footer />

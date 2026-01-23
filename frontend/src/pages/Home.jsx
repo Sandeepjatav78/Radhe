@@ -3,11 +3,12 @@ import Hero from '../components/Hero';
 import LatestCollection from '../components/LatestCollection';
 import BestSeller from '../components/BestSeller';
 import OurTerms from '../components/OurTerms';
-import NewsLetterBox from '../components/NewsLetterBox';
+import QuickServices from '../components/QuickServices'
 
 const Home = () => {
   return (
     <div className="">
+      <QuickServices />
       <Hero />
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <LatestCollection />
