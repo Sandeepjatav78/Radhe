@@ -137,7 +137,7 @@ const Contact = () => {
                   </li>
                   <li className="flex gap-2">
                       <span className="font-semibold min-w-[120px]">Reg. Number:</span>
-                      <span>PMC/54321</span>
+                      <span>56539</span>
                   </li>
                   <li className="flex gap-2">
                       <span className="font-semibold min-w-[120px]">GSTIN:</span>

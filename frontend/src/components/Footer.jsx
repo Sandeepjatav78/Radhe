@@ -27,11 +27,11 @@ const Footer = () => {
 
           {/* Regulatory Details */}
           <div className="text-[11px] sm:text-xs text-gray-500 space-y-1 border-l-2 border-emerald-600 pl-3">
-             <p><span className="text-gray-400 font-semibold">Drug Lic:</span> 20B/1234/24</p>
-             <p><span className="text-gray-400 font-semibold">Pharmacist:</span> Mr. Rahul</p>
-             <p><span className="text-gray-400 font-semibold">Reg. No:</span> PMC/54321</p>
-             <p><span className="text-gray-400 font-semibold">GSTIN:</span> 06ABCDE1234F1Z5</p>
-             <p><span className="text-gray-400 font-semibold">FSSAI:</span> 10821000000000</p>
+             <p><span className="text-gray-400 font-semibold">Drug Lic:</span> RLF20HR2025005933 , RLF21HR2025005925</p>
+             <p><span className="text-gray-400 font-semibold">Pharmacist:</span> Poonam</p>
+             <p><span className="text-gray-400 font-semibold">Reg. No:</span> 56539</p>
+             <p><span className="text-gray-400 font-semibold">GSTIN:</span> 06NNTPS0144E1ZL</p>
+             <p><span className="text-gray-400 font-semibold">FSSAI:</span> 20826016000067</p>
           </div>
         </motion.div>
 
