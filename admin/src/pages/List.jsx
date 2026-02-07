@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { backendURL, currency } from "../App";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom"; // <--- 1. Import useNavigate
+import { useNavigate } from "react-router-dom";
 
-// Icons
+// --- Icons ---
 const TrashIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M3 6h18"></path>
@@ -20,24 +20,44 @@ const EditIcon = () => (
   </svg>
 );
 
+const SearchIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-gray-400">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+);
+
 const List = ({ token }) => {
-  const navigate = useNavigate(); // <--- 2. Initialize Navigation
+  const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  
+  // New State for Search
+  const [searchTerm, setSearchTerm] = useState(""); 
+  
   const limit = 10;
 
-  const fetchProducts = async (pageNumber = 1, append = false) => {
+  // Modified fetch function to accept search and sort params
+  const fetchProducts = async (pageNumber = 1, append = false, query = "") => {
     setLoading(true);
     try {
       const res = await axios.get(`${backendURL}/api/product/list`, {
-        params: { page: pageNumber, limit },
+        params: { 
+            page: pageNumber, 
+            limit, 
+            search: query, // Send search query to backend
+            sort: "newest" // Request newest items first
+        },
       });
 
       if (res.data.success) {
-        const newProducts = res.data.products || [];
+        let newProducts = res.data.products || [];
+        
+        // Update State
         setProducts((prev) => (append ? [...prev, ...newProducts] : newProducts));
+        
         if (newProducts.length < limit) setHasMore(false);
       } else {
         toast.error(res.data.message);
@@ -50,8 +70,34 @@ const List = ({ token }) => {
     }
   };
 
+  // 1. Initial Load
+  useEffect(() => {
+    fetchProducts(1, false, searchTerm);
+  }, []);
+
+  // 2. Load More (Pagination)
+  useEffect(() => {
+    if (page > 1) {
+        fetchProducts(page, true, searchTerm);
+    }
+  }, [page]);
+
+  // 3. Handle Load More Click
   const handleLoadMore = () => {
     if (!loading && hasMore) setPage((prev) => prev + 1);
+  };
+
+  // 4. Handle Search Input Change
+  const handleSearch = (e) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+    
+    // Reset pagination and list when searching
+    setPage(1);
+    setHasMore(true);
+    
+    // Optional: Debounce this in a real app, but calling direct for now
+    fetchProducts(1, false, value);
   };
 
   const removeProduct = async (id) => {
@@ -60,9 +106,10 @@ const List = ({ token }) => {
       const res = await axios.post(`${backendURL}/api/product/remove`, { id }, { headers: { token } });
       if (res.data.success) {
         toast.success(res.data.message);
+        // Refresh list keeping current search
         setPage(1);
         setHasMore(true);
-        fetchProducts(1, false);
+        fetchProducts(1, false, searchTerm);
       } else {
         toast.error(res.data.message);
       }
@@ -72,33 +119,47 @@ const List = ({ token }) => {
     }
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  useEffect(() => {
-    if (page > 1) fetchProducts(page, true);
-  }, [page]);
-
   return (
     <div className="min-h-screen bg-gray-50/50 p-6 w-full relative">
       {/* --- Header Section --- */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
         <div>
           <h2 className="text-2xl font-bold text-gray-800">Inventory Management</h2>
           <p className="text-gray-500 text-sm mt-1">Manage your pharmacy stock and listings</p>
         </div>
-        <div className="bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm text-sm font-medium text-gray-600">
-          Total Items: <span className="text-emerald-600 font-bold">{products.length}+</span>
+
+        {/* --- Right Side: Search & Stats --- */}
+        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+            {/* Search Bar */}
+            <div className="relative group w-full sm:w-64">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <SearchIcon />
+                </div>
+                <input
+                    type="text"
+                    placeholder="Search medicines..."
+                    value={searchTerm}
+                    onChange={handleSearch}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-200 rounded-lg leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 sm:text-sm transition-all shadow-sm group-hover:border-gray-300"
+                />
+            </div>
+
+            {/* Total Items Count */}
+            <div className="bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm text-sm font-medium text-gray-600 flex items-center justify-center whitespace-nowrap">
+            Total Items: <span className="text-emerald-600 font-bold ml-1">{products.length}{hasMore ? "+" : ""}</span>
+            </div>
         </div>
       </div>
 
       {/* --- Product List Grid --- */}
       <div className="flex flex-col gap-4">
-        {products.length === 0 ? (
+        {products.length === 0 && !loading ? (
           <div className="flex flex-col items-center justify-center py-20 bg-white rounded-xl border border-dashed border-gray-300">
-             <p className="text-gray-400 font-medium">No medicines in inventory.</p>
-             <p className="text-sm text-gray-300 mt-1">{loading ? "Fetching data..." : "Add items to see them here."}</p>
+             <div className="text-gray-300 mb-3">
+                <SearchIcon />
+             </div>
+             <p className="text-gray-500 font-medium">No medicines found.</p>
+             <p className="text-sm text-gray-400 mt-1">Try adjusting your search or add new items.</p>
           </div>
         ) : (
           products.map((product) => (
@@ -156,15 +217,13 @@ const List = ({ token }) => {
                 </p>
                 
                 <div className="flex gap-2">
-                    {/* EDIT BUTTON - Redirects to Update Page */}
                     <button
-                        onClick={() => navigate(`/update/${product._id}`)} // <--- 3. Yahan Change kiya hai
+                        onClick={() => navigate(`/update/${product._id}`)}
                         className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg font-medium transition-colors"
                     >
                         <EditIcon /> Edit
                     </button>
 
-                    {/* DELETE BUTTON */}
                     <button
                         onClick={() => removeProduct(product._id)}
                         className="flex items-center gap-2 text-sm text-red-500 bg-red-50 hover:bg-red-100 px-4 py-2 rounded-lg font-medium transition-colors"
@@ -178,7 +237,14 @@ const List = ({ token }) => {
         )}
       </div>
 
-      {hasMore && !loading && (
+      {/* --- Load More & Loading States --- */}
+      {loading && (
+          <div className="flex justify-center mt-8 mb-8">
+              <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+          </div>
+      )}
+
+      {hasMore && !loading && products.length > 0 && (
         <div className="flex justify-center mt-10 mb-10">
           <button onClick={handleLoadMore} className="group flex items-center gap-2 bg-white border border-gray-300 text-gray-700 px-6 py-2.5 rounded-full hover:bg-gray-50 transition-all font-medium shadow-sm">
             Load More Items
@@ -186,12 +252,6 @@ const List = ({ token }) => {
         </div>
       )}
       
-      {loading && (
-          <div className="flex justify-center mt-8">
-              <div className="w-6 h-6 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-          </div>
-      )}
-
     </div>
   );
 };

@@ -85,13 +85,44 @@ const listCategories = async (req, res) => {
 // 3. List Products
 const listProduct = async (req, res) => {
     try {
-        const products = await productModel.find({});
-        res.json({ success: true, products });
+        const { page = 1, limit = 10, search, sort } = req.query;
+
+        // 1. Build Search Query
+        const query = {};
+        if (search) {
+            query.name = { $regex: search, $options: "i" }; // Case insensitive search
+        }
+
+        // 2. Build Sort Option
+        let sortOption = {};
+        // "newest" means descending order (-1) of date
+        if (sort === "newest") {
+            sortOption = { date: -1 }; 
+        } else {
+            sortOption = { date: 1 }; // Oldest first
+        }
+
+        // 3. Fetch from DB
+        const products = await productModel.find(query)
+            .sort(sortOption)
+            .limit(limit * 1)
+            .skip((page - 1) * limit);
+
+        // 4. Get Total Count (for pagination)
+        const count = await productModel.countDocuments(query);
+
+        res.json({
+            success: true,
+            products,
+            totalPages: Math.ceil(count / limit),
+            currentPage: page
+        });
+
     } catch (error) {
+        console.log(error);
         res.json({ success: false, message: error.message });
     }
-};
-
+}
 // 4. Remove Product
 const removeProduct = async (req, res) => {
     try {
