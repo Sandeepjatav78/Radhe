@@ -36,44 +36,6 @@ const Cart = () => {
     return parseFloat((R * c).toFixed(1));
   };
 
-  // --- 🌟 NEW: AUTO FETCH LIVE LOCATION ON PAGE LOAD ---
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const lat = position.coords.latitude;
-          const lng = position.coords.longitude;
-
-          // 1. Set Map Coordinates
-          setCoordinates({ lat, lng });
-
-          // 2. Fetch Text Address (Reverse Geocoding using free OpenStreetMap API)
-          try {
-            const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`);
-            const data = await res.json();
-            if (data && data.address) {
-              setDetectedAddress({
-                street: data.address.road || data.address.suburb || data.address.neighbourhood || "Current Location",
-                city: data.address.city || data.address.town || data.address.village || data.address.county || "",
-                state: data.address.state || "",
-                zipcode: data.address.postcode || "",
-                country: data.address.country || "India"
-              });
-              toast.success("📍 Location auto-detected!", { autoClose: 1500 });
-            }
-          } catch (err) {
-            console.error("Error fetching address:", err);
-          }
-        },
-        (error) => {
-          console.warn("Geolocation blocked or error:", error);
-          // Don't show error toast here, let user manually select if they blocked location
-        },
-        { enableHighAccuracy: true } // Fetches precise GPS location
-      );
-    }
-  }, []); // Empty array means this runs only once when Cart opens
-
   // --- 1. CART DATA LOGIC (HANDLES VARIANTS) ---
   useEffect(() => {
     if (products.length > 0) {

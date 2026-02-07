@@ -85,8 +85,6 @@ const listCategories = async (req, res) => {
 // 3. List Products
 const listProduct = async (req, res) => {
     try {
-        // Change limit from 10 to a high number (e.g., 5000) or check for 'all'
-        // This ensures the Frontend receives all data for its filtering logic
         const { page = 1, limit = 5000, search, sort } = req.query;
 
         // 1. Build Search Query
@@ -98,7 +96,7 @@ const listProduct = async (req, res) => {
         // 2. Build Sort Option
         let sortOption = {};
         if (sort === "newest") {
-            sortOption = { date: -1 }; 
+            sortOption = { date: -1 };
         } else {
             sortOption = { date: 1 };
         }
@@ -106,7 +104,7 @@ const listProduct = async (req, res) => {
         // 3. Fetch from DB
         const products = await productModel.find(query)
             .sort(sortOption)
-            .limit(Number(limit)) // Now limits to 5000 instead of 10
+            .limit(Number(limit))
             .skip((Number(page) - 1) * Number(limit));
 
         // 4. Get Total Count
@@ -115,6 +113,7 @@ const listProduct = async (req, res) => {
         res.json({
             success: true,
             products,
+            total: count, // <--- ✅ ADDED THIS LINE (Required for frontend total count)
             totalPages: Math.ceil(count / limit),
             currentPage: Number(page)
         });
@@ -124,7 +123,6 @@ const listProduct = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 }
-
 
 // 4. Remove Product
 const removeProduct = async (req, res) => {
@@ -165,7 +163,7 @@ const updateProduct = async (req, res) => {
 
         // 2. Handle Image Updates
         // We create a copy of the existing images array
-        let updatedImages = [...product.image]; 
+        let updatedImages = [...product.image];
 
         // If user uploaded a new image1, upload it and replace index 0
         if (req.files.image1) {
@@ -245,8 +243,8 @@ const seedCategories = async (req, res) => {
         // Loop chalakar DB mein save karein
         for (const [catName, subCats] of Object.entries(defaultCategoryData)) {
             await categoryModel.findOneAndUpdate(
-                { name: catName }, 
-                { 
+                { name: catName },
+                {
                     $addToSet: { subCategories: { $each: subCats } } // Duplicate nahi hone dega
                 },
                 { upsert: true, new: true } // Agar nahi hai to naya bana dega
@@ -261,4 +259,4 @@ const seedCategories = async (req, res) => {
     }
 }
 
-export { listProduct, addProduct, removeProduct, singleProduct, updateProduct, listCategories,seedCategories };
+export { listProduct, addProduct, removeProduct, singleProduct, updateProduct, listCategories, seedCategories };
