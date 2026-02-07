@@ -3,11 +3,16 @@ import { toast } from 'react-toastify';
 
 const QuickServices = () => {
   
-  // ✅ PERFECTED FUNCTION: Ab ye App.jsx ke global design ko use karega
+  // 1. Default handler for features not ready yet
   const handleComingSoon = () => {
     toast.info("🚧 Coming Soon! Our team is working on this feature.", {
-      toastId: "coming-soon", // Ye limit karega ki ek baar mein ek hi notification aaye
+      toastId: "coming-soon", 
     });
+  };
+
+  // 2. ✅ NEW HANDLER: Triggers the phone dialer
+  const handleCallOrder = () => {
+    window.location.href = "tel:9817500669";
   };
 
   const services = [
@@ -29,7 +34,7 @@ const QuickServices = () => {
       bgColor: "bg-emerald-50",
       borderColor: "border-emerald-100",
       textColor: "text-emerald-600",
-      action: handleComingSoon 
+      action: handleCallOrder // <--- Updated to use the call function
     },
     {
       id: 3,
@@ -46,7 +51,7 @@ const QuickServices = () => {
   return (
     <div className="mt-4 sm:mt-8">
       
-      {/* ✅ 3 BOXES IN ONE LINE (grid-cols-3) WITHOUT SCROLL */}
+      {/* 3 BOXES IN ONE LINE */}
       <div className="grid grid-cols-3 gap-2 sm:gap-6">
         
         {services.map((service) => (
