@@ -85,37 +85,38 @@ const listCategories = async (req, res) => {
 // 3. List Products
 const listProduct = async (req, res) => {
     try {
-        const { page = 1, limit = 10, search, sort } = req.query;
+        // Change limit from 10 to a high number (e.g., 5000) or check for 'all'
+        // This ensures the Frontend receives all data for its filtering logic
+        const { page = 1, limit = 5000, search, sort } = req.query;
 
         // 1. Build Search Query
         const query = {};
         if (search) {
-            query.name = { $regex: search, $options: "i" }; // Case insensitive search
+            query.name = { $regex: search, $options: "i" };
         }
 
         // 2. Build Sort Option
         let sortOption = {};
-        // "newest" means descending order (-1) of date
         if (sort === "newest") {
             sortOption = { date: -1 }; 
         } else {
-            sortOption = { date: 1 }; // Oldest first
+            sortOption = { date: 1 };
         }
 
         // 3. Fetch from DB
         const products = await productModel.find(query)
             .sort(sortOption)
-            .limit(limit * 1)
-            .skip((page - 1) * limit);
+            .limit(Number(limit)) // Now limits to 5000 instead of 10
+            .skip((Number(page) - 1) * Number(limit));
 
-        // 4. Get Total Count (for pagination)
+        // 4. Get Total Count
         const count = await productModel.countDocuments(query);
 
         res.json({
             success: true,
             products,
             totalPages: Math.ceil(count / limit),
-            currentPage: page
+            currentPage: Number(page)
         });
 
     } catch (error) {
@@ -123,6 +124,8 @@ const listProduct = async (req, res) => {
         res.json({ success: false, message: error.message });
     }
 }
+
+
 // 4. Remove Product
 const removeProduct = async (req, res) => {
     try {
