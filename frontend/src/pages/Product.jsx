@@ -3,6 +3,8 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets";
 import RelatedProducts from "../components/RelatedProducts";
+import ReviewSection from "../components/ReviewSection";
+import DrugInteractionChecker from "../components/DrugInteractionChecker";
 import { toast } from "react-toastify";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -13,6 +15,8 @@ const Product = () => {
   const [image, setImage] = useState("");
   const [activeTab, setActiveTab] = useState("description");
   const [activeVariant, setActiveVariant] = useState(null);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(1);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,13 +36,26 @@ const Product = () => {
   };
 
   useEffect(() => {
+    console.log(`[Product] ProductID: ${productId}`);
+    console.log(`[Product] Total products available: ${products.length}`);
+    
+    if (!productId) {
+      console.warn('[Product] No productId in URL params');
+      return;
+    }
+
     const product = products.find((item) => item._id === productId);
+    
     if (product) {
+      console.log(`[Product] ✅ Found product:`, product.name);
       setProductData(product);
       setImage(product.image[0]);
       if (product.variants && product.variants.length > 0) {
           setActiveVariant(product.variants[0]);
       }
+    } else {
+      console.warn(`[Product] ❌ Product not found in array. Searched for ID: ${productId}`);
+      console.log(`[Product] Available IDs:`, products.map(p => p._id).slice(0, 5));
     }
   }, [productId, products]);
 
@@ -84,7 +101,33 @@ const Product = () => {
       exit: (direction) => ({ x: direction > 0 ? -300 : 300, opacity: 0, scale: 0.8, transition: { duration: 0.3, ease: "easeIn" } })
   };
 
-  if (!productData || !activeVariant) return <div className="min-h-[70vh] flex items-center justify-center text-gray-500 animate-pulse">Loading...</div>;
+  if (!productData) {
+    // If products array is empty, still loading
+    if (products.length === 0) {
+      return <div className="min-h-[70vh] flex items-center justify-center text-gray-500 animate-pulse">
+        <div className="text-center">
+          <div className="text-lg font-semibold mb-2">Loading product...</div>
+          <div className="text-sm">Please wait</div>
+        </div>
+      </div>;
+    }
+    
+    // Products loaded but product not found
+    return <div className="min-h-[70vh] flex items-center justify-center">
+      <div className="text-center">
+        <div className="text-xl font-bold text-red-600 mb-4">Product Not Found</div>
+        <p className="text-gray-600 mb-6">The product you're looking for doesn't exist or may have been removed.</p>
+        <button 
+          onClick={() => navigate('/')}
+          className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition"
+        >
+          Back to Home
+        </button>
+      </div>
+    </div>;
+  }
+  
+  if (!activeVariant) return <div className="min-h-[70vh] flex items-center justify-center text-gray-500 animate-pulse">Loading variants...</div>;
 
   const currentPrice = activeVariant.price;
   const currentMrp = activeVariant.mrp;
@@ -118,13 +161,24 @@ const Product = () => {
 
           {/* MAIN IMAGE CAROUSEL */}
           <div 
+            onClick={() => setShowImageModal(true)}
             // ✅ MOBILE FIX: Fixed height h-[280px] on mobile so it fits the screen perfectly without shifting
-            className="flex-1 bg-white rounded-2xl border border-gray-100 flex items-center justify-center p-4 sm:p-6 relative shadow-sm h-[280px] sm:h-[400px] md:h-[450px] touch-pan-y overflow-hidden"
+            className="flex-1 bg-white rounded-2xl border border-gray-100 flex items-center justify-center p-4 sm:p-6 relative shadow-sm h-[280px] sm:h-[400px] md:h-[450px] touch-pan-y overflow-hidden cursor-pointer group"
             onTouchStart={onTouchStart}
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
           >
               {discount > 0 && <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full shadow-md z-10">{discount}% OFF</span>}
+              
+              {/* Zoom hint overlay */}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
+                <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
+                  <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                  </svg>
+                  <span className="text-sm font-medium text-gray-700">Click to zoom</span>
+                </div>
+              </div>
               
               <AnimatePresence initial={false} custom={direction} mode="wait">
                 <motion.img
@@ -258,6 +312,98 @@ const Product = () => {
       </div>
 
       <RelatedProducts category={productData.category} subCategory={productData.subCategory} productId={productData._id} />
+
+      {/* ================= NEW FEATURES ================= */}
+      <DrugInteractionChecker />
+      <ReviewSection productId={productData._id} />
+
+      {/* ================= IMAGE ZOOM MODAL ================= */}
+      {showImageModal && (
+        <div 
+          className="fixed inset-0 bg-black/90 z-[1000] flex items-center justify-center p-4"
+          onClick={() => setShowImageModal(false)}
+        >
+          {/* Close Button */}
+          <button 
+            onClick={() => setShowImageModal(false)}
+            className="absolute top-4 right-4 z-[1001] bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+
+          {/* Main Zoomable Image */}
+          <div 
+            className="relative w-full h-full max-w-4xl max-h-screen flex items-center justify-center overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <motion.img
+              src={image}
+              alt={productData.name}
+              className="w-full h-full object-contain cursor-zoom-in"
+              style={{ scale: zoomLevel }}
+              drag
+              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+            />
+          </div>
+
+          {/* Zoom Controls */}
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 bg-black/50 backdrop-blur-sm px-4 py-3 rounded-full z-[1001]">
+            <button
+              onClick={() => setZoomLevel(Math.max(1, zoomLevel - 0.5))}
+              className="bg-white/20 hover:bg-white/30 text-white p-2.5 rounded-full transition-all"
+              title="Zoom Out"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+              </svg>
+            </button>
+
+            <div className="flex items-center gap-2 px-3 min-w-[100px] justify-center">
+              <span className="text-white text-sm font-bold">{(zoomLevel * 100).toFixed(0)}%</span>
+            </div>
+
+            <button
+              onClick={() => setZoomLevel(Math.min(3, zoomLevel + 0.5))}
+              className="bg-white/20 hover:bg-white/30 text-white p-2.5 rounded-full transition-all"
+              title="Zoom In"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+              </svg>
+            </button>
+
+            <button
+              onClick={() => setZoomLevel(1)}
+              className="bg-white/20 hover:bg-white/30 text-white px-3 py-2.5 rounded-full transition-all text-sm font-medium"
+              title="Reset Zoom"
+            >
+              Reset
+            </button>
+          </div>
+
+          {/* Thumbnail Strip at Bottom */}
+          <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 flex gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg z-[1001] scrollbar-hide overflow-x-auto max-w-sm">
+            {productData.image.map((img, idx) => (
+              <img
+                key={idx}
+                src={img}
+                alt={`thumb-${idx}`}
+                onClick={() => setImage(img)}
+                className={`h-12 w-12 object-contain rounded cursor-pointer border-2 transition-all ${
+                  image === img ? 'border-emerald-400' : 'border-gray-600 opacity-60 hover:opacity-100'
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* Navigation Info */}
+          <div className="absolute top-6 left-1/2 transform -translate-x-1/2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm z-[1001]">
+            Click and drag to pan • Scroll to zoom
+          </div>
+        </div>
+      )}
     </div>
   );
 };

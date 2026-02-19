@@ -30,7 +30,7 @@ const PlaceOrder = () => {
   ];
 
   // Get Data from Cart Page
-  const { address, coordinates, deliveryFee, distance } = location.state || {};
+  const { address, coordinates, deliveryFee, distance, couponCode, couponDiscount } = location.state || {};
 
   const [formData, setFormData] = useState({
     firstName: "", lastName: "", email: "", phone: "",
@@ -39,6 +39,7 @@ const PlaceOrder = () => {
   });
 
   const cartTotal = orderItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+  const finalAmount = Math.max(0, cartTotal + (deliveryFee || 0) - (couponDiscount || 0));
   const isRxRequired = orderItems.some(item => item.prescriptionRequired);
 
   useEffect(() => {
@@ -115,8 +116,6 @@ const PlaceOrder = () => {
           }
       }
 
-      const finalAmount = cartTotal + deliveryFee;
-
       const orderData = {
         address: {
             ...formData,
@@ -125,6 +124,9 @@ const PlaceOrder = () => {
         }, 
         items: orderItems,
         amount: finalAmount,
+        deliveryFee: deliveryFee || 0,
+        couponCode: couponCode || null,
+        couponDiscount: couponDiscount || 0,
         prescriptionUploaded: isRxRequired ? true : false, 
         prescriptionUrl: prescriptionUrl, 
         slot: deliverySlot, 
@@ -248,15 +250,29 @@ const PlaceOrder = () => {
                     <span>{currency}{cartTotal}.00</span>
                  </div>
                  <div className="flex justify-between">
-                    <span>Delivery Fee ({distance}km)</span>
+                    <span>Delivery Fee ({distance?.toFixed(1) || 0}km)</span>
                     <span className={deliveryFee === 0 ? "text-green-600 font-bold" : ""}>
                         {deliveryFee === 0 ? "FREE" : `${currency}${deliveryFee}.00`}
                     </span>
                  </div>
+                 {couponDiscount > 0 && (
+                   <>
+                     <div className="flex justify-between text-green-600">
+                       <span className="flex items-center gap-1">
+                         <span>🎉</span>
+                         <span>Coupon ({couponCode})</span>
+                       </span>
+                       <span className="font-semibold">-{currency}{couponDiscount}.00</span>
+                     </div>
+                     <div className="bg-green-50 border border-green-200 px-2 py-1 rounded text-xs text-green-700 text-center">
+                       You saved {currency}{couponDiscount} with promo code!
+                     </div>
+                   </>
+                 )}
                  <hr className="border-gray-100 my-2" />
                  <div className="flex justify-between text-lg font-bold text-gray-900">
                     <span>Grand Total</span>
-                    <span>{currency}{cartTotal + deliveryFee}.00</span>
+                    <span>{currency}{finalAmount}.00</span>
                  </div>
               </div>
 

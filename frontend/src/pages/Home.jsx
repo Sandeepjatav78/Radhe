@@ -7,15 +7,15 @@ import QuickServices from '../components/QuickServices'
 
 const Home = () => {
   return (
-    <div className="">
+    <div className="pb-16 sm:pb-0">
       <QuickServices />
       <Hero />
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         <LatestCollection />
         <BestSeller />
       </section>
       <OurTerms />
-      <section className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-5xl mx-auto px-2 sm:px-4 lg:px-8">
         {/* <NewsLetterBox /> */}
       </section>
     </div>

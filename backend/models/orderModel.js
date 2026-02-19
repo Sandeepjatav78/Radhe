@@ -11,10 +11,13 @@ const orderSchema = new mongoose.Schema({
     slot: { type: String, required: true, default: "Standard Delivery" },
     date: { type: Number, required: true },
     
-    // 👇 ADD THIS LINE (To store the rejection reason)
-    cancelReason: { type: String, default: "" },
+    // Delivery & Coupon fields
+    deliveryFee: { type: Number, default: 10 },
+    couponCode: { type: String, default: null },
+    couponDiscount: { type: Number, default: 0 },
     
-    // 👇 Ensure this exists to store the prescription Image URL
+    // Cancellation & Prescription
+    cancelReason: { type: String, default: "" },
     prescriptionUrl: { type: String, default: "" } 
 })
 

@@ -29,10 +29,57 @@ const MapController = ({ coords }) => {
 };
 
 const LocationPicker = ({ setLocation, onAddressSelect }) => {
-    const [position, setPosition] = useState({ lat: 29.3909, lng: 76.9635 }); // Default: Panipat
+    // Load saved location from localStorage or use default
+    const [position, setPosition] = useState(() => {
+        const savedLocation = localStorage.getItem('userLocation');
+        if (savedLocation) {
+            try {
+                const coords = JSON.parse(savedLocation);
+                return { lat: coords.lat, lng: coords.lng };
+            } catch (e) {
+                console.error("Error parsing saved location:", e);
+            }
+        }
+        return { lat: 29.410327, lng: 76.9870635 }; // Default: Radhe Pharmacy
+    });
     const [isLocating, setIsLocating] = useState(false);
     const [searchText, setSearchText] = useState("");
     const markerRef = useRef(null);
+    const [isInitialized, setIsInitialized] = useState(false);
+
+    // Load saved location on mount
+    useEffect(() => {
+        if (isInitialized) return; // Prevent re-running
+        
+        const savedLocation = localStorage.getItem('userLocation');
+        if (savedLocation) {
+            try {
+                const coords = JSON.parse(savedLocation);
+                const newPos = { lat: coords.lat, lng: coords.lng };
+                setPosition(newPos);
+                setLocation(newPos);
+                console.log('✅ Saved location loaded:', newPos);
+                
+                // Fetch address for saved location
+                const savedAddress = localStorage.getItem('userAddress');
+                if (savedAddress && onAddressSelect) {
+                    const addr = JSON.parse(savedAddress);
+                    onAddressSelect(addr, false); // Don't show toast on initial load
+                    console.log('✅ Saved address loaded:', addr);
+                } else {
+                    getAddressFromCoords(coords.lat, coords.lng);
+                }
+            } catch (e) {
+                console.error("❌ Error loading saved location:", e);
+                localStorage.removeItem('userLocation');
+                localStorage.removeItem('userAddress');
+            }
+        } else {
+            console.log('ℹ️ No saved location found, using default pharmacy location');
+        }
+        setIsInitialized(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []); // Run only on mount
 
     // --- REVERSE GEOCODING (Coords -> Address) ---
     const getAddressFromCoords = async (lat, lng) => {
@@ -123,6 +170,27 @@ const LocationPicker = ({ setLocation, onAddressSelect }) => {
 
     return (
         <div className='flex flex-col gap-4 w-full'>
+            
+            {/* Saved Location Indicator */}
+            {localStorage.getItem('userLocation') && (
+                <div className='bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg flex items-center justify-between text-xs'>
+                    <div className='flex items-center gap-2'>
+                        <span>💾</span>
+                        <span className='text-blue-700 font-medium'>Saved location loaded</span>
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => {
+                            localStorage.removeItem('userLocation');
+                            localStorage.removeItem('userAddress');
+                            window.location.reload();
+                        }}
+                        className='text-blue-600 hover:text-blue-800 underline text-xs'
+                    >
+                        Clear
+                    </button>
+                </div>
+            )}
             
             {/* Header & Detect Button (Mobile Responsive) */}
             <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-2'>

@@ -4,7 +4,9 @@ import { assets } from "../assets/assets";
 import Title from "../components/Title";
 import ProductItem from "../components/ProductItem";
 import RequestMedicine from "../components/RequestMedicine";
+import AdvancedFilters from "../components/AdvancedFilters";
 import axios from "axios";
+import { getCache, setCache, CACHE_DURATIONS } from "../utils/cacheUtils";
 
 const Collection = () => {
   const { products, search, showSearch, backendUrl } = useContext(ShopContext);
@@ -33,10 +35,18 @@ const Collection = () => {
       "Other": []
   };
 
-  // --- 2. FETCH & MERGE DATA ---
+  // --- 2. FETCH & MERGE DATA (with Local Storage Cache) ---
   useEffect(() => {
     const fetchAndMergeCategories = async () => {
       try {
+        // Check cache first
+        const cachedCategories = getCache('categoriesCache', CACHE_DURATIONS.MEDIUM);
+        if (cachedCategories) {
+          setAllCategories(cachedCategories);
+          return;
+        }
+        
+        // If cache miss, fetch and merge
         let mergedList = Object.keys(defaultCategoryData).map(key => ({
             name: key,
             subCategories: defaultCategoryData[key]
@@ -55,7 +65,10 @@ const Collection = () => {
                 }
             });
         }
+        
         setAllCategories(mergedList);
+        setCache('categoriesCache', mergedList);
+        
       } catch (error) {
         console.error("Failed to fetch categories", error);
       }
@@ -136,7 +149,7 @@ const Collection = () => {
   const isFilterActive = category.length > 0 || subCategory.length > 0;
 
   return (
-    <div className="flex flex-col sm:flex-row gap-1 sm:gap-10 pt-10 border-t">
+    <div className="flex flex-col sm:flex-row gap-3 sm:gap-10 pt-4 sm:pt-10 pb-20 sm:pb-10">
       
       {/* --- LEFT SIDE: FILTERS --- */}
       <div className="min-w-60">
@@ -233,16 +246,16 @@ const Collection = () => {
 
       {/* --- RIGHT SIDE: PRODUCTS --- */}
       <div className="flex-1">
-        <div className="flex justify-between text-base sm:text-2xl mb-4">
+        <div className="flex justify-between items-center text-base sm:text-2xl mb-4 px-2 sm:px-0">
           <Title text1={"ALL"} text2={"MEDICINES"} />
-          <select onClick={(e) => setSortType(e.target.value)} value={sortType} className="border-2 border-gray-300 text-sm px-2 py-1 rounded outline-emerald-500">
+          <select onChange={(e) => setSortType(e.target.value)} value={sortType} className="border-2 border-gray-300 text-sm px-2 py-1 rounded outline-emerald-500">
             <option value="relevant">Sort By: Newest First</option>
             <option value="low-high">Sort By: Low to High</option>
             <option value="high-low">Sort By: High To Low</option>
           </select>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 gap-y-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 gap-y-3 sm:gap-y-6">
           {filterProducts.length > 0 ? (
             filterProducts.map((item, index) => (
               <ProductItem

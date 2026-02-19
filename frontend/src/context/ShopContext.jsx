@@ -2,6 +2,7 @@ import React, { createContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { getCache, setCache, clearCache, CACHE_DURATIONS } from "../utils/cacheUtils";
 
 export const ShopContext = createContext();
 
@@ -124,17 +125,30 @@ const ShopContextProvider = (props) => {
     return totalAmount;
   };
 
-  // --- 5. Fetch Products List ---
+  // --- 5. Fetch Products List (with Local Storage Cache) ---
   const getProductsData = async () => {
     try {
+      // Check cache first
+      const cachedProducts = getCache('productsCache', CACHE_DURATIONS.MEDIUM);
+      if (cachedProducts) {
+        console.log(`[ShopContext] ✅ Products loaded from cache (${cachedProducts.length} items)`);
+        setProducts(cachedProducts);
+        return;
+      }
+      
+      // Fetch from API if cache miss
+      console.log(`[ShopContext] 🔄 Fetching products from API...`);
       const response = await axios.get(backendUrl + "/api/product/list");
       if (response.data.success) {
+        console.log(`[ShopContext] ✅ Products loaded from API (${response.data.products.length} items)`);
         setProducts(response.data.products);
+        setCache('productsCache', response.data.products);
       } else {
+        console.error(`[ShopContext] ❌ API error: ${response.data.message}`);
         toast.error(response.data.message);
       }
     } catch (error) {
-      console.log(error);
+      console.error(`[ShopContext] ❌ Fetch error:`, error);
       toast.error(error.message);
     }
   };
@@ -167,6 +181,12 @@ const ShopContextProvider = (props) => {
       getUserCart(localStorage.getItem("token"));
     }
   }, []);
+  
+  // Function to clear products cache (useful after admin updates)
+  const clearProductsCache = () => {
+    clearCache('productsCache');
+    getProductsData(); // Refresh data immediately
+  };
 
   const value = {
     products, currency, delivery_fee,
@@ -174,7 +194,7 @@ const ShopContextProvider = (props) => {
     cartItems, addToCart, setCartItems,
     getCartCount, updateQuantity,
     getCartAmount, navigate, backendUrl,
-    setToken, token,
+    setToken, token, clearProductsCache,
   };
 
   return (

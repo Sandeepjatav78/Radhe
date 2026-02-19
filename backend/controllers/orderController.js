@@ -2,6 +2,9 @@ import orderModel from "../models/orderModel.js";
 import userModel from "../models/userModel.js";
 import Stripe from 'stripe';
 import razorpay from 'razorpay';
+// ✅ IMPORT the detailed function from your utils file
+import sendWhatsAppAdmin from "../utils/whatsapp.js"; 
+import { incrementCouponUsage } from "./couponController.js"; 
 
 // Global variables
 const currency = 'inr';
@@ -17,13 +20,16 @@ const razorpayInstance = new razorpay({
 // 1. Placing Order using COD
 const placeOrder = async (req, res) => {
     try {
-        const { userId, items, amount, address, slot, prescriptionUrl } = req.body;
+        const { userId, items, amount, address, slot, prescriptionUrl, deliveryFee, couponCode, couponDiscount } = req.body;
 
         const orderData = {
             userId,
             items,
             address,
             amount,
+            deliveryFee: deliveryFee || 10,
+            couponCode: couponCode || null,
+            couponDiscount: couponDiscount || 0,
             slot: slot || "Standard Delivery",
             prescriptionUrl: prescriptionUrl || "", 
             prescriptionUploaded: !!prescriptionUrl, 
@@ -36,6 +42,14 @@ const placeOrder = async (req, res) => {
         await newOrder.save();
         await userModel.findByIdAndUpdate(userId, { cartData: {} });
 
+        // Increment coupon usage if applied
+        if (couponCode) {
+            await incrementCouponUsage(couponCode);
+        }
+
+        // ✅ Use the DETAILED utility for COD
+        await sendWhatsAppAdmin(newOrder);
+
         res.json({ success: true, message: "Order Placed" });
 
     } catch (error) {
@@ -44,10 +58,9 @@ const placeOrder = async (req, res) => {
     }
 }
 
-// 2. Placing Order using Stripe (✅ FIXED)
+// 2. Placing Order using Stripe
 const placeOrderStripe = async (req, res) => {
     try {
-        // 👇 ADDED slot and prescriptionUrl
         const { userId, items, amount, address, slot, prescriptionUrl } = req.body;
         const { origin } = req.headers;
 
@@ -56,9 +69,9 @@ const placeOrderStripe = async (req, res) => {
             items,
             address,
             amount,
-            slot: slot || "Standard Delivery", // ✅ Added
-            prescriptionUrl: prescriptionUrl || "", // ✅ Added
-            prescriptionUploaded: !!prescriptionUrl, // ✅ Added
+            slot: slot || "Standard Delivery",
+            prescriptionUrl: prescriptionUrl || "", 
+            prescriptionUploaded: !!prescriptionUrl, 
             paymentMethod: "Stripe",
             payment: false,
             date: Date.now()
@@ -71,7 +84,7 @@ const placeOrderStripe = async (req, res) => {
             price_data: {
                 currency: currency,
                 product_data: { 
-                    name: `${item.name} (${item.size || 'Unit'})` // Added size to name
+                    name: `${item.name} (${item.size || 'Unit'})` 
                 },
                 unit_amount: item.price * 100
             },
@@ -102,10 +115,9 @@ const placeOrderStripe = async (req, res) => {
     }
 };
 
-// 3. Placing Order using Razorpay (✅ FIXED)
+// 3. Placing Order using Razorpay
 const placeOrderRazorpay = async (req, res) => {
     try {
-        // 👇 ADDED slot and prescriptionUrl
         const { userId, items, amount, address, slot, prescriptionUrl } = req.body;
 
         const orderData = {
@@ -113,9 +125,9 @@ const placeOrderRazorpay = async (req, res) => {
             items,
             address,
             amount,
-            slot: slot || "Standard Delivery", // ✅ Added
-            prescriptionUrl: prescriptionUrl || "", // ✅ Added
-            prescriptionUploaded: !!prescriptionUrl, // ✅ Added
+            slot: slot || "Standard Delivery",
+            prescriptionUrl: prescriptionUrl || "", 
+            prescriptionUploaded: !!prescriptionUrl, 
             paymentMethod: "Razorpay",
             payment: false,
             date: Date.now()
@@ -144,13 +156,17 @@ const placeOrderRazorpay = async (req, res) => {
     }
 };
 
-// ... (Verify, UserOrders, AllOrders, UpdateStatus remain same) ...
+// 4. Verify Stripe
 const verifyStripe = async (req, res) => {
     const { orderId, success, userId } = req.body;
     try {
         if (success === "true") {
-            await orderModel.findByIdAndUpdate(orderId, { payment: true });
+            const order = await orderModel.findByIdAndUpdate(orderId, { payment: true }, { new: true });
             await userModel.findByIdAndUpdate(userId, { cartData: {} });
+            
+            // ✅ Use the DETAILED utility after Stripe success
+            await sendWhatsAppAdmin(order);
+
             res.json({ success: true });
         } else {
             await orderModel.findByIdAndDelete(orderId);
@@ -162,13 +178,19 @@ const verifyStripe = async (req, res) => {
     }
 };
 
+// 5. Verify Razorpay
 const verifyRazorpay = async (req, res) => {
     try {
         const { userId, razorpay_order_id } = req.body;
         const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
+        
         if (orderInfo.status === 'paid') {
-            await orderModel.findByIdAndUpdate(orderInfo.receipt, { payment: true });
+            const order = await orderModel.findByIdAndUpdate(orderInfo.receipt, { payment: true }, { new: true });
             await userModel.findByIdAndUpdate(userId, { cartData: {} });
+            
+            // ✅ Use the DETAILED utility after Razorpay success
+            await sendWhatsAppAdmin(order);
+
             res.json({ success: true, message: "Payment Successful" });
         } else {
             res.json({ success: false, message: "Payment Failed" });
@@ -181,10 +203,16 @@ const verifyRazorpay = async (req, res) => {
 
 const allorders = async (req, res) => {
     try {
+        console.log('🔍 [DEBUG] /api/order/list called');
+        console.log('🔍 [DEBUG] Headers:', req.headers);
+        console.log('🔍 [DEBUG] Admin info:', req.admin);
+        
         const orders = await orderModel.find({});
+        console.log('🔍 [DEBUG] Found orders:', orders.length);
+        
         res.json({ success: true, orders });
     } catch (error) {
-        console.log(error);
+        console.log('❌ [ERROR] allorders:', error);
         res.json({ success: false, message: error.message });
     }
 };

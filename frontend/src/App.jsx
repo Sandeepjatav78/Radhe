@@ -1,6 +1,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar";
+import MobileNav from "./components/MobileNav";
 import Home from "./pages/Home";
 import Collection from "./pages/Collection";
 import About from "./pages/About";
@@ -13,6 +14,7 @@ import Product from "./pages/Product";
 import Footer from "./components/Footer";
 import SearchBar from "./components/SearchBar";
 import Profile from "./pages/Profile";
+import Wishlist from "./pages/Wishlist";
 import Verify from "./pages/Verify";
 import ScrollToTop from './components/ScrollToTop';
 import SiteInfoBanner from "./components/SiteInfoBanner";
@@ -34,6 +36,7 @@ const App = () => {
       <ScrollToTop />
       <Navbar />
       <SearchBar />
+      <MobileNav />
       
       {/* Site Info Banner */}
       <SiteInfoBanner /> 
@@ -72,6 +75,7 @@ const App = () => {
           <Route path="/verify" element={<Verify />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/wishlist" element={<Wishlist />} />
 
           {/* Legal Policy Routes */}
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
