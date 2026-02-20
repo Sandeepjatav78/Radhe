@@ -15,7 +15,13 @@ const authUser = async (req, res, next) => {
             // Verify the Clerk token using clerk-sdk-node
             const decoded = await verifyToken(token, {
                 secretKey: process.env.CLERK_SECRET_KEY,
-                authorizedParties: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000']
+                authorizedParties: [
+                    'http://localhost:5173',
+                    'http://localhost:5174',
+                    'http://localhost:3000',
+                    'https://www.radhepharmacy.app',
+                    'https://radhepharmacy.app'
+                ]
             });
             
             // Add Clerk user ID to request object
