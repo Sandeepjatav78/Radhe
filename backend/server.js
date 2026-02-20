@@ -108,6 +108,10 @@ app.use('/api/review', apiLimiter, reviewRouter)
 app.use('/api/drug-interaction', apiLimiter, drugInteractionRouter)
 app.use('/api/dashboard', apiLimiter, dashboardRouter)
 
+// Favicon handler - prevent 404 errors
+app.get('/favicon.ico', (req, res) => res.status(204).end());
+app.get('/favicon.png', (req, res) => res.status(204).end());
+
 app.get('/', (req, res) => {
     res.send("API WORKING")
 })
