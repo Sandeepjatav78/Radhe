@@ -90,6 +90,7 @@ const corsOptions = {
         ? [
             'https://radhepharmacy.app',
             'https://www.radhepharmacy.app',
+            'https://radhe-admin.vercel.app',
             process.env.FRONTEND_URL
           ].filter(Boolean) // Remove undefined values
         : true, // Allow all origins in development
