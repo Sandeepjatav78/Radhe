@@ -62,7 +62,7 @@ const PrescriptionUpload = ({ orderId, onUploadSuccess }) => {
       const response = await axios.post(
         `${backendUrl}/api/prescription/upload`,
         { orderId, prescriptionImage },
-        { headers: { token } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.data.success) {

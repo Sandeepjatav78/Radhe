@@ -3,15 +3,23 @@ import userModel from "../models/userModel.js"
 // Add to Cart
 const addToCart = async (req, res) => {
     try {
-        const { userId, itemId, size } = req.body;
+        const { itemId, size } = req.body;
+        const clerkId = req.user?.id;
 
-        const userData = await userModel.findById(userId);
+        if (!clerkId) {
+            return res.status(401).json({ success: false, message: "Not authorized" });
+        }
+
+        console.log(`[CART] Adding item ${itemId} for user ${clerkId}`);
+
+        const userData = await userModel.findOne({ clerkId });
         
         if (!userData) {
+            console.log(`[CART] ❌ User not found: ${clerkId}`);
             return res.json({ success: false, message: "User not found" });
         }
 
-        let cartData = await userData.cartData;
+        let cartData = userData.cartData || {};
 
         // Logic to add nested size
         if (cartData[itemId]) {
@@ -25,16 +33,14 @@ const addToCart = async (req, res) => {
             cartData[itemId][size] = 1;
         }
 
-        // ⚠️👇 YEH LINE MISSING THI - ISKE BINA DATA SAVE NAHI HOGA 👇⚠️
         userData.markModified('cartData'); 
-        // -----------------------------------------------------------
+        await userData.save();
 
-        await userModel.findByIdAndUpdate(userId, { cartData }); 
-
+        console.log(`[CART] ✅ Item added for user ${clerkId}`);
         res.json({ success: true, message: "Added to Cart" });
 
     } catch (error) {
-        console.log(error);
+        console.error('[CART] Error adding to cart:', error);
         res.json({ success: false, message: error.message })
     }
 }
@@ -42,15 +48,23 @@ const addToCart = async (req, res) => {
 // Update Cart
 const updateCart = async (req, res) => {
     try {
-        const { userId, itemId, size, quantity } = req.body;
+        const { itemId, size, quantity } = req.body;
+        const clerkId = req.user?.id;
+
+        if (!clerkId) {
+            return res.status(401).json({ success: false, message: "Not authorized" });
+        }
+
+        console.log(`[CART] Updating item ${itemId} for user ${clerkId}`);
         
-        const userData = await userModel.findById(userId);
+        const userData = await userModel.findOne({ clerkId });
 
         if (!userData) {
+            console.log(`[CART] ❌ User not found: ${clerkId}`);
             return res.json({ success: false, message: "User not found" });
         }
 
-        let cartData = await userData.cartData;
+        let cartData = userData.cartData || {};
 
         // Ensure item object exists
         if (!cartData[itemId]) {
@@ -59,16 +73,14 @@ const updateCart = async (req, res) => {
 
         cartData[itemId][size] = quantity;
 
-        // ⚠️👇 YEH LINE MISSING THI - ISKE BINA DATA SAVE NAHI HOGA 👇⚠️
         userData.markModified('cartData');
-        // -----------------------------------------------------------
-
-        await userModel.findByIdAndUpdate(userId, { cartData });
+        await userData.save();
         
+        console.log(`[CART] ✅ Cart updated for user ${clerkId}`);
         res.json({ success: true, message: "Cart Updated" });
 
     } catch (error) {
-        console.log(error);
+        console.error('[CART] Error updating cart:', error);
         res.json({ success: false, message: error.message });
     }
 }
@@ -76,19 +88,27 @@ const updateCart = async (req, res) => {
 // Get User Cart
 const getUserCart = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const clerkId = req.user?.id;
 
-        const userData = await userModel.findById(userId);
-
-        if (!userData) {
-            return res.json({ success: false, message: "User not found" });
+        if (!clerkId) {
+            return res.status(401).json({ success: false, message: "Not authorized" });
         }
 
-        let cartData = await userData.cartData;
+        console.log(`[CART] Getting cart for user ${clerkId}`);
 
+        const userData = await userModel.findOne({ clerkId });
+
+        if (!userData) {
+            console.log(`[CART] ❌ User not found: ${clerkId}`);
+            return res.json({ success: true, cartData: {} });
+        }
+
+        let cartData = userData.cartData || {};
+
+        console.log(`[CART] ✅ Cart retrieved for user ${clerkId}`);
         res.json({ success: true, cartData });
     } catch (error) {
-        console.log(error);
+        console.error('[CART] Error getting cart:', error);
         res.json({ success: false, message: error.message });
     }
 }

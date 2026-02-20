@@ -27,7 +27,7 @@ const DrugInteractionChecker = ({ cartItems = [] }) => {
       const response = await axios.post(
         `${backendUrl}/api/drug-interaction/check`,
         { medicines },
-        { headers: { token } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       setInteractions(response.data.interactions || []);

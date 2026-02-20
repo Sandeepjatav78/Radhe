@@ -106,7 +106,7 @@ const ReviewSection = ({ productId }) => {
       const response = await axios.post(
         `${backendUrl}/api/review/add`,
         { productId, rating, comment, image },
-        { headers: { token } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.data.success) {

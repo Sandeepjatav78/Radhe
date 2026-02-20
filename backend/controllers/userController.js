@@ -1,166 +1,113 @@
-import validator from "validator"
-import bcrypt from "bcrypt"
-import jwt from 'jsonwebtoken'
 import userModel from "../models/userModel.js";
 
-
-const createToken = (id) => {
-    return jwt.sign({ id }, process.env.JWT_SECRET)
-}
-
- const getProfile = async (req, res) => {
+// Sync Clerk user with MongoDB (called on first login via /profile endpoint)
+const syncClerkUser = async (clerkUserId, email, phoneNumber) => {
     try {
-        const userId = req.user.id; // Assume auth middleware sets req.user
-        const user = await userModel.findById(userId);
-        if (!user) return res.status(404).json({ success: false, message: "User not found" });
-        res.json({ success: true, user });
+        // Build update object - only include phoneNumber if it has a value
+        const updateData = {
+            clerkId: clerkUserId,
+            email: email || '',
+            isVerified: true
+        };
+        
+        // Only add phoneNumber if it exists and is not empty
+        if (phoneNumber && phoneNumber.trim()) {
+            updateData.phoneNumber = phoneNumber;
+        }
+        
+        // Check if user exists in MongoDB by clerkId
+        let user = await userModel.findOneAndUpdate(
+            { clerkId: clerkUserId },
+            updateData,
+            { 
+                upsert: true,  // Create if doesn't exist
+                new: true      // Return updated document
+            }
+        );
+
+        if (user) {
+        }
+
+        return user;
     } catch (error) {
-        res.status(500).json({ success: false, message: error.message });
+        throw error;
     }
 };
 
- const updateProfile = async (req, res) => {
+// Get user profile (with Clerk sync on first access)
+const getProfile = async (req, res) => {
     try {
-        if (!req.user || !req.user.id) {
-            return res.status(401).json({ success: false, message: "Not Authorized" });
+        const clerkUserId = req.user?.id;
+        const email = req.user?.email;
+        const phoneNumber = req.user?.phoneNumber;
+
+        if (!clerkUserId) {
+            return res.status(401).json({ success: false, message: "Not authorized" });
         }
-        const userId = req.user.id;
-        const {
-            name,
-            email,
-            phone,
-            nationality,
-            location,
-            profilePicture,
-        } = req.body;
 
-        const updateData = {
-            name,
-            email,
-            phone,
-            nationality,
-            profilePicture,
-            location,
-        };
+        // Sync user from Clerk on first profile access
+        const user = await syncClerkUser(clerkUserId, email, phoneNumber);
 
-        // Clean undefined fields
-        Object.keys(updateData).forEach(key => {
-            if (updateData[key] === undefined) delete updateData[key];
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        res.json({ 
+            success: true, 
+            user: {
+                id: user._id,
+                clerkId: user.clerkId,
+                email: user.email,
+                phoneNumber: user.phoneNumber,
+                name: user.name,
+                address: user.address,
+                isVerified: user.isVerified
+            }
         });
-
-        const updatedUser = await userModel.findByIdAndUpdate(userId, updateData, {
-            new: true,
-        });
-
-        if (!updatedUser) return res.status(404).json({ success: false, message: "User not found" });
-
-        res.json({ success: true, user: updatedUser, message: "Profile updated successfully" });
     } catch (error) {
-        console.error(error);
+        res.status(500).json({ success: false, message: "Server error: " + error.message });
+    }
+};
+
+// Update profile
+const updateProfile = async (req, res) => {
+    try {
+        const clerkUserId = req.user?.id;
+        if (!clerkUserId) {
+            return res.status(401).json({ success: false, message: "Not authorized" });
+        }
+
+        const { name, address, phoneNumber } = req.body;
+        const updateData = {};
+
+        if (name) updateData.name = name;
+        if (address) updateData.address = address;
+        if (phoneNumber) updateData.phoneNumber = phoneNumber;
+
+        // Find user by Clerk ID and update
+        const user = await userModel.findOne({ clerkId: clerkUserId });
+        if (!user) {
+            return res.status(404).json({ success: false, message: "User not found" });
+        }
+
+        const updatedUser = await userModel.findByIdAndUpdate(user._id, updateData, { new: true });
+
+        res.json({ 
+            success: true, 
+            message: "Profile updated",
+            user: {
+                id: updatedUser._id,
+                clerkId: updatedUser.clerkId,
+                email: updatedUser.email,
+                phoneNumber: updatedUser.phoneNumber,
+                name: updatedUser.name,
+                address: updatedUser.address
+            }
+        });
+    } catch (error) {
+        console.error('updateProfile Error:', error);
         res.status(500).json({ success: false, message: "Server error" });
     }
 };
-// user login route
-const loginUser = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const user = await userModel.findOne({ email });
 
-        if (!user) {
-            return res.status(404).json({ success: false, message: "User doesn't exist" })
-        }
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (isMatch) {
-            const token = createToken(user._id)
-            res.json({ success: true, token })
-        }
-        else {
-            res.status(401).json({ success: false, message: "Invalid credentials" })
-        }
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ success: false, message: "Server error" })
-
-    }
-}
-
-//user register route
-const registerUser = async (req, res) => {
-    try {
-        const { name, email, password } = req.body;
-
-        //existing user check
-        const exists = await userModel.findOne({ email });
-        if (exists) {
-            return res.status(409).json({ success: false, message: "User already exists" });
-        }
-
-        // Validate email
-        if (!validator.isEmail(email)) {
-            return res.status(400).json({ success: false, message: "Please enter valid email" });
-        }
-
-        if (password.length < 8) {
-            return res.status(400).json({ success: false, message: "Please enter a Strong password" })
-        }
-
-        // hashing password
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(password, salt)
-
-        const newUser = new userModel({
-            name,
-            email,
-            password: hashedPassword,
-        })
-        const user = await newUser.save()
-        const token = createToken(user._id)
-        res.json({ success: true, token })
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ success: false, message: "Server error" })
-
-    }
-
-}
-// admin login
-const adminLogin = async (req, res) => {
-    try {
-        const { email, password } = req.body
-        
-        if (email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD) {
-            // Use proper JWT structure with role and expiration
-            const token = jwt.sign(
-                { email, role: 'admin' }, 
-                process.env.JWT_SECRET,
-                { expiresIn: '24h' }
-            );
-            res.json({ success: true, token })
-        } else {
-            res.status(401).json({ success: false, message: "Invalid credentials" })
-        }
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ success: false, message: "Server error" })
-    }
-}
-
-// New function to get user profile
-const userProfile = async (req, res) => {
-    try {
-        const userId = req.user?.id;
-        if (!userId) {
-            return res.status(401).json({ success: false, message: "Unauthorized" });
-        }
-        const user = await userModel.findById(userId).select("-password");
-        if (!user) {
-            return res.json({ success: false, message: "User not found" });
-        }
-        res.json({ success: true, user });
-    } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error fetching user profile" });
-    }
-};
-
-export { loginUser, registerUser, adminLogin, userProfile, updateProfile };
+export { getProfile, updateProfile, syncClerkUser };

@@ -138,7 +138,7 @@ const PlaceOrder = () => {
           const response = await axios.post(
             backendUrl + "/api/order/place",
             orderData,
-            { headers: { token } }
+            { headers: { Authorization: `Bearer ${token}` } }
           );
           if (response.data.success) {
             toast.success("Order Placed Successfully!");
@@ -186,11 +186,11 @@ const PlaceOrder = () => {
         <div className="mt-2 sm:mt-4">
               <p className="text-xs sm:text-sm font-bold text-gray-700 mb-2">Address (Detected from Map)</p>
               <input required name="street" value={formData.street} onChange={onChangeHandler} type="text" placeholder="Street Address" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full mb-3 bg-white" />
-              <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3">
                  <input required name="city" value={formData.city} onChange={onChangeHandler} type="text" placeholder="City" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full bg-white" />
                  <input required name="state" value={formData.state} onChange={onChangeHandler} type="text" placeholder="State" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full bg-white" />
               </div>
-              <div className="grid grid-cols-2 gap-3 mt-3">
+                  <div className="grid grid-cols-2 gap-3 mt-3">
                  <input required name="zipcode" value={formData.zipcode} onChange={onChangeHandler} type="number" placeholder="Zipcode" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full bg-white" />
                  <input name="country" value={formData.country} readOnly type="text" placeholder="Country" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full bg-gray-50 text-gray-500 cursor-not-allowed" />
               </div>

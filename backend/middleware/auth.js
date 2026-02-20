@@ -1,30 +1,38 @@
-import jwt from 'jsonwebtoken';
+import { verifyToken } from '@clerk/clerk-sdk-node';
 
 const authUser = async (req, res, next) => {
     try {
-        const { token } = req.headers;
-
-        if (!token) {
-            console.log(`[AUTH] No token provided for ${req.method} ${req.path}`);
+        // Get the token from the Authorization header (Bearer token)
+        const authHeader = req.headers.authorization;
+        
+        if (!authHeader || !authHeader.startsWith('Bearer ')) {
             return res.status(401).json({ success: false, message: 'Not Authorized. Login Again' });
         }
 
+        const token = authHeader.substring(7); // Remove "Bearer " prefix
+
         try {
-            const token_decode = jwt.verify(token, process.env.JWT_SECRET);
+            // Verify the Clerk token using clerk-sdk-node
+            const decoded = await verifyToken(token, {
+                secretKey: process.env.CLERK_SECRET_KEY,
+                authorizedParties: ['http://localhost:5173', 'http://localhost:5174', 'http://localhost:3000']
+            });
             
-            // Add user ID to request body and create user object
-            req.body.userId = token_decode.id;
-            req.user = { id: token_decode.id };
-            
-            console.log(`[AUTH] ✅ Authorized for user ${token_decode.id} - ${req.method} ${req.path}`);
+            // Add Clerk user ID to request object
+            req.user = { 
+                id: decoded.sub,  // Clerk user ID
+                email: decoded.email || '',
+                phoneNumber: decoded.phone_numbers?.[0]?.phone_number || ''
+            };
             next();
-        } catch (jwtError) {
-            console.log(`[AUTH] ❌ JWT verification failed: ${jwtError.message}`);
-            return res.status(401).json({ success: false, message: 'Invalid or expired token' });
+        } catch (tokenError) {
+            return res.status(401).json({ 
+                success: false, 
+                message: 'Invalid or expired token. Please login again.' 
+            });
         }
 
     } catch (error) {
-        console.error(`[AUTH] Server error:`, error);
         res.status(500).json({ success: false, message: 'Server error' });
     }
 };

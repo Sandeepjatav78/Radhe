@@ -23,6 +23,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 const app = express()
 const port = process.env.PORT || 4000
 
+
 // Trust proxy - IMPORTANT for Vercel deployment
 app.set('trust proxy', 1);
 
@@ -95,7 +96,8 @@ const corsOptions = {
           ].filter(Boolean) // Remove undefined values
         : true, // Allow all origins in development
     credentials: true,
-    optionsSuccessStatus: 200
+    optionsSuccessStatus: 200,
+    allowedHeaders: ['Content-Type', 'Authorization', 'token'] // Explicitly allow 'token' header
 };
 app.use(cors(corsOptions))
 

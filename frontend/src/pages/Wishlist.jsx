@@ -15,7 +15,7 @@ const UserWishlist = () => {
       try {
         console.log("Fetching wishlist...");
         const response = await axios.get(`${backendUrl}/api/wishlist`, {
-          headers: { token },
+          headers: { Authorization: `Bearer ${token}` },
         });
         
         if (response.data.success || response.data.wishlist) {
@@ -41,7 +41,7 @@ const UserWishlist = () => {
       const response = await axios.post(
         `${backendUrl}/api/wishlist/remove`,
         { productId },
-        { headers: { token } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       
       if (response.data.success) {

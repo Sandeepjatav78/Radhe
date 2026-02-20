@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useAuth } from "@clerk/clerk-react"; // ✅ Import to get fresh tokens
 import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
 import { assets } from "../assets/assets";
@@ -10,7 +11,8 @@ import CouponCode from "../components/CouponCode";
 import axios from "axios";
 
 const Cart = () => {
-  const { products, currency, cartItems, updateQuantity, navigate, backendUrl, token } = useContext(ShopContext);
+  const { products, currency, cartItems, updateQuantity, navigate, backendUrl } = useContext(ShopContext);
+  const { getToken } = useAuth(); // ✅ Get fresh token from Clerk
   const [cartData, setCartData] = useState([]);
   
   // --- CALCULATION STATES ---
@@ -169,16 +171,17 @@ const Cart = () => {
       return;
     }
 
-    if (!token) {
-      toast.error("Please login to apply coupon");
-      return;
-    }
-
     try {
+      // ✅ Get fresh token from Clerk for this request
+      const freshToken = await getToken();
+      if (!freshToken) {
+        toast.error("Please login to apply coupon");
+        return;
+      }
       const response = await axios.post(
         backendUrl + "/api/coupon/validate",
         { code: code, cartTotal },
-        { headers: { token } }
+        { headers: { Authorization: `Bearer ${freshToken}` } } // ✅ Use fresh token
       );
 
       if (response.data.success) {
@@ -191,7 +194,6 @@ const Cart = () => {
         toast.error(response.data.message);
       }
     } catch (error) {
-      console.error(error);
       
       // Fallback to hardcoded coupons if API fails
       const validCoupons = {
@@ -297,37 +299,37 @@ const Cart = () => {
                     
                     return (
                       <div key={index} className="py-4 border border-gray-100 rounded-xl px-4 flex items-center gap-4 bg-white shadow-sm">
-                        <div className="w-20 h-20 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200 p-1 flex-shrink-0">
-                            <img src={productData.image?.[0]} alt={productData.name} className="w-full h-full object-contain" />
-                        </div>
-                        <div className="flex-1">
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-base font-bold text-gray-800 line-clamp-1">{productData.name}</p>
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded border border-gray-200">{item.size}</span>
-                                    </div>
-                                </div>
+                      <div className="w-20 h-20 bg-gray-50 rounded-lg flex items-center justify-center border border-gray-200 p-1 flex-shrink-0">
+                        <img src={productData.image?.[0]} alt={productData.name} className="w-full h-full object-contain" />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-start">
+                          <div>
+                            <p className="text-base font-bold text-gray-800 line-clamp-1">{productData.name}</p>
+                            <div className="flex items-center gap-2 mt-1">
+                              <span className="bg-gray-100 text-gray-600 text-xs px-2 py-0.5 rounded border border-gray-200">{item.size}</span>
                             </div>
+                          </div>
+                        </div>
                             
-                            <div className="flex justify-between items-center mt-3">
-                                <p className="text-emerald-700 font-bold">{currency}{item.price}</p>
-                                <div className="flex items-center gap-3">
-                                    <input 
-                                      type="number" 
-                                      min={1} 
-                                      defaultValue={item.quantity} 
-                                      onChange={(e) => {
-                                          const value = e.target.value;
-                                          if (value === '' || value === '0') return; 
-                                          updateQuantity(item._id, item.size, Number(value));
-                                      }} 
-                                      className="border border-gray-300 px-2 py-1 w-14 text-center rounded focus:outline-emerald-500"
-                                    />
-                                    <img src={assets.bin_icon} onClick={() => updateQuantity(item._id, item.size, 0)} className="w-5 cursor-pointer opacity-60 hover:text-red-500" alt="Delete"/>
-                                </div>
-                            </div>
+                        <div className="flex justify-between items-center mt-3">
+                          <p className="text-emerald-700 font-bold">{currency}{item.price}</p>
+                          <div className="flex items-center gap-3">
+                            <input 
+                              type="number" 
+                              min={1} 
+                              defaultValue={item.quantity} 
+                              onChange={(e) => {
+                                const value = e.target.value;
+                                if (value === '' || value === '0') return; 
+                                updateQuantity(item._id, item.size, Number(value));
+                              }} 
+                              className="border border-gray-300 px-2 py-1 w-14 text-center rounded focus:outline-emerald-500"
+                            />
+                            <img src={assets.bin_icon} onClick={() => updateQuantity(item._id, item.size, 0)} className="w-5 cursor-pointer opacity-60 hover:text-red-500" alt="Delete"/>
+                          </div>
                         </div>
+                      </div>
                       </div>
                     );
                   })}

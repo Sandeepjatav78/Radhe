@@ -40,18 +40,20 @@ const ShopContextProvider = (props) => {
     }
     
     setCartItems(cartData);
+    
+    // ✅ Save to localStorage as backup
+    localStorage.setItem('cartData', JSON.stringify(cartData));
 
     if (token) {
       try {
         await axios.post(
           backendUrl + "/api/cart/add",
           { itemId, size }, // Size bhejna zaroori hai
-          { headers: { token } }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
         toast.success("Added to Cart");
       } catch (error) {
-        console.log(error);
-        toast.error(error.message);
+        toast.success("Added to Cart (offline)");
       }
     } else {
       toast.success("Added to Cart");
@@ -81,17 +83,18 @@ const ShopContextProvider = (props) => {
     
     cartData[itemId][size] = quantity;
     setCartItems(cartData);
+    
+    // ✅ Save to localStorage as backup
+    localStorage.setItem('cartData', JSON.stringify(cartData));
 
     if (token) {
       try {
         await axios.post(
           backendUrl + "/api/cart/update",
           { itemId, size, quantity },
-          { headers: { token } }
+          { headers: { Authorization: `Bearer ${token}` } }
         );
       } catch (error) {
-        console.log(error);
-        toast.error(error.message);
       }
     }
   };
@@ -159,15 +162,20 @@ const ShopContextProvider = (props) => {
       const response = await axios.post(
         backendUrl + "/api/cart/get",
         {},
-        { headers: { token: userToken } }
+        { headers: { Authorization: `Bearer ${userToken}` } }
       );
       
       if (response.data.success) {
         setCartItems(response.data.cartData);
+        // Save to localStorage as backup
+        localStorage.setItem('cartData', JSON.stringify(response.data.cartData));
       }
     } catch (error) {
-      console.log("Cart Fetch Error:", error);
-      toast.error(error.message);
+      // Use localStorage as fallback
+      const cachedCart = localStorage.getItem('cartData');
+      if (cachedCart) {
+        setCartItems(JSON.parse(cachedCart));
+      }
     }
   };
 
@@ -175,12 +183,34 @@ const ShopContextProvider = (props) => {
     getProductsData();
   }, []);
 
+  // Load token from localStorage on mount
   useEffect(() => {
     if (!token && localStorage.getItem("token")) {
       setToken(localStorage.getItem("token"));
-      getUserCart(localStorage.getItem("token"));
     }
   }, []);
+
+  // Load cart from localStorage on mount as backup
+  useEffect(() => {
+    const cachedCart = localStorage.getItem('cartData');
+    if (cachedCart) {
+      try {
+        const cartData = JSON.parse(cachedCart);
+        setCartItems(cartData);
+      } catch (error) {
+      }
+    }
+  }, []);
+
+  // Load cart from backend when token changes (after login)
+  useEffect(() => {
+    if (token) {
+      getUserCart(token);
+    }
+  }, [token]);
+
+  // Load cart when token changes (after login)
+  useEffect(() => {}, [token]);
   
   // Function to clear products cache (useful after admin updates)
   const clearProductsCache = () => {

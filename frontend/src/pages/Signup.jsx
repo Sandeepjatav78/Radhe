@@ -1,10 +1,10 @@
 import React, { useContext, useEffect } from 'react'
-import { SignIn } from '@clerk/clerk-react'
+import { SignUp } from '@clerk/clerk-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth, useUser } from '@clerk/clerk-react'
 import { ShopContext } from '../context/ShopContext'
 
-const Login = () => {
+const Signup = () => {
   const { user, isLoaded } = useUser()
   const { getToken, isSignedIn } = useAuth()
   const { setToken } = useContext(ShopContext)
@@ -36,8 +36,8 @@ const Login = () => {
           <p className='text-gray-600 mt-2'>Order medicines online</p>
         </div>
 
-        {/* Clerk SignIn Component */}
-        <SignIn 
+        {/* Clerk SignUp Component */}
+        <SignUp 
           appearance={{
             elements: {
               rootBox: 'w-full',
@@ -53,7 +53,7 @@ const Login = () => {
               footerActionLink: 'text-emerald-600 font-semibold hover:underline',
             }
           }}
-          signUpUrl="/signup"
+          signInUrl="/login"
         />
 
         {/* Footer */}
@@ -65,4 +65,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Signup

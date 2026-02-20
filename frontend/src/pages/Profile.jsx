@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
+import { useAuth } from "@clerk/clerk-react"; // ✅ Import useAuth to get fresh token
 import { ShopContext } from "../context/ShopContext";
 import { FaEdit, FaCamera, FaSave } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -11,9 +12,11 @@ const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dt9g6lw4r/upload"; // Yo
 const UPLOAD_PRESET = "unsigned_preset_here"; // Replace with your unsigned upload preset name
 
 const Profile = () => {
-  const { token, backendUrl } = useContext(ShopContext);
+  const { backendUrl } = useContext(ShopContext);
+  const { getToken } = useAuth(); // ✅ Get fresh token from Clerk for each request
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isInitializing, setIsInitializing] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -31,19 +34,29 @@ const Profile = () => {
   const fileInputRef = useRef(null);
   const navigate = useNavigate();
 
+  // Initialize on component mount - wait for token to be loaded from localStorage
+  useEffect(() => {
+    const timer = setTimeout(() => setIsInitializing(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     const fetchUserProfile = async () => {
-      if (!token) {
-        setLoading(false);
-        toast.info("Please login to view your profile");
-        navigate('/login');
-        return;
-      }
+      if (isInitializing) return;
+      
       try {
-        const response = await axios.post(
+        const freshToken = await getToken();
+        
+        if (!freshToken) {
+          setLoading(false);
+          toast.info("Please login to view your profile");
+          navigate('/login');
+          return;
+        }
+        
+        const response = await axios.get(
           `${backendUrl}/api/user/profile`,
-          {},
-          { headers: { token } }
+          { headers: { Authorization: `Bearer ${freshToken}` } } // ✅ Use fresh token
         );
 
         if (response.data.success) {
@@ -74,8 +87,7 @@ const Profile = () => {
           }
         }
       } catch (error) {
-        console.error(error);
-        toast.error("Failed to fetch profile data.");
+        toast.error("Failed to fetch profile data: " + (error.response?.data?.message || error.message));
         const localProfile = localStorage.getItem("profileData");
         if (localProfile) {
           const data = JSON.parse(localProfile);
@@ -89,7 +101,7 @@ const Profile = () => {
     };
 
     fetchUserProfile();
-  }, [token, backendUrl, navigate]);
+  }, [isInitializing, getToken, backendUrl, navigate]);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;
@@ -161,7 +173,7 @@ const Profile = () => {
       const response = await axios.post(
         `${backendUrl}/api/user/update-profile`,
         updatedProfile,
-        { headers: { token } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.data.success) {

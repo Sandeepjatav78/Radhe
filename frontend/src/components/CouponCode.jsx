@@ -23,7 +23,7 @@ const CouponCode = ({ totalAmount, onApplyCoupon }) => {
       const response = await axios.post(
         `${backendUrl}/api/coupon/validate`,
         { code: couponCode, totalAmount },
-        { headers: { token } }
+        { headers: { Authorization: `Bearer ${token}` } }
       );
 
       if (response.data.success) {
