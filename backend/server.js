@@ -87,7 +87,11 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 // CORS Configuration - allow all in development, restrict in production
 const corsOptions = {
     origin: process.env.NODE_ENV === 'production' 
-        ? process.env.FRONTEND_URL 
+        ? [
+            'https://radhepharmacy.app',
+            'https://www.radhepharmacy.app',
+            process.env.FRONTEND_URL
+          ].filter(Boolean) // Remove undefined values
         : true, // Allow all origins in development
     credentials: true,
     optionsSuccessStatus: 200
