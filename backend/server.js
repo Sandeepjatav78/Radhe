@@ -63,10 +63,6 @@ const authLimiter = rateLimit({
     message: { success: false, message: 'Too many login attempts, please try again later' },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req, res) => {
-        // Use X-Forwarded-For header for Vercel or other proxies
-        return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection.remoteAddress;
-    },
     skip: (req, res) => {
         // Disable rate limiting in development
         return process.env.NODE_ENV !== 'production';
@@ -78,10 +74,6 @@ const apiLimiter = rateLimit({
     windowMs: 1 * 60 * 1000, // 1 minute
     max: 100, // 100 requests per minute
     message: { success: false, message: 'Too many requests, please try again later' },
-    keyGenerator: (req, res) => {
-        // Use X-Forwarded-For header for Vercel or other proxies
-        return req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection.remoteAddress;
-    },
     skip: (req, res) => {
         // Disable rate limiting in development
         return process.env.NODE_ENV !== 'production';
