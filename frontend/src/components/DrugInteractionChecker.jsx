@@ -1,10 +1,12 @@
 import React, { useContext, useState } from "react";
+import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { ShopContext } from "../context/ShopContext";
 
 const DrugInteractionChecker = ({ cartItems = [] }) => {
   const { token, backendUrl } = useContext(ShopContext);
+  const { getToken } = useAuth();
   const [showChecker, setShowChecker] = useState(false);
   const [medicines, setMedicines] = useState([]);
   const [interactions, setInteractions] = useState([]);
@@ -12,22 +14,29 @@ const DrugInteractionChecker = ({ cartItems = [] }) => {
   const [warningLevel, setWarningLevel] = useState("safe");
 
   const handleCheckInteractions = async () => {
-    if (medicines.length < 2) {
+    const cleanedMedicines = medicines
+      .map((med) => med.trim())
+      .filter((med) => med.length > 0);
+
+    if (cleanedMedicines.length < 2) {
       toast.warn("Enter at least 2 medicines to check interactions");
       return;
     }
 
-    if (!token) {
-      toast.info("Please login to check drug interactions");
-      return;
+    let authToken = token;
+    try {
+      const freshToken = await getToken?.();
+      authToken = freshToken || token;
+    } catch (error) {
+      authToken = token;
     }
 
     setLoading(true);
     try {
       const response = await axios.post(
         `${backendUrl}/api/drug-interaction/check`,
-        { medicines },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { medicines: cleanedMedicines },
+        authToken ? { headers: { Authorization: `Bearer ${authToken}` } } : undefined
       );
 
       setInteractions(response.data.interactions || []);

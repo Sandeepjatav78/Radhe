@@ -13,6 +13,7 @@ import couponRouter from './routes/couponRoute.js'
 import prescriptionRouter from './routes/prescriptionRoute.js'
 import reviewRouter from './routes/reviewRoute.js'
 import drugInteractionRouter from './routes/drugInteractionRoute.js'
+import chatbotRouter from './routes/chatbotRoute.js'
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -113,6 +114,7 @@ app.use('/api/coupon', apiLimiter, couponRouter)
 app.use('/api/prescription', apiLimiter, prescriptionRouter)
 app.use('/api/review', apiLimiter, reviewRouter)
 app.use('/api/drug-interaction', apiLimiter, drugInteractionRouter)
+app.use('/api/chatbot', apiLimiter, chatbotRouter)
 app.use('/api/dashboard', apiLimiter, dashboardRouter)
 
 // Favicon handler - prevent 404 errors

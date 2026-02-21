@@ -5,7 +5,7 @@ import adminAuth from "../middleware/adminAuth.js";
 
 const drugInteractionRouter = express.Router();
 
-drugInteractionRouter.post("/check", auth, checkInteractions);
+drugInteractionRouter.post("/check", checkInteractions);
 drugInteractionRouter.post("/admin/add", auth, adminAuth, addDrugInteraction);
 drugInteractionRouter.get("/admin/all", auth, adminAuth, getAllInteractions);
 

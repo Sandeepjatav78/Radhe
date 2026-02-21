@@ -19,6 +19,7 @@ import Wishlist from "./pages/Wishlist";
 import Verify from "./pages/Verify";
 import ScrollToTop from './components/ScrollToTop';
 import SiteInfoBanner from "./components/SiteInfoBanner";
+import Chatbot from "./chatbot/chatbot";
 
 import { ToastContainer, Slide } from "react-toastify"; // ✅ Slide transition
 import 'react-toastify/dist/ReactToastify.css';
@@ -90,6 +91,8 @@ const App = () => {
         
         <Footer />
       </div>
+
+      <Chatbot />
       
     </div>
   );
