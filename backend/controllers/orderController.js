@@ -20,7 +20,12 @@ const razorpayInstance = new razorpay({
 // 1. Placing Order using COD
 const placeOrder = async (req, res) => {
     try {
-        const { userId, items, amount, address, slot, prescriptionUrl, deliveryFee, couponCode, couponDiscount } = req.body;
+        const { items, amount, address, slot, prescriptionUrl, deliveryFee, couponCode, couponDiscount } = req.body;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Not Authorized. Login Again" });
+        }
 
         const orderData = {
             userId,
@@ -40,7 +45,7 @@ const placeOrder = async (req, res) => {
 
         const newOrder = new orderModel(orderData);
         await newOrder.save();
-        await userModel.findByIdAndUpdate(userId, { cartData: {} });
+            await userModel.findOneAndUpdate({ clerkId: userId }, { cartData: {} });
 
         // Increment coupon usage if applied
         if (couponCode) {
@@ -61,7 +66,11 @@ const placeOrder = async (req, res) => {
 // 2. Placing Order using Stripe
 const placeOrderStripe = async (req, res) => {
     try {
-        const { userId, items, amount, address, slot, prescriptionUrl } = req.body;
+        const { items, amount, address, slot, prescriptionUrl } = req.body;
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Not Authorized. Login Again" });
+        }
         const { origin } = req.headers;
 
         const orderData = {
@@ -118,7 +127,11 @@ const placeOrderStripe = async (req, res) => {
 // 3. Placing Order using Razorpay
 const placeOrderRazorpay = async (req, res) => {
     try {
-        const { userId, items, amount, address, slot, prescriptionUrl } = req.body;
+        const { items, amount, address, slot, prescriptionUrl } = req.body;
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Not Authorized. Login Again" });
+        }
 
         const orderData = {
             userId,
@@ -158,11 +171,15 @@ const placeOrderRazorpay = async (req, res) => {
 
 // 4. Verify Stripe
 const verifyStripe = async (req, res) => {
-    const { orderId, success, userId } = req.body;
+    const { orderId, success } = req.body;
+    const userId = req.user?.id;
     try {
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Not Authorized. Login Again" });
+        }
         if (success === "true") {
             const order = await orderModel.findByIdAndUpdate(orderId, { payment: true }, { new: true });
-            await userModel.findByIdAndUpdate(userId, { cartData: {} });
+                await userModel.findOneAndUpdate({ clerkId: userId }, { cartData: {} });
             
             // ✅ Use the DETAILED utility after Stripe success
             await sendWhatsAppAdmin(order);
@@ -181,12 +198,16 @@ const verifyStripe = async (req, res) => {
 // 5. Verify Razorpay
 const verifyRazorpay = async (req, res) => {
     try {
-        const { userId, razorpay_order_id } = req.body;
+        const { razorpay_order_id } = req.body;
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Not Authorized. Login Again" });
+        }
         const orderInfo = await razorpayInstance.orders.fetch(razorpay_order_id);
         
         if (orderInfo.status === 'paid') {
             const order = await orderModel.findByIdAndUpdate(orderInfo.receipt, { payment: true }, { new: true });
-            await userModel.findByIdAndUpdate(userId, { cartData: {} });
+                await userModel.findOneAndUpdate({ clerkId: userId }, { cartData: {} });
             
             // ✅ Use the DETAILED utility after Razorpay success
             await sendWhatsAppAdmin(order);
@@ -219,7 +240,10 @@ const allorders = async (req, res) => {
 
 const userorders = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const userId = req.user?.id;
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Not Authorized. Login Again" });
+        }
         const orders = await orderModel.find({ userId });
         res.json({ success: true, orders });
     } catch (error) {

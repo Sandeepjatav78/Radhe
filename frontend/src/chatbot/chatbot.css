@@ -25,19 +25,19 @@
   box-shadow: 0 12px 28px rgba(22, 163, 74, 0.35);
   cursor: pointer;
   z-index: 10000;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
   font-family: 'Space Grotesk', 'DM Sans', sans-serif;
+}
+
+.chatbot-toggle:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 16px 32px rgba(22, 163, 74, 0.45);
 }
 
 .chatbot-toggle.is-hidden {
   opacity: 0;
   pointer-events: none;
   transform: scale(0.9);
-}
-
-.chatbot-toggle:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 16px 32px rgba(22, 163, 74, 0.45);
 }
 
 .chatbot-toggle-pulse {
@@ -279,11 +279,10 @@
   .chatbot-container {
     right: 12px;
     left: 12px;
-    bottom: calc(96px + env(safe-area-inset-bottom));
+    bottom: 120px;
     width: auto;
     border-radius: 18px;
-    max-height: 62vh;
-    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.18);
+    max-height: 60vh;
   }
 
   .chatbot-input {
@@ -296,6 +295,6 @@
 
   .chatbot-toggle {
     right: 16px;
-    bottom: calc(72px + env(safe-area-inset-bottom));
+    bottom: 24px;
   }
 }

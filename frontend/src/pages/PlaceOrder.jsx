@@ -1,4 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
+import { useAuth } from "@clerk/clerk-react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
@@ -9,6 +10,7 @@ const PlaceOrder = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { backendUrl, token, cartItems, setCartItems, products, currency } = useContext(ShopContext);
+  const { getToken } = useAuth();
 
   const [method, setMethod] = useState("cod");
   const [prescriptionFile, setPrescriptionFile] = useState(null);
@@ -133,12 +135,21 @@ const PlaceOrder = () => {
         date: Date.now()
       };
 
+      const freshToken = await getToken?.();
+      const authToken = freshToken || token;
+
+      if (!authToken) {
+        toast.error("Please login to place the order.");
+        navigate("/login");
+        return;
+      }
+
       switch (method) {
         case "cod":
           const response = await axios.post(
             backendUrl + "/api/order/place",
             orderData,
-            { headers: { Authorization: `Bearer ${token}` } }
+            { headers: { Authorization: `Bearer ${authToken}` } }
           );
           if (response.data.success) {
             toast.success("Order Placed Successfully!");

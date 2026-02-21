@@ -1,4 +1,5 @@
 import userModel from "../models/userModel.js";
+import jwt from "jsonwebtoken";
 
 // Sync Clerk user with MongoDB (called on first login via /profile endpoint)
 const syncClerkUser = async (clerkUserId, email, phoneNumber) => {
@@ -110,4 +111,29 @@ const updateProfile = async (req, res) => {
     }
 };
 
-export { getProfile, updateProfile, syncClerkUser };
+// Admin login (email/password from env, issues JWT)
+const adminLogin = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ success: false, message: "Email and password are required" });
+        }
+
+        if (email !== process.env.ADMIN_EMAIL || password !== process.env.ADMIN_PASSWORD) {
+            return res.status(401).json({ success: false, message: "Invalid admin credentials" });
+        }
+
+        const token = jwt.sign(
+            { email, role: "admin" },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+
+        return res.json({ success: true, token });
+    } catch (error) {
+        return res.status(500).json({ success: false, message: "Server error" });
+    }
+};
+
+export { adminLogin, getProfile, updateProfile, syncClerkUser };

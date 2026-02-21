@@ -2,7 +2,19 @@ import twilio from 'twilio';
 
 const sendWhatsAppAdmin = async (orderData) => {
     try {
-        const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+        const accountSid = process.env.TWILIO_ACCOUNT_SID;
+        const authToken = process.env.TWILIO_AUTH_TOKEN;
+        const adminPhones = (process.env.ADMIN_PHONE || "")
+            .split(",")
+            .map((phone) => phone.trim())
+            .filter(Boolean);
+
+        if (!accountSid || !authToken || adminPhones.length === 0) {
+            console.warn("⚠️ WhatsApp skipped: missing Twilio credentials or admin phone");
+            return;
+        }
+
+        const client = twilio(accountSid, authToken);
 
         const productList = orderData.items && orderData.items.length > 0 
             ? orderData.items.map(item => `• ${item.name} (x${item.quantity})`).join('\n')
@@ -26,11 +38,13 @@ const sendWhatsAppAdmin = async (orderData) => {
             `📍 *LOCATION:* \n${fullAddress}\n\n` +
             `🔗 *MAP LINK:* \n${mapUrl}`;
 
-        await client.messages.create({
-            from: 'whatsapp:+14155238886', 
-            to: `whatsapp:${process.env.ADMIN_PHONE}`,
-            body: messageBody
-        });
+        await Promise.all(
+            adminPhones.map((phone) => client.messages.create({
+                from: 'whatsapp:+14155238886',
+                to: `whatsapp:${phone}`,
+                body: messageBody
+            }))
+        );
         
         console.log("✅ Detailed WhatsApp sent successfully!");
     } catch (error) {
