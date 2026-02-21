@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import './chatbot.css';
 import { FaCapsules } from 'react-icons/fa';
 import axios from 'axios';
@@ -18,6 +19,8 @@ const Chatbot = () => {
   const [relatedFaqs, setRelatedFaqs] = useState([]);
 
   const backendUrl = useMemo(() => import.meta.env.VITE_BACKEND_URL, []);
+  const location = useLocation();
+  const isCartPage = location.pathname === '/cart';
 
   const toggleChat = () => setIsOpen(prev => !prev);
 
@@ -104,7 +107,7 @@ const Chatbot = () => {
   return (
     <>
       <button
-        className={`chatbot-toggle${isOpen ? ' is-hidden' : ''}`}
+        className={`chatbot-toggle${isOpen ? ' is-hidden' : ''}${isCartPage ? ' cart-offset' : ''}`}
         onClick={toggleChat}
         aria-label="Open support assistant"
       >
@@ -113,7 +116,7 @@ const Chatbot = () => {
       </button>
 
       {isOpen && (
-        <div className="chatbot-container" role="dialog" aria-label="Support assistant">
+        <div className={`chatbot-container${isCartPage ? ' cart-offset' : ''}`} role="dialog" aria-label="Support assistant">
           <div className="chatbot-header">
             <div className="chatbot-title">Pharmacy Assistant</div>
             <div className="chatbot-subtitle">Orders, delivery, payments, prescriptions</div>

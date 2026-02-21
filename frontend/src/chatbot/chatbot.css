@@ -50,6 +50,10 @@
   z-index: -1;
 }
 
+.chatbot-toggle.cart-offset {
+  bottom: 96px;
+}
+
 .chatbot-container {
   position: fixed;
   bottom: 72px;
@@ -66,6 +70,10 @@
   flex-direction: column;
   border: 1px solid var(--chatbot-border);
   animation: chatbotFloatIn 0.35s ease;
+}
+
+.chatbot-container.cart-offset {
+  bottom: 140px;
 }
 
 .chatbot-header {
@@ -279,10 +287,14 @@
   .chatbot-container {
     right: 12px;
     left: 12px;
-    bottom: 120px;
+    bottom: 160px;
     width: auto;
     border-radius: 18px;
     max-height: 60vh;
+  }
+
+  .chatbot-container.cart-offset {
+    bottom: 210px;
   }
 
   .chatbot-input {
@@ -295,6 +307,10 @@
 
   .chatbot-toggle {
     right: 16px;
-    bottom: 24px;
+    bottom: 72px;
+  }
+
+  .chatbot-toggle.cart-offset {
+    bottom: 132px;
   }
 }
