@@ -114,11 +114,11 @@ const Collection = () => {
     let productsCopy = products.slice().reverse(); 
 
     if (showSearch && search) {
-      const regex = new RegExp(`\\b${search.toLowerCase()}\\b`);
+      const normalizedSearch = search.trim().toLowerCase();
       productsCopy = productsCopy.filter(
         (item) =>
-          regex.test(item.name.toLowerCase()) ||
-          (item.saltComposition && item.saltComposition.toLowerCase().includes(search.toLowerCase()))
+          item.name.toLowerCase().includes(normalizedSearch) ||
+          (item.saltComposition && item.saltComposition.toLowerCase().includes(normalizedSearch))
       );
     }
 
