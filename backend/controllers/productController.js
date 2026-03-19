@@ -85,27 +85,59 @@ const listCategories = async (req, res) => {
 // 3. List Products
 const listProduct = async (req, res) => {
     try {
-        const { page = 1, limit = 5000, search, sort } = req.query;
+        const { page = 1, limit = 5000, search, sort, category, subCategory } = req.query;
+        const pageNumber = Math.max(Number(page) || 1, 1);
+        const limitNumber = Math.max(Number(limit) || 20, 1);
+
+        const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
         // 1. Build Search Query
         const query = {};
         if (search) {
-            query.name = { $regex: search, $options: "i" };
+            const safeSearch = escapeRegExp(search.trim());
+            query.$or = [
+                { name: { $regex: safeSearch, $options: "i" } },
+                { saltComposition: { $regex: safeSearch, $options: "i" } }
+            ];
+        }
+
+        if (category) {
+            const categoryList = String(category)
+                .split(",")
+                .map((item) => item.trim())
+                .filter(Boolean);
+
+            if (categoryList.length > 0) {
+                query.category = { $in: categoryList };
+            }
+        }
+
+        if (subCategory) {
+            const subCategoryList = String(subCategory)
+                .split(",")
+                .map((item) => item.trim())
+                .filter(Boolean);
+
+            if (subCategoryList.length > 0) {
+                query.subCategory = { $in: subCategoryList };
+            }
         }
 
         // 2. Build Sort Option
         let sortOption = {};
-        if (sort === "newest") {
-            sortOption = { date: -1 };
+        if (sort === "low-high") {
+            sortOption = { price: 1, date: -1 };
+        } else if (sort === "high-low") {
+            sortOption = { price: -1, date: -1 };
         } else {
-            sortOption = { date: 1 };
+            sortOption = { date: -1 };
         }
 
         // 3. Fetch from DB
         const products = await productModel.find(query)
             .sort(sortOption)
-            .limit(Number(limit))
-            .skip((Number(page) - 1) * Number(limit));
+            .limit(limitNumber)
+            .skip((pageNumber - 1) * limitNumber);
 
         // 4. Get Total Count
         const count = await productModel.countDocuments(query);
@@ -114,8 +146,8 @@ const listProduct = async (req, res) => {
             success: true,
             products,
             total: count, // <--- ✅ ADDED THIS LINE (Required for frontend total count)
-            totalPages: Math.ceil(count / limit),
-            currentPage: Number(page)
+            totalPages: Math.ceil(count / limitNumber),
+            currentPage: pageNumber
         });
 
     } catch (error) {

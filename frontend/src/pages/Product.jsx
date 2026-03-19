@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets";
@@ -17,6 +17,12 @@ const Product = () => {
   const [activeVariant, setActiveVariant] = useState(null);
   const [showImageModal, setShowImageModal] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(1);
+  const [panPosition, setPanPosition] = useState({ x: 0, y: 0 });
+
+  const zoomContainerRef = useRef(null);
+  const pinchStartDistanceRef = useRef(null);
+  const pinchStartZoomRef = useRef(1);
+  const dragStateRef = useRef({ isDragging: false, startX: 0, startY: 0, originX: 0, originY: 0 });
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,6 +31,8 @@ const Product = () => {
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
   const minSwipeDistance = 50;
+  const MIN_ZOOM = 1;
+  const MAX_ZOOM = 4;
 
   const defaultSafetyAdvice = {
       alcohol: "Unsafe. It is advisable not to consume alcohol along with this medicine.",
@@ -100,6 +108,144 @@ const Product = () => {
       center: { x: 0, opacity: 1, scale: 1, transition: { duration: 0.4, ease: "easeOut" } },
       exit: (direction) => ({ x: direction > 0 ? -300 : 300, opacity: 0, scale: 0.8, transition: { duration: 0.3, ease: "easeIn" } })
   };
+
+  const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+
+  const getPanBounds = (targetZoom = zoomLevel) => {
+    const container = zoomContainerRef.current;
+    if (!container || targetZoom <= 1) {
+      return { maxX: 0, maxY: 0 };
+    }
+
+    const rect = container.getBoundingClientRect();
+    const maxX = ((rect.width * targetZoom) - rect.width) / 2;
+    const maxY = ((rect.height * targetZoom) - rect.height) / 2;
+    return { maxX, maxY };
+  };
+
+  const setZoomWithClamp = (nextZoom) => {
+    const safeZoom = clamp(nextZoom, MIN_ZOOM, MAX_ZOOM);
+    setZoomLevel(safeZoom);
+
+    if (safeZoom <= 1) {
+      setPanPosition({ x: 0, y: 0 });
+      return;
+    }
+
+    const bounds = getPanBounds(safeZoom);
+    setPanPosition((prev) => ({
+      x: clamp(prev.x, -bounds.maxX, bounds.maxX),
+      y: clamp(prev.y, -bounds.maxY, bounds.maxY),
+    }));
+  };
+
+  const resetZoomState = () => {
+    setZoomLevel(1);
+    setPanPosition({ x: 0, y: 0 });
+    pinchStartDistanceRef.current = null;
+    pinchStartZoomRef.current = 1;
+    dragStateRef.current = { isDragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+  };
+
+  const closeImageModal = () => {
+    setShowImageModal(false);
+    resetZoomState();
+  };
+
+  const getDistance = (touchA, touchB) => {
+    const dx = touchA.clientX - touchB.clientX;
+    const dy = touchA.clientY - touchB.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  };
+
+  const handleZoomWheel = (event) => {
+    event.preventDefault();
+    const zoomDelta = event.deltaY < 0 ? 0.2 : -0.2;
+    setZoomWithClamp(zoomLevel + zoomDelta);
+  };
+
+  const startPan = (clientX, clientY) => {
+    if (zoomLevel <= 1) return;
+    dragStateRef.current = {
+      isDragging: true,
+      startX: clientX,
+      startY: clientY,
+      originX: panPosition.x,
+      originY: panPosition.y,
+    };
+  };
+
+  const movePan = (clientX, clientY) => {
+    if (!dragStateRef.current.isDragging || zoomLevel <= 1) return;
+
+    const dx = clientX - dragStateRef.current.startX;
+    const dy = clientY - dragStateRef.current.startY;
+    const bounds = getPanBounds();
+
+    setPanPosition({
+      x: clamp(dragStateRef.current.originX + dx, -bounds.maxX, bounds.maxX),
+      y: clamp(dragStateRef.current.originY + dy, -bounds.maxY, bounds.maxY),
+    });
+  };
+
+  const endPan = () => {
+    dragStateRef.current.isDragging = false;
+  };
+
+  const handleZoomTouchStart = (event) => {
+    if (event.touches.length === 2) {
+      pinchStartDistanceRef.current = getDistance(event.touches[0], event.touches[1]);
+      pinchStartZoomRef.current = zoomLevel;
+      return;
+    }
+
+    if (event.touches.length === 1) {
+      startPan(event.touches[0].clientX, event.touches[0].clientY);
+    }
+  };
+
+  const handleZoomTouchMove = (event) => {
+    if (event.touches.length === 2 && pinchStartDistanceRef.current) {
+      event.preventDefault();
+      const currentDistance = getDistance(event.touches[0], event.touches[1]);
+      const scaleRatio = currentDistance / pinchStartDistanceRef.current;
+      setZoomWithClamp(pinchStartZoomRef.current * scaleRatio);
+      return;
+    }
+
+    if (event.touches.length === 1 && dragStateRef.current.isDragging) {
+      event.preventDefault();
+      movePan(event.touches[0].clientX, event.touches[0].clientY);
+    }
+  };
+
+  const handleZoomTouchEnd = () => {
+    if (pinchStartDistanceRef.current) {
+      pinchStartDistanceRef.current = null;
+      pinchStartZoomRef.current = zoomLevel;
+    }
+    endPan();
+  };
+
+  const handleZoomDoubleClick = () => {
+    const nextZoom = zoomLevel < 2 ? 2 : zoomLevel + 1;
+    setZoomWithClamp(nextZoom);
+  };
+
+  useEffect(() => {
+    if (!showImageModal) return;
+
+    const onGlobalMouseUp = () => endPan();
+    window.addEventListener("mouseup", onGlobalMouseUp);
+
+    return () => {
+      window.removeEventListener("mouseup", onGlobalMouseUp);
+    };
+  }, [showImageModal]);
+
+  useEffect(() => {
+    resetZoomState();
+  }, [image]);
 
   if (!productData) {
     // If products array is empty, still loading
@@ -321,11 +467,11 @@ const Product = () => {
       {showImageModal && (
         <div 
           className="fixed inset-0 bg-black/90 z-[1000] flex items-center justify-center p-4"
-          onClick={() => setShowImageModal(false)}
+          onClick={closeImageModal}
         >
           {/* Close Button */}
           <button 
-            onClick={() => setShowImageModal(false)}
+            onClick={closeImageModal}
             className="absolute top-4 right-4 z-[1001] bg-white/20 hover:bg-white/30 text-white p-2 rounded-full transition-all"
           >
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -335,23 +481,38 @@ const Product = () => {
 
           {/* Main Zoomable Image */}
           <div 
-            className="relative w-full h-full max-w-4xl max-h-screen flex items-center justify-center overflow-hidden"
+            ref={zoomContainerRef}
+            className="relative w-full h-full max-w-4xl max-h-screen flex items-center justify-center overflow-hidden touch-none"
             onClick={(e) => e.stopPropagation()}
+            onWheel={handleZoomWheel}
+            onMouseDown={(e) => startPan(e.clientX, e.clientY)}
+            onMouseMove={(e) => movePan(e.clientX, e.clientY)}
+            onMouseUp={endPan}
+            onMouseLeave={endPan}
+            onDoubleClick={handleZoomDoubleClick}
+            onTouchStart={handleZoomTouchStart}
+            onTouchMove={handleZoomTouchMove}
+            onTouchEnd={handleZoomTouchEnd}
           >
-            <motion.img
+            <img
               src={image}
               alt={productData.name}
-              className="w-full h-full object-contain cursor-zoom-in"
-              style={{ scale: zoomLevel }}
-              drag
-              dragConstraints={{ left: 0, right: 0, top: 0, bottom: 0 }}
+              className={`w-full h-full object-contain select-none ${zoomLevel > 1 ? "cursor-grab" : "cursor-zoom-in"}`}
+              style={{
+                transform: `translate(${panPosition.x}px, ${panPosition.y}px) scale(${zoomLevel})`,
+                transformOrigin: "center center",
+              }}
+              draggable={false}
             />
           </div>
 
           {/* Zoom Controls */}
-          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 bg-black/50 backdrop-blur-sm px-4 py-3 rounded-full z-[1001]">
+          <div
+            className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 bg-black/50 backdrop-blur-sm px-4 py-3 rounded-full z-[1001]"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
-              onClick={() => setZoomLevel(Math.max(1, zoomLevel - 0.5))}
+              onClick={() => setZoomWithClamp(zoomLevel - 0.5)}
               className="bg-white/20 hover:bg-white/30 text-white p-2.5 rounded-full transition-all"
               title="Zoom Out"
             >
@@ -365,7 +526,7 @@ const Product = () => {
             </div>
 
             <button
-              onClick={() => setZoomLevel(Math.min(3, zoomLevel + 0.5))}
+              onClick={() => setZoomWithClamp(zoomLevel + 0.5)}
               className="bg-white/20 hover:bg-white/30 text-white p-2.5 rounded-full transition-all"
               title="Zoom In"
             >
@@ -375,7 +536,7 @@ const Product = () => {
             </button>
 
             <button
-              onClick={() => setZoomLevel(1)}
+              onClick={resetZoomState}
               className="bg-white/20 hover:bg-white/30 text-white px-3 py-2.5 rounded-full transition-all text-sm font-medium"
               title="Reset Zoom"
             >
@@ -384,7 +545,10 @@ const Product = () => {
           </div>
 
           {/* Thumbnail Strip at Bottom */}
-          <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2 flex gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg z-[1001] scrollbar-hide overflow-x-auto max-w-sm">
+          <div
+            className="absolute bottom-24 left-1/2 transform -translate-x-1/2 flex gap-2 bg-black/50 backdrop-blur-sm px-3 py-2 rounded-lg z-[1001] scrollbar-hide overflow-x-auto max-w-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
             {productData.image.map((img, idx) => (
               <img
                 key={idx}
@@ -399,8 +563,11 @@ const Product = () => {
           </div>
 
           {/* Navigation Info */}
-          <div className="absolute top-6 left-1/2 transform -translate-x-1/2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm z-[1001]">
-            Click and drag to pan • Scroll to zoom
+          <div
+            className="absolute top-6 left-1/2 transform -translate-x-1/2 bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm z-[1001]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            Mobile: pinch out + drag • Desktop: wheel + double click + drag
           </div>
         </div>
       )}

@@ -1,17 +1,24 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import { assets } from "../assets/assets";
 import Title from "../components/Title";
 import ProductItem from "../components/ProductItem";
 import RequestMedicine from "../components/RequestMedicine";
-import AdvancedFilters from "../components/AdvancedFilters";
 import axios from "axios";
 import { getCache, setCache, CACHE_DURATIONS } from "../utils/cacheUtils";
 
 const Collection = () => {
-  const { products, search, showSearch, backendUrl } = useContext(ShopContext);
+  const { search, showSearch, backendUrl } = useContext(ShopContext);
+  const PAGE_SIZE = 20;
+
   const [showFilter, setShowFilter] = useState(false);
   const [filterProducts, setFilterProducts] = useState([]);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [isInitialLoadDone, setIsInitialLoadDone] = useState(false);
+  const loadMoreRef = useRef(null);
 
   // Filter States
   const [category, setCategory] = useState([]);
@@ -110,40 +117,99 @@ const Collection = () => {
       setSortType("relevant");
   };
 
-  const applyFilter = () => {
-    let productsCopy = products.slice().reverse(); 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 300);
 
-    if (showSearch && search) {
-      const normalizedSearch = search.trim().toLowerCase();
-      productsCopy = productsCopy.filter(
-        (item) =>
-          item.name.toLowerCase().includes(normalizedSearch) ||
-          (item.saltComposition && item.saltComposition.toLowerCase().includes(normalizedSearch))
-      );
+    return () => clearTimeout(timer);
+  }, [search]);
+
+  const fetchProducts = async (targetPage, shouldReset = false) => {
+    if (isLoadingProducts) return;
+
+    try {
+      setIsLoadingProducts(true);
+
+      const params = {
+        page: targetPage,
+        limit: PAGE_SIZE,
+      };
+
+      const effectiveSearch = showSearch ? debouncedSearch : "";
+      if (effectiveSearch) params.search = effectiveSearch;
+      if (category.length > 0) params.category = category.join(",");
+      if (subCategory.length > 0) params.subCategory = subCategory.join(",");
+      if (sortType === "low-high") params.sort = "low-high";
+      if (sortType === "high-low") params.sort = "high-low";
+
+      const response = await axios.get(backendUrl + "/api/product/list", { params });
+
+      if (!response.data.success) {
+        setHasMore(false);
+        return;
+      }
+
+      const incomingProducts = response.data.products || [];
+
+      if (shouldReset) {
+        setFilterProducts(incomingProducts);
+      } else {
+        setFilterProducts((prev) => {
+          const seenIds = new Set(prev.map((item) => item._id));
+          const uniqueIncoming = incomingProducts.filter((item) => !seenIds.has(item._id));
+          return [...prev, ...uniqueIncoming];
+        });
+      }
+
+      const totalPages = Number(response.data.totalPages || 1);
+      setHasMore(targetPage < totalPages);
+      setIsInitialLoadDone(true);
+    } catch (error) {
+      console.error("Failed to fetch paginated products", error);
+      setHasMore(false);
+      setIsInitialLoadDone(true);
+    } finally {
+      setIsLoadingProducts(false);
     }
-
-    if (category.length > 0) {
-      productsCopy = productsCopy.filter((item) => category.includes(item.category));
-    }
-
-    if (subCategory.length > 0) {
-      productsCopy = productsCopy.filter((item) => subCategory.includes(item.subCategory));
-    }
-
-    setFilterProducts(productsCopy);
   };
 
-  const sortProducts = () => {
-    let fpCopy = filterProducts.slice();
-    switch (sortType) {
-      case "low-high": setFilterProducts(fpCopy.sort((a, b) => a.price - b.price)); break;
-      case "high-low": setFilterProducts(fpCopy.sort((a, b) => b.price - a.price)); break;
-      default: applyFilter(); break;
-    }
-  };
+  useEffect(() => {
+    setPage(1);
+    setHasMore(true);
+    fetchProducts(1, true);
+  }, [debouncedSearch, showSearch, category, subCategory, sortType, backendUrl]);
 
-  useEffect(() => { applyFilter(); }, [category, subCategory, search, showFilter, products]);
-  useEffect(() => { sortProducts(); }, [sortType]);
+  useEffect(() => {
+    if (page === 1) return;
+    fetchProducts(page, false);
+  }, [page]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const firstEntry = entries[0];
+        if (firstEntry.isIntersecting && hasMore && !isLoadingProducts) {
+          setPage((prev) => prev + 1);
+        }
+      },
+      {
+        root: null,
+        rootMargin: "250px",
+        threshold: 0,
+      }
+    );
+
+    const currentRef = loadMoreRef.current;
+    if (currentRef) {
+      observer.observe(currentRef);
+    }
+
+    return () => {
+      if (currentRef) observer.unobserve(currentRef);
+      observer.disconnect();
+    };
+  }, [hasMore, isLoadingProducts]);
 
   // Check if any filter is active to show the Clear button
   const isFilterActive = category.length > 0 || subCategory.length > 0;
@@ -273,9 +339,24 @@ const Collection = () => {
             ))
           ) : (
             <div className="col-span-full flex flex-col items-center justify-center w-full">
+               {isLoadingProducts && !isInitialLoadDone ? (
+                 <p className="text-gray-500 text-lg mt-4 mb-4 text-center">Loading medicines...</p>
+               ) : (
+                 <>
                <p className="text-gray-500 text-lg mt-4 mb-4 text-center">No medicines found matching your search.</p>
                <RequestMedicine />
+                 </>
+               )}
             </div>
+          )}
+        </div>
+
+        <div ref={loadMoreRef} className="h-12 flex items-center justify-center">
+          {isLoadingProducts && filterProducts.length > 0 && (
+            <p className="text-sm text-gray-500">Loading more medicines...</p>
+          )}
+          {!hasMore && filterProducts.length > 0 && (
+            <p className="text-sm text-gray-400">You have reached the end.</p>
           )}
         </div>
       </div>
