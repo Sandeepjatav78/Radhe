@@ -192,7 +192,7 @@ const Profile = () => {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <div className="w-16 h-16 border-4 border-brand border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-gray-600">Loading your profile...</p>
         </div>
       </div>
@@ -205,7 +205,7 @@ const Profile = () => {
       <div className="max-w-4xl mx-auto px-3 sm:px-6 py-6 sm:py-12">
         <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
           {/* Header Section */}
-          <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 p-6 sm:p-8 text-white">
+          <div className="bg-gradient-to-r from-brand to-brand p-6 sm:p-8 text-white">
             <div className="flex items-center gap-4">
               <div className="relative">
                 <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/20 backdrop-blur flex items-center justify-center text-2xl sm:text-3xl font-bold border-4 border-white/30">
@@ -214,7 +214,7 @@ const Profile = () => {
               </div>
               <div>
                 <h1 className="text-xl sm:text-2xl font-bold">{user.name || "Your Name"}</h1>
-                <p className="text-emerald-100 text-sm sm:text-base">{user.email}</p>
+                <p className="text-brand-light text-sm sm:text-base">{user.email}</p>
               </div>
             </div>
           </div>
@@ -226,7 +226,7 @@ const Profile = () => {
               {/* Phone */}
               <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-xl border border-blue-200">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                     </svg>
@@ -241,7 +241,7 @@ const Profile = () => {
               {/* Location */}
               <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-xl border border-purple-200">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -259,9 +259,9 @@ const Profile = () => {
               </div>
 
               {/* Nationality */}
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-xl border border-orange-200">
+              <div className="bg-gradient-to-br from-brand-light to-brand-soft p-4 rounded-xl border border-brand/10">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9" />
                     </svg>
@@ -276,17 +276,17 @@ const Profile = () => {
               {/* Orders */}
               <div 
                 onClick={() => navigate('/orders')}
-                className="bg-gradient-to-br from-emerald-50 to-emerald-100 p-4 rounded-xl border border-emerald-200 cursor-pointer hover:shadow-md transition-shadow active:scale-95"
+                className="bg-gradient-to-br from-brand-light to-brand-light p-4 rounded-xl border border-brand-light cursor-pointer hover:shadow-md transition-shadow active:scale-95"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-brand rounded-lg flex items-center justify-center">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-gray-600 mb-1">My Orders</p>
-                    <p className="font-bold text-emerald-600 flex items-center gap-1">
+                    <p className="font-bold text-brand flex items-center gap-1">
                       View All
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -300,7 +300,7 @@ const Profile = () => {
             {/* Action Buttons */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button
-                className="bg-emerald-600 text-white px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 hover:bg-emerald-700 font-semibold shadow-md hover:shadow-lg transition-all active:scale-95"
+                className="bg-brand text-white px-6 py-3.5 rounded-xl flex items-center justify-center gap-2 hover:bg-brand-dark font-semibold shadow-md hover:shadow-lg transition-all active:scale-95"
                 onClick={() => setIsEditing(true)}
               >
                 <FaEdit /> Edit Profile
@@ -327,7 +327,7 @@ const Profile = () => {
         {isEditing && (
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-gradient-to-r from-emerald-500 to-emerald-600 p-4 sm:p-6 text-white flex items-center justify-between rounded-t-2xl">
+              <div className="sticky top-0 bg-gradient-to-r from-brand to-brand p-4 sm:p-6 text-white flex items-center justify-between rounded-t-2xl">
                 <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
                   <FaEdit /> Edit Profile
                 </h2>
@@ -355,10 +355,10 @@ const Profile = () => {
                   {/* Profile Image Upload */}
                   <div className="flex flex-col items-center mb-6">
                     <div className="relative group">
-                      <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-3xl sm:text-4xl font-bold text-white shadow-lg border-4 border-white">
+                      <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-brand-dark to-brand flex items-center justify-center text-3xl sm:text-4xl font-bold text-white shadow-lg border-4 border-white">
                         {user.name?.charAt(0).toUpperCase() || "U"}
                       </div>
-                      <label className="absolute bottom-0 right-0 w-10 h-10 sm:w-12 sm:h-12 bg-blue-600 rounded-full flex items-center justify-center cursor-pointer hover:bg-blue-700 transition-all shadow-lg border-4 border-white">
+                      <label className="absolute bottom-0 right-0 w-10 h-10 sm:w-12 sm:h-12 bg-brand rounded-full flex items-center justify-center cursor-pointer hover:bg-brand-dark transition-all shadow-lg border-4 border-white">
                         <FaCamera className="text-white text-base sm:text-lg" />
                         <input
                           type="file"
@@ -370,8 +370,8 @@ const Profile = () => {
                       </label>
                     </div>
                     {uploading && (
-                      <div className="mt-3 flex items-center gap-2 text-sm text-emerald-600">
-                        <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+                      <div className="mt-3 flex items-center gap-2 text-sm text-brand">
+                        <div className="w-4 h-4 border-2 border-brand border-t-transparent rounded-full animate-spin"></div>
                         Uploading...
                       </div>
                     )}
@@ -386,7 +386,7 @@ const Profile = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleFormChange}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brand focus:outline-none transition-colors"
                         placeholder="Enter your full name"
                         required
                       />
@@ -399,7 +399,7 @@ const Profile = () => {
                         name="email"
                         value={formData.email}
                         onChange={handleFormChange}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors bg-gray-50"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brand focus:outline-none transition-colors bg-gray-50"
                         placeholder="your.email@example.com"
                         disabled
                       />
@@ -413,7 +413,7 @@ const Profile = () => {
                         name="phone"
                         value={formData.phone}
                         onChange={handleFormChange}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brand focus:outline-none transition-colors"
                         placeholder="+91 9876543210"
                       />
                     </div>
@@ -425,7 +425,7 @@ const Profile = () => {
                         name="nationality"
                         value={formData.nationality}
                         onChange={handleFormChange}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brand focus:outline-none transition-colors"
                         placeholder="e.g., Indian, American"
                       />
                     </div>
@@ -438,7 +438,7 @@ const Profile = () => {
                         name="city"
                         value={formData.location.city}
                         onChange={handleFormChange}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brand focus:outline-none transition-colors"
                         placeholder="Mumbai"
                       />
                     </div>
@@ -450,7 +450,7 @@ const Profile = () => {
                         name="state"
                         value={formData.location.state}
                         onChange={handleFormChange}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brand focus:outline-none transition-colors"
                         placeholder="Maharashtra"
                       />
                     </div>
@@ -462,7 +462,7 @@ const Profile = () => {
                         name="country"
                         value={formData.location.country}
                         onChange={handleFormChange}
-                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors"
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:border-brand focus:outline-none transition-colors"
                         placeholder="India"
                       />
                     </div>
@@ -489,7 +489,7 @@ const Profile = () => {
                     <button
                       type="submit"
                       disabled={uploading}
-                      className="px-6 py-3.5 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white rounded-xl font-semibold hover:from-emerald-600 hover:to-emerald-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95 shadow-lg"
+                      className="px-6 py-3.5 bg-gradient-to-r from-brand to-brand text-white rounded-xl font-semibold hover:from-brand hover:to-brand-dark transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 active:scale-95 shadow-lg"
                     >
                       {uploading ? (
                         <>

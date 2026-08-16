@@ -134,12 +134,12 @@ const ReviewSection = ({ productId }) => {
             {canReview ? (
               <button
                 onClick={() => setShowReviewForm(true)}
-                className="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition"
+                className="bg-brand text-white px-4 py-2 rounded-lg hover:bg-brand-dark transition"
               >
                 Write Review
               </button>
             ) : (
-              <div className="text-sm text-orange-600 bg-orange-50 px-4 py-2 rounded-lg">
+              <div className="text-sm text-brand-dark bg-brand-light px-4 py-2 rounded-lg">
                 ⓘ {reviewStatusMessage || "Purchase this product to write a review"}
               </div>
             )}
@@ -159,7 +159,7 @@ const ReviewSection = ({ productId }) => {
       {/* Average Rating */}
       <div className="flex items-center gap-4 mb-8 p-4 bg-white rounded-xl">
         <div className="text-center">
-          <div className="text-4xl font-bold text-emerald-600">{avgRating}</div>
+          <div className="text-4xl font-bold text-brand">{avgRating}</div>
           <div className="flex text-yellow-400 gap-1">
             {[...Array(5)].map((_, i) => (
               <span key={i} className={i < Math.round(avgRating) ? "text-2xl" : "text-gray-300 text-2xl"}>
@@ -196,7 +196,7 @@ const ReviewSection = ({ productId }) => {
 
       {/* Review Form */}
       {showReviewForm && (
-        <form onSubmit={handleSubmitReview} className="mb-6 p-4 bg-white rounded-xl border-2 border-emerald-200">
+        <form onSubmit={handleSubmitReview} className="mb-6 p-4 bg-white rounded-xl border-2 border-brand-light">
           <div className="mb-4">
             <label className="block text-sm font-bold mb-2">Rating</label>
             <div className="flex gap-2">
@@ -222,7 +222,7 @@ const ReviewSection = ({ productId }) => {
               onChange={(e) => setComment(e.target.value)}
               maxLength="200"
               placeholder="Share your experience (max 200 characters)"
-              className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:outline-none resize-none"
+              className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-brand focus:outline-none resize-none"
               rows="3"
             />
             <div className="text-xs text-gray-500 mt-1">{comment.length}/200</div>
@@ -262,7 +262,7 @@ const ReviewSection = ({ productId }) => {
                   />
                 </label>
               )}
-              {uploading && <p className="text-center text-sm text-emerald-600 mt-2">Uploading...</p>}
+              {uploading && <p className="text-center text-sm text-brand mt-2">Uploading...</p>}
             </div>
           </div>
 
@@ -270,7 +270,7 @@ const ReviewSection = ({ productId }) => {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 transition disabled:opacity-50"
+              className="flex-1 bg-brand text-white px-4 py-2 rounded-lg hover:bg-brand-dark transition disabled:opacity-50"
             >
               {loading ? "Posting..." : "Post Review"}
             </button>
@@ -302,7 +302,7 @@ const ReviewSection = ({ productId }) => {
                   </div>
                 </div>
                 {review.verified && (
-                  <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                  <span className="text-xs bg-brand-light text-brand-dark px-2 py-1 rounded-full">
                     ✓ Verified Purchase
                   </span>
                 )}
@@ -315,7 +315,7 @@ const ReviewSection = ({ productId }) => {
               )}
               <div className="flex items-center gap-4 text-xs text-gray-500">
                 <span>{new Date(review.createdAt).toLocaleDateString()}</span>
-                <button className="text-emerald-600 hover:underline">👍 Helpful ({review.helpful})</button>
+                <button className="text-brand hover:underline">👍 Helpful ({review.helpful})</button>
               </div>
             </div>
           ))

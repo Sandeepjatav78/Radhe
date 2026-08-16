@@ -5,10 +5,12 @@ import Title from "../components/Title";
 import ProductItem from "../components/ProductItem";
 import RequestMedicine from "../components/RequestMedicine";
 import axios from "axios";
+import { useSearchParams } from "react-router-dom";
 import { getCache, setCache, CACHE_DURATIONS } from "../utils/cacheUtils";
 
 const Collection = () => {
   const { search, showSearch, backendUrl } = useContext(ShopContext);
+  const [searchParams] = useSearchParams();
   const PAGE_SIZE = 20;
 
   const [showFilter, setShowFilter] = useState(false);
@@ -21,7 +23,10 @@ const Collection = () => {
   const loadMoreRef = useRef(null);
 
   // Filter States
-  const [category, setCategory] = useState([]);
+  const [category, setCategory] = useState(() => {
+    const fromUrl = searchParams.get('category');
+    return fromUrl ? [fromUrl] : [];
+  });
   const [subCategory, setSubCategory] = useState([]);
   const [sortType, setSortType] = useState("relevant");
 
@@ -221,12 +226,13 @@ const Collection = () => {
       <div className="min-w-60">
         
         {/* Header with Clear Button */}
-        <div className="flex items-center justify-between my-2">
+        <div className="flex items-center justify-between my-2 px-2">
             <p
-            className="text-xl flex items-center cursor-pointer gap-2"
+            className="text-sm sm:text-base flex items-center cursor-pointer gap-2 font-extrabold text-gray-900"
             onClick={() => setShowFilter(!showFilter)}
             >
             FILTERS
+            <span className="w-6 h-[3px] bg-brand rounded-full"></span>
             <img className={`h-3 sm:hidden transition-transform ${showFilter ? "rotate-90" : ""}`} src={assets.dropdown_icon} alt="" />
             </p>
 
@@ -234,15 +240,15 @@ const Collection = () => {
             {isFilterActive && (
                 <button 
                     onClick={clearFilters}
-                    className="text-xs text-red-500 font-medium hover:text-red-700 underline transition-colors cursor-pointer mr-2"
+                    className="text-xs text-brand-dark font-semibold hover:text-brand underline transition-colors cursor-pointer mr-2"
                 >
                     Clear All
                 </button>
             )}
         </div>
 
-        <div className={`border border-gray-300 p-5 mt-6 ${showFilter ? "" : "hidden"} sm:block bg-white rounded-lg shadow-sm`}>
-          <p className="mb-4 text-sm font-bold text-gray-800">CATEGORIES</p>
+        <div className={`border border-gray-100 shadow-sm p-4 mt-4 ${showFilter ? "" : "hidden"} sm:block bg-white rounded-2xl`}>
+          <p className="mb-3 text-xs font-extrabold text-gray-800 tracking-wider">CATEGORIES</p>
           
           <div className="flex flex-col gap-1 text-sm text-gray-700">
             {allCategories.length > 0 ? (
@@ -256,8 +262,8 @@ const Collection = () => {
                       {/* --- Parent Category Row --- */}
                       <div 
                         onClick={() => toggleExpand(cat.name)}
-                        className={`flex items-center justify-between p-2.5 rounded cursor-pointer transition-colors border-b border-transparent hover:bg-gray-50
-                            ${isOpen ? 'bg-gray-50 font-semibold text-gray-900' : 'text-gray-600'}
+                        className={`flex items-center justify-between p-2.5 rounded-lg cursor-pointer transition-colors border-b border-transparent
+                            ${isOpen ? 'bg-brand-light font-semibold text-gray-900' : 'text-gray-600 hover:bg-gray-50'}
                         `}
                       >
                           <span className="flex-1">{cat.name}</span>
@@ -270,16 +276,16 @@ const Collection = () => {
 
                       {/* --- Dropdown List --- */}
                       {isOpen && (
-                          <div className="flex flex-col gap-1 bg-gray-50/50 pb-2 mb-2 rounded-b-lg">
+                          <div className="flex flex-col gap-0.5 bg-brand-soft/50 pb-2 mb-2 rounded-b-xl">
                               
                               {/* Option 1: ALL [Category] */}
                               <p 
                                   onClick={() => toggleCategoryFilter(cat.name)}
                                   className={`cursor-pointer px-4 py-1.5 text-xs transition-colors flex items-center gap-2
-                                      ${isCatActive ? 'text-emerald-600 font-bold bg-white shadow-sm' : 'text-gray-500 hover:text-emerald-600'}
+                                      ${isCatActive ? 'text-brand font-bold bg-white shadow-sm rounded-lg' : 'text-gray-500 hover:text-brand'}
                                   `}
                               >
-                                  <span className={`w-1.5 h-1.5 rounded-full ${isCatActive ? 'bg-emerald-500' : 'bg-gray-300'}`}></span>
+                                  <span className={`w-1.5 h-1.5 rounded-full ${isCatActive ? 'bg-brand' : 'bg-gray-300'}`}></span>
                                   All {cat.name}s
                               </p>
 
@@ -291,7 +297,7 @@ const Collection = () => {
                                         key={subIndex} 
                                         onClick={() => toggleSubCategory(sub)}
                                         className={`cursor-pointer px-4 py-1.5 text-xs transition-colors pl-8
-                                            ${isSubSelected ? 'text-orange-600 font-bold' : 'text-gray-500 hover:text-gray-900'}
+                                            ${isSubSelected ? 'text-brand font-bold' : 'text-gray-500 hover:text-gray-900'}
                                         `}
                                     >
                                         {sub}
@@ -312,9 +318,9 @@ const Collection = () => {
 
       {/* --- RIGHT SIDE: PRODUCTS --- */}
       <div className="flex-1">
-        <div className="flex justify-between items-center text-base sm:text-2xl mb-4 px-2 sm:px-0">
-          <Title text1={"ALL"} text2={"MEDICINES"} />
-          <select onChange={(e) => setSortType(e.target.value)} value={sortType} className="border-2 border-gray-300 text-sm px-2 py-1 rounded outline-emerald-500">
+        <div className="flex justify-between items-center mb-4 px-2 sm:px-0">
+          <Title text1={"All"} text2={"Medicines"} />
+          <select onChange={(e) => setSortType(e.target.value)} value={sortType} className="border border-gray-200 text-xs sm:text-sm px-2.5 py-1.5 rounded-lg focus:outline-none focus:border-brand focus:ring-2 focus:ring-brand/20 bg-white font-semibold text-gray-700">
             <option value="relevant">Sort By: Newest First</option>
             <option value="low-high">Sort By: Low to High</option>
             <option value="high-low">Sort By: High To Low</option>

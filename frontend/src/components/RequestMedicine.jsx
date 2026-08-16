@@ -81,18 +81,18 @@ const RequestMedicine = () => {
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto mt-10 p-6 bg-orange-50/50 border border-orange-200 rounded-xl text-center shadow-sm">
+    <div className="w-full max-w-lg mx-auto mt-10 p-6 bg-brand-light border border-brand/10 rounded-xl text-center shadow-sm">
       <p className="text-2xl mb-2">💊</p>
       <h3 className="text-xl font-bold text-gray-800">Did not find your medicine?</h3>
       <p className="text-gray-500 text-sm mb-6">Don't worry! Upload a photo or type the name, and we will arrange it for you.</p>
 
       <form onSubmit={onSubmitHandler} className="flex flex-col gap-3 text-left">
         
-        <input required name="name" type="text" placeholder="Your Name" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-emerald-500 text-sm" />
-        <input required name="email" type="email" placeholder="Your Email (For Confirmation)" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-emerald-500 text-sm" />
-        <input required name="phone" type="number" placeholder="Phone Number" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-emerald-500 text-sm" />
+        <input required name="name" type="text" placeholder="Your Name" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-brand text-sm" />
+        <input required name="email" type="email" placeholder="Your Email (For Confirmation)" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-brand text-sm" />
+        <input required name="phone" type="number" placeholder="Phone Number" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-brand text-sm" />
         
-        <input name="medicine_name" type="text" placeholder="Medicine Name (e.g. Dolo 650)" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-emerald-500 text-sm" />
+        <input name="medicine_name" type="text" placeholder="Medicine Name (e.g. Dolo 650)" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-brand text-sm" />
         
         {/* File Input */}
         <div className="relative border border-dashed border-gray-400 rounded-lg p-3 bg-white text-center cursor-pointer hover:bg-gray-50">
@@ -106,7 +106,7 @@ const RequestMedicine = () => {
             />
         </div>
 
-        <button type="submit" disabled={isSubmitting} className="w-full bg-black text-white py-2.5 rounded-lg font-medium hover:bg-gray-800 transition-all text-sm disabled:bg-gray-400">
+        <button type="submit" disabled={isSubmitting} className="w-full bg-brand text-white py-2.5 rounded-lg font-medium hover:bg-brand-dark transition-all text-sm disabled:bg-gray-400">
             {isSubmitting ? "Sending Request..." : "Request Medicine"}
         </button>
 

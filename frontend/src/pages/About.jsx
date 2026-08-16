@@ -15,7 +15,7 @@ const About = () => {
         
         {/* Left: Video/Image with Styling */}
         <div className="w-full md:w-1/2 relative group">
-          <div className="absolute -inset-1 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
+          <div className="absolute -inset-1 bg-gradient-to-r from-brand to-teal-600 rounded-2xl blur opacity-25 group-hover:opacity-50 transition duration-1000 group-hover:duration-200"></div>
           
           <video
             src={videoUrl} 
@@ -33,7 +33,7 @@ const About = () => {
         {/* ... Right Side Content (Same as before) ... */}
         <div className="w-full md:w-1/2 flex flex-col gap-6">
            <div>
-              <p className="text-emerald-600 font-bold tracking-wider uppercase text-sm mb-2">Who We Are</p>
+              <p className="text-brand font-bold tracking-wider uppercase text-sm mb-2">Who We Are</p>
               <h2 className="text-3xl md:text-4xl font-bold text-gray-900 leading-tight">
                 Empowering Health, <br/> One Prescription at a Time.
               </h2>
@@ -74,14 +74,14 @@ const About = () => {
 
       <div className="mb-20">
         <div className="text-center mb-12">
-            <p className="text-emerald-600 font-bold text-sm tracking-wide uppercase mb-2">Why Choose Us</p>
+            <p className="text-brand font-bold text-sm tracking-wide uppercase mb-2">Why Choose Us</p>
             <h2 className="text-3xl font-bold text-gray-900">The Radhe Promise</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
-            <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center mb-6 group-hover:bg-emerald-600 transition-colors">
-                <svg className="w-6 h-6 text-emerald-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div className="w-12 h-12 bg-brand-light rounded-lg flex items-center justify-center mb-6 group-hover:bg-brand transition-colors">
+                <svg className="w-6 h-6 text-brand group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
             <h4 className="text-xl font-bold text-gray-900 mb-3">100% Genuine</h4>
             <p className="text-gray-500 leading-relaxed text-sm">
@@ -90,8 +90,8 @@ const About = () => {
             </div>
 
             <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
-            <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center mb-6 group-hover:bg-emerald-600 transition-colors">
-                <svg className="w-6 h-6 text-emerald-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <div className="w-12 h-12 bg-brand-light rounded-lg flex items-center justify-center mb-6 group-hover:bg-brand transition-colors">
+                <svg className="w-6 h-6 text-brand group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
             </div>
             <h4 className="text-xl font-bold text-gray-900 mb-3">Lightning Fast</h4>
             <p className="text-gray-500 leading-relaxed text-sm">
@@ -100,8 +100,8 @@ const About = () => {
             </div>
 
             <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group hover:-translate-y-1">
-            <div className="w-12 h-12 bg-emerald-50 rounded-lg flex items-center justify-center mb-6 group-hover:bg-emerald-600 transition-colors">
-                <svg className="w-6 h-6 text-emerald-600 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+            <div className="w-12 h-12 bg-brand-light rounded-lg flex items-center justify-center mb-6 group-hover:bg-brand transition-colors">
+                <svg className="w-6 h-6 text-brand group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 5.636l-3.536 3.536m0 5.656l3.536 3.536M9.172 9.172L5.636 5.636m3.536 9.192l-3.536 3.536M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-5 0a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
             </div>
             <h4 className="text-xl font-bold text-gray-900 mb-3">Expert Support</h4>
             <p className="text-gray-500 leading-relaxed text-sm">
@@ -116,8 +116,8 @@ const About = () => {
             <h2 className="text-2xl font-bold text-gray-900 mb-3">Join Our Community</h2>
             <p className="text-gray-500 mb-6">Get health tips and exclusive offers directly to your inbox.</p>
             <div className="flex justify-center gap-2 max-w-md mx-auto">
-                <input type="email" placeholder="Enter your email" className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-emerald-500" />
-                <button className="bg-black text-white px-6 py-3 rounded-lg font-medium hover:bg-gray-800 transition">Subscribe</button>
+                <input type="email" placeholder="Enter your email" className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-brand" />
+                <button className="bg-brand text-white px-6 py-3 rounded-lg font-medium hover:bg-brand-dark transition">Subscribe</button>
             </div>
        </div>
 

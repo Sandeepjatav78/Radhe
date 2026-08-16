@@ -120,7 +120,7 @@ const AvailableCoupons = ({ onApplyCoupon, cartTotal }) => {
       <button
         type="button"
         onClick={() => setShowCoupons(!showCoupons)}
-        className="text-emerald-600 text-sm font-medium hover:text-emerald-700 flex items-center gap-1"
+        className="text-brand text-sm font-medium hover:text-brand-dark flex items-center gap-1"
       >
         <span>🎫</span>
         <span>{showCoupons ? 'Hide' : 'View'} Available Coupons</span>
@@ -139,7 +139,7 @@ const AvailableCoupons = ({ onApplyCoupon, cartTotal }) => {
                   key={index}
                   className={`border rounded-lg p-3 ${
                     eligible 
-                      ? 'bg-white border-emerald-200 hover:border-emerald-400 cursor-pointer' 
+                      ? 'bg-white border-brand-light hover:border-brand-dark cursor-pointer' 
                       : 'bg-gray-100 border-gray-200 opacity-60'
                   } transition-all`}
                   onClick={() => eligible && handleCouponClick(coupon.code, coupon.minOrder)}
@@ -150,7 +150,7 @@ const AvailableCoupons = ({ onApplyCoupon, cartTotal }) => {
                         <span className="text-lg">{coupon.icon}</span>
                         <span className="font-bold text-sm text-gray-800">{coupon.code}</span>
                         {coupon.limit && (
-                          <span className="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded">
+                          <span className="text-[10px] bg-brand-light text-brand-dark px-2 py-0.5 rounded">
                             {coupon.limit}
                           </span>
                         )}
@@ -165,7 +165,7 @@ const AvailableCoupons = ({ onApplyCoupon, cartTotal }) => {
                       disabled={!eligible}
                       className={`text-xs px-3 py-1 rounded font-medium ${
                         eligible
-                          ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                          ? 'bg-brand text-white hover:bg-brand-dark'
                           : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                       }`}
                       onClick={(e) => {

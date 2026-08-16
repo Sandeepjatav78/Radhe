@@ -19,14 +19,14 @@ const Footer = () => {
           className="col-span-2 md:col-span-1 flex flex-col items-start"
         >
           <h1 className="text-white text-2xl font-bold mb-3 flex items-center gap-2">
-            <span className="text-emerald-500">Radhe</span> Pharmacy
+            <span className="text-brand">Radhe</span> Pharmacy
           </h1>
           <p className="text-xs text-gray-400 mb-5 leading-relaxed pr-4">
             Your trusted partner in health. 100% genuine medicines delivered directly to your home in Panipat.
           </p>
 
           {/* Regulatory Details */}
-          <div className="text-[11px] sm:text-xs text-gray-500 space-y-1 border-l-2 border-emerald-600 pl-3">
+          <div className="text-[11px] sm:text-xs text-gray-500 space-y-1 border-l-2 border-brand pl-3">
              <p><span className="text-gray-400 font-semibold">Drug Lic:</span> RLF20HR2025005933 , RLF21HR2025005925</p>
              <p><span className="text-gray-400 font-semibold">Pharmacist:</span> Poonam</p>
              <p><span className="text-gray-400 font-semibold">Reg. No:</span> 56539</p>
@@ -44,10 +44,10 @@ const Footer = () => {
         >
           <h2 className="text-white text-base sm:text-lg font-semibold mb-4">Company</h2>
           <ul className="space-y-2.5 text-xs sm:text-sm text-gray-400">
-            <li><Link to="/" className="hover:text-emerald-400 transition-colors">Home</Link></li>
-            <li><Link to="/about" className="hover:text-emerald-400 transition-colors">About Us</Link></li>
-            <li><Link to="/collection" className="hover:text-emerald-400 transition-colors">Order Medicine</Link></li>
-            <li><Link to="/contact" className="hover:text-emerald-400 transition-colors">Contact Us</Link></li>
+            <li><Link to="/" className="hover:text-brand-dark transition-colors">Home</Link></li>
+            <li><Link to="/about" className="hover:text-brand-dark transition-colors">About Us</Link></li>
+            <li><Link to="/collection" className="hover:text-brand-dark transition-colors">Order Medicine</Link></li>
+            <li><Link to="/contact" className="hover:text-brand-dark transition-colors">Contact Us</Link></li>
           </ul>
         </motion.div>
 
@@ -60,12 +60,12 @@ const Footer = () => {
         >
           <h2 className="text-white text-base sm:text-lg font-semibold mb-4">Legal & Policy</h2>
           <ul className="space-y-2.5 text-xs sm:text-sm text-gray-400">
-            <li><Link to="/privacy-policy" className="hover:text-emerald-400 transition-colors">Privacy</Link></li>
-            <li><Link to="/terms-conditions" className="hover:text-emerald-400 transition-colors">Terms of Use</Link></li>
-            <li><Link to="/return-policy" className="hover:text-emerald-400 transition-colors">Refunds</Link></li>
-            <li><Link to="/cancellation-policy" className="hover:text-emerald-400 transition-colors">Cancellation</Link></li>
-            <li><Link to="/prescription-policy" className="hover:text-emerald-400 transition-colors">Rx Policy</Link></li>
-            <li><Link to="/grievance-redressal" className="hover:text-emerald-400 transition-colors">Grievance</Link></li>
+            <li><Link to="/privacy-policy" className="hover:text-brand-dark transition-colors">Privacy</Link></li>
+            <li><Link to="/terms-conditions" className="hover:text-brand-dark transition-colors">Terms of Use</Link></li>
+            <li><Link to="/return-policy" className="hover:text-brand-dark transition-colors">Refunds</Link></li>
+            <li><Link to="/cancellation-policy" className="hover:text-brand-dark transition-colors">Cancellation</Link></li>
+            <li><Link to="/prescription-policy" className="hover:text-brand-dark transition-colors">Rx Policy</Link></li>
+            <li><Link to="/grievance-redressal" className="hover:text-brand-dark transition-colors">Grievance</Link></li>
           </ul>
         </motion.div>
 
@@ -89,7 +89,7 @@ const Footer = () => {
                 key={i}
                 href="#"
                 whileHover={{ scale: 1.1 }}
-                className="p-2 bg-gray-800 rounded-full hover:bg-emerald-600 hover:text-white transition-colors"
+                className="p-2 bg-gray-800 rounded-full hover:bg-brand hover:text-white transition-colors"
               >
                 <Icon size={14} />
               </motion.a>

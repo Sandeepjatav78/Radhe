@@ -270,7 +270,7 @@ const Cart = () => {
       <div className="min-h-[50vh] flex flex-col items-center justify-center text-gray-500 px-4">
         <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-4"><img src={assets.cart_icon} className="w-10 opacity-40" alt="" /></div>
         <p className="text-xl font-semibold mb-2 text-gray-800">Your Cart is Empty</p>
-        <Link to="/collection" className="px-8 py-3 bg-emerald-600 text-white rounded-full font-medium hover:bg-emerald-700 shadow-md">Browse Medicines</Link>
+        <Link to="/collection" className="px-8 py-3 bg-brand text-white rounded-full font-medium hover:bg-brand-dark shadow-md">Browse Medicines</Link>
       </div>
   );
 
@@ -310,7 +310,7 @@ const Cart = () => {
                         </div>
                             
                         <div className="flex justify-between items-center mt-3">
-                          <p className="text-emerald-700 font-bold">{currency}{item.price}</p>
+                          <p className="text-brand-dark font-bold">{currency}{item.price}</p>
                           <div className="flex items-center gap-3">
                             <input 
                               type="number" 
@@ -321,7 +321,7 @@ const Cart = () => {
                                 if (value === '' || value === '0') return; 
                                 updateQuantity(item._id, item.size, Number(value));
                               }} 
-                              className="border border-gray-300 px-2 py-1 w-14 text-center rounded focus:outline-emerald-500"
+                              className="border border-gray-300 px-2 py-1 w-14 text-center rounded focus:outline-brand"
                             />
                             <img src={assets.bin_icon} onClick={() => updateQuantity(item._id, item.size, 0)} className="w-5 cursor-pointer opacity-60 hover:text-red-500" alt="Delete"/>
                           </div>
@@ -335,7 +335,7 @@ const Cart = () => {
               {/* --- ADD MORE BUTTON --- */}
               <Link 
                 to="/collection"
-                className="flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 text-gray-600 px-4 py-4 rounded-xl hover:border-emerald-500 hover:text-emerald-700 hover:bg-emerald-50/50 transition-all font-semibold"
+                className="flex items-center justify-center gap-2 border-2 border-dashed border-gray-300 text-gray-600 px-4 py-4 rounded-xl hover:border-brand hover:text-brand-dark hover:bg-brand-light/50 transition-all font-semibold"
               >
                 <span className="text-xl leading-none">+</span> Add More Medicines
               </Link>
@@ -399,7 +399,7 @@ const Cart = () => {
                                   {deliveryFee === 0 ? "FREE" : `${currency}${deliveryFee}`}
                               </p>
                           ) : (
-                              <span className="text-xs text-orange-500">Fetching...</span>
+                              <span className="text-xs text-brand">Fetching...</span>
                           )}
                       </div>
                       {couponDiscount > 0 && (
@@ -418,8 +418,8 @@ const Cart = () => {
                   {freeDeliveryMsg && (
                       <div className={`text-xs p-2 rounded text-center mb-4 border ${
                         deliveryFee === 0 
-                          ? 'bg-green-50 text-green-700 border-green-100 font-medium'
-                          : 'bg-blue-50 text-blue-700 border-blue-100'
+                          ? 'bg-brand-light text-brand-dark border-brand/10 font-medium'
+                          : 'bg-gray-50 text-gray-600 border-gray-100'
                       }`}>
                           {freeDeliveryMsg}
                       </div>
@@ -433,7 +433,7 @@ const Cart = () => {
                   <button 
                     onClick={handleProceed}
                     disabled={!isDeliverable}
-                    className={`w-full py-4 rounded-xl font-bold shadow-lg transition-all hidden sm:block ${isDeliverable ? 'bg-black text-white hover:bg-gray-800' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+                    className={`w-full py-4 rounded-xl font-bold shadow-lg transition-all hidden sm:block ${isDeliverable ? 'bg-brand text-white hover:bg-brand-dark' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
                   >
                     CONTINUE TO CHECKOUT
                   </button>
@@ -451,7 +451,7 @@ const Cart = () => {
           <button 
             onClick={handleProceed}
             disabled={!isDeliverable}
-            className={`flex-1 py-3.5 rounded-xl font-bold shadow-lg transition-all ${isDeliverable ? 'bg-emerald-600 text-white active:scale-95' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+            className={`flex-1 py-3.5 rounded-xl font-bold shadow-lg transition-all ${isDeliverable ? 'bg-brand text-white active:scale-95' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
           >
             {isDeliverable ? 'CHECKOUT' : 'NOT DELIVERABLE'}
           </button>

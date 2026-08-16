@@ -265,7 +265,7 @@ const Product = () => {
         <p className="text-gray-600 mb-6">The product you're looking for doesn't exist or may have been removed.</p>
         <button 
           onClick={() => navigate('/')}
-          className="bg-emerald-600 text-white px-6 py-2 rounded-lg hover:bg-emerald-700 transition"
+          className="bg-brand text-white px-6 py-2 rounded-lg hover:bg-brand-dark transition"
         >
           Back to Home
         </button>
@@ -299,7 +299,7 @@ const Product = () => {
                 src={item} 
                 onClick={() => changeImage(item, index > productData.image.indexOf(image) ? 1 : -1)} 
                 // ✅ MOBILE FIX: Smaller thumbnails (w-14) for mobile, bigger (w-20) for desktop
-                className={`w-14 h-14 min-w-[56px] sm:min-w-0 sm:w-20 sm:h-20 object-contain cursor-pointer rounded-lg border-2 p-1 transition-all brightness-105 ${image === item ? "border-emerald-500 bg-emerald-50" : "border-transparent bg-gray-50 hover:border-gray-200"}`} 
+                className={`w-14 h-14 min-w-[56px] sm:min-w-0 sm:w-20 sm:h-20 object-contain cursor-pointer rounded-lg border-2 p-1 transition-all brightness-105 ${image === item ? "border-brand bg-brand-light" : "border-transparent bg-gray-50 hover:border-gray-200"}`} 
                 alt={`thumb-${index}`} 
               />
             ))}
@@ -314,7 +314,7 @@ const Product = () => {
             onTouchMove={onTouchMove}
             onTouchEnd={onTouchEnd}
           >
-              {discount > 0 && <span className="absolute top-3 right-3 bg-red-500 text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full shadow-md z-10">{discount}% OFF</span>}
+              {discount > 0 && <span className="absolute top-3 right-3 bg-brand text-white text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-full shadow-md z-10">{discount}% OFF</span>}
               
               {/* Zoom hint overlay */}
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-all flex items-center justify-center opacity-0 group-hover:opacity-100">
@@ -350,7 +350,7 @@ const Product = () => {
 
         {/* ================= RIGHT: Product Info ================= */}
         <div className="flex-1 flex flex-col">
-          <p className="text-xs sm:text-sm text-emerald-600 font-bold uppercase tracking-wider mb-1">{productData.manufacturer || "Generic"}</p>
+          <p className="text-xs sm:text-sm text-brand font-bold uppercase tracking-wider mb-1">{productData.manufacturer || "Generic"}</p>
           
           {/* ✅ MOBILE FIX: Font sizes adapted for mobile (text-xl vs text-3xl) */}
           <h1 className="text-xl sm:text-3xl font-bold text-gray-900 leading-tight">{productData.name}</h1>
@@ -383,8 +383,8 @@ const Product = () => {
                         onClick={() => setActiveVariant(variant)}
                         className={`px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg border text-xs sm:text-sm font-medium transition-all ${
                             activeVariant.size === variant.size 
-                            ? "border-emerald-600 bg-emerald-50 text-emerald-700 ring-1 ring-emerald-600" 
-                            : "border-gray-200 text-gray-600 hover:border-emerald-300"
+                            ? "border-brand bg-brand-light text-brand-dark ring-1 ring-brand" 
+                            : "border-gray-200 text-gray-600 hover:border-brand"
                         }`}
                       >
                           {variant.size}
@@ -413,7 +413,7 @@ const Product = () => {
                         } 
                         addToCart(productData._id, currentSize); 
                     }} 
-                    className="flex-1 bg-black text-white py-3.5 sm:py-4 px-6 rounded-xl hover:bg-gray-800 transition-transform active:scale-95 text-sm sm:text-base font-bold shadow-[0_8px_30px_rgb(0,0,0,0.12)]"
+                    className="flex-1 bg-brand text-white py-3.5 sm:py-4 px-6 rounded-xl hover:bg-brand-dark transition-transform active:scale-95 text-sm sm:text-base font-bold shadow-[0_8px_30px_rgba(252,128,25,0.35)]"
                 >
                     Add to Cart
                 </button>
@@ -436,8 +436,8 @@ const Product = () => {
       {/* ================= TABS & SAFETY ================= */}
       <div className="mt-12 sm:mt-16">
         <div className="flex gap-4 sm:gap-6 border-b border-gray-200">
-           <button onClick={() => setActiveTab("description")} className={`pb-2.5 sm:pb-3 border-b-2 font-bold text-xs sm:text-base transition-colors cursor-pointer ${activeTab === "description" ? "border-emerald-600 text-gray-800" : "border-transparent text-gray-500 hover:text-gray-700"}`}>Description</button>
-           <button onClick={() => setActiveTab("safety")} className={`pb-2.5 sm:pb-3 border-b-2 font-bold text-xs sm:text-base transition-colors cursor-pointer ${activeTab === "safety" ? "border-emerald-600 text-gray-800" : "border-transparent text-gray-500 hover:text-gray-700"}`}>Safety Advice</button>
+           <button onClick={() => setActiveTab("description")} className={`pb-2.5 sm:pb-3 border-b-2 font-bold text-xs sm:text-base transition-colors cursor-pointer ${activeTab === "description" ? "border-brand text-gray-800" : "border-transparent text-gray-500 hover:text-gray-700"}`}>Description</button>
+           <button onClick={() => setActiveTab("safety")} className={`pb-2.5 sm:pb-3 border-b-2 font-bold text-xs sm:text-base transition-colors cursor-pointer ${activeTab === "safety" ? "border-brand text-gray-800" : "border-transparent text-gray-500 hover:text-gray-700"}`}>Safety Advice</button>
         </div>
         
         <div className="py-5 sm:py-6 text-gray-600 text-xs sm:text-sm leading-6 sm:leading-7 space-y-4">
@@ -446,12 +446,12 @@ const Product = () => {
            ) : (
              // ✅ MOBILE FIX: P-3 padding on mobile instead of P-4 so items don't look bulky.
              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 mt-2 sm:mt-4">
-                <div className="bg-orange-50 p-3 sm:p-4 rounded-lg border border-orange-100 flex gap-3 sm:gap-4"><div className="text-xl sm:text-2xl">🍷</div><div><h4 className="font-bold text-gray-800 mb-0.5">Alcohol</h4><p className="text-[11px] sm:text-xs text-gray-600">{safety.alcohol}</p></div></div>
-                <div className="bg-blue-50 p-3 sm:p-4 rounded-lg border border-blue-100 flex gap-3 sm:gap-4"><div className="text-xl sm:text-2xl">🤰</div><div><h4 className="font-bold text-gray-800 mb-0.5">Pregnancy</h4><p className="text-[11px] sm:text-xs text-gray-600">{safety.pregnancy}</p></div></div>
-                <div className="bg-pink-50 p-3 sm:p-4 rounded-lg border border-pink-100 flex gap-3 sm:gap-4"><div className="text-xl sm:text-2xl">🤱</div><div><h4 className="font-bold text-gray-800 mb-0.5">Breastfeeding</h4><p className="text-[11px] sm:text-xs text-gray-600">{safety.breastfeeding}</p></div></div>
-                <div className="bg-green-50 p-3 sm:p-4 rounded-lg border border-green-100 flex gap-3 sm:gap-4"><div className="text-xl sm:text-2xl">🚗</div><div><h4 className="font-bold text-gray-800 mb-0.5">Driving</h4><p className="text-[11px] sm:text-xs text-gray-600">{safety.driving}</p></div></div>
-                <div className="bg-yellow-50 p-3 sm:p-4 rounded-lg border border-yellow-100 flex gap-3 sm:gap-4"><div className="text-xl sm:text-2xl">🫘</div><div><h4 className="font-bold text-gray-800 mb-0.5">Kidney</h4><p className="text-[11px] sm:text-xs text-gray-600">{safety.kidney}</p></div></div>
-                <div className="bg-purple-50 p-3 sm:p-4 rounded-lg border border-purple-100 flex gap-3 sm:gap-4"><div className="text-xl sm:text-2xl">🩺</div><div><h4 className="font-bold text-gray-800 mb-0.5">Liver</h4><p className="text-[11px] sm:text-xs text-gray-600">{safety.liver}</p></div></div>
+                <div className="bg-brand-light p-3 sm:p-4 rounded-lg border border-brand/10 flex gap-3 sm:gap-4"><div className="text-xl sm:text-2xl">🍷</div><div><h4 className="font-bold text-gray-800 mb-0.5">Alcohol</h4><p className="text-[11px] sm:text-xs text-gray-600">{safety.alcohol}</p></div></div>
+                <div className="bg-brand-light p-3 sm:p-4 rounded-lg border border-brand/10 flex gap-3 sm:gap-4"><div className="text-xl sm:text-2xl">🤰</div><div><h4 className="font-bold text-gray-800 mb-0.5">Pregnancy</h4><p className="text-[11px] sm:text-xs text-gray-600">{safety.pregnancy}</p></div></div>
+                <div className="bg-brand-light p-3 sm:p-4 rounded-lg border border-brand/10 flex gap-3 sm:gap-4"><div className="text-xl sm:text-2xl">🤱</div><div><h4 className="font-bold text-gray-800 mb-0.5">Breastfeeding</h4><p className="text-[11px] sm:text-xs text-gray-600">{safety.breastfeeding}</p></div></div>
+                <div className="bg-brand-light p-3 sm:p-4 rounded-lg border border-brand/10 flex gap-3 sm:gap-4"><div className="text-xl sm:text-2xl">🚗</div><div><h4 className="font-bold text-gray-800 mb-0.5">Driving</h4><p className="text-[11px] sm:text-xs text-gray-600">{safety.driving}</p></div></div>
+                <div className="bg-brand-light p-3 sm:p-4 rounded-lg border border-brand/10 flex gap-3 sm:gap-4"><div className="text-xl sm:text-2xl">🫘</div><div><h4 className="font-bold text-gray-800 mb-0.5">Kidney</h4><p className="text-[11px] sm:text-xs text-gray-600">{safety.kidney}</p></div></div>
+                <div className="bg-brand-light p-3 sm:p-4 rounded-lg border border-brand/10 flex gap-3 sm:gap-4"><div className="text-xl sm:text-2xl">🩺</div><div><h4 className="font-bold text-gray-800 mb-0.5">Liver</h4><p className="text-[11px] sm:text-xs text-gray-600">{safety.liver}</p></div></div>
              </div>
            )}
         </div>
@@ -556,7 +556,7 @@ const Product = () => {
                 alt={`thumb-${idx}`}
                 onClick={() => setImage(img)}
                 className={`h-12 w-12 object-contain rounded cursor-pointer border-2 transition-all ${
-                  image === img ? 'border-emerald-400' : 'border-gray-600 opacity-60 hover:opacity-100'
+                  image === img ? 'border-brand' : 'border-gray-600 opacity-60 hover:opacity-100'
                 }`}
               />
             ))}

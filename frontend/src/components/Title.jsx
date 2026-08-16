@@ -10,13 +10,13 @@ const Title = ({ text1, text2 }) => {
         className="text-gray-500 font-medium"
       >
           {text1} 
-          <span className="text-emerald-700 font-bold ml-2">{text2}</span>
+          <span className="text-brand font-bold ml-2">{text2}</span>
       </motion.p>
       <motion.p 
         initial={{ scaleX: 0 }}
         animate={{ scaleX: 1 }}
         transition={{ delay: 0.2 }}
-        className="w-8 sm:w-12 h-[2px] bg-emerald-700"
+        className="w-8 sm:w-12 h-[2px] bg-brand"
       ></motion.p>
     </div>
   );

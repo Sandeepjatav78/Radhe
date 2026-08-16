@@ -74,7 +74,7 @@ const CouponCode = ({ totalAmount, onApplyCoupon }) => {
         <button
           onClick={handleApplyCoupon}
           disabled={loading}
-          className="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition disabled:opacity-50 font-bold"
+          className="px-6 py-2.5 bg-brand text-white rounded-lg hover:bg-brand-dark transition disabled:opacity-50 font-bold"
         >
           {loading ? "..." : "Apply"}
         </button>
@@ -82,7 +82,7 @@ const CouponCode = ({ totalAmount, onApplyCoupon }) => {
 
       {/* Applied Coupon Display */}
       {appliedCoupon && (
-        <div className="p-3 bg-green-100 border-2 border-green-300 rounded-lg mb-3 flex items-center justify-between">
+        <div className="p-3 bg-brand-light border-2 border-brand/20 rounded-lg mb-3 flex items-center justify-between">
           <div>
             <span className="font-bold text-green-700">✓ {appliedCoupon}</span>
             <span className="text-green-600 ml-3">Save Rs {discount}</span>
@@ -115,7 +115,7 @@ const CouponCode = ({ totalAmount, onApplyCoupon }) => {
               <button
                 key={coupon._id}
                 onClick={() => handleSelectCoupon(coupon.code)}
-                className="p-2 bg-white border-2 border-purple-300 rounded-lg hover:bg-purple-50 transition text-left"
+                className="p-2 bg-white border-2 border-brand/30 rounded-lg hover:bg-brand-light transition text-left"
               >
                 <div className="font-bold text-purple-700">{coupon.code}</div>
                 <div className="text-xs text-gray-600">

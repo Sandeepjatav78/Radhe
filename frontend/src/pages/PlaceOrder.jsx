@@ -185,11 +185,11 @@ const PlaceOrder = () => {
         
         {/* ✅ MOBILE FIX: Inputs text-sm so iOS keyboard doesn't auto-zoom. */}
         <div className="grid grid-cols-2 gap-3">
-          <input required name="firstName" value={formData.firstName} onChange={onChangeHandler} type="text" placeholder="First Name" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 outline-emerald-500" />
-          <input required name="lastName" value={formData.lastName} onChange={onChangeHandler} type="text" placeholder="Last Name" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 outline-emerald-500" />
+          <input required name="firstName" value={formData.firstName} onChange={onChangeHandler} type="text" placeholder="First Name" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 outline-brand" />
+          <input required name="lastName" value={formData.lastName} onChange={onChangeHandler} type="text" placeholder="Last Name" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 outline-brand" />
         </div>
-        <input required name="email" value={formData.email} onChange={onChangeHandler} type="email" placeholder="Email Address" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full outline-emerald-500" />
-        <input required name="phone" value={formData.phone} onChange={onChangeHandler} type="number" placeholder="Phone Number" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full outline-emerald-500" />
+        <input required name="email" value={formData.email} onChange={onChangeHandler} type="email" placeholder="Email Address" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full outline-brand" />
+        <input required name="phone" value={formData.phone} onChange={onChangeHandler} type="number" placeholder="Phone Number" className="text-sm border border-gray-300 rounded-lg px-3.5 py-3 w-full outline-brand" />
         
         <div className="mt-2 sm:mt-4">
               <p className="text-xs sm:text-sm font-bold text-gray-700 mb-2">Address (Detected from Map)</p>
@@ -215,8 +215,8 @@ const PlaceOrder = () => {
                         onClick={() => setDeliverySlot(slot)}
                         className={`border rounded-lg p-2.5 sm:p-3 cursor-pointer text-center transition-all duration-200 text-[11px] sm:text-sm ${
                             deliverySlot === slot 
-                            ? 'border-emerald-600 bg-emerald-50 text-emerald-700 font-bold ring-1 ring-emerald-500' 
-                            : 'border-gray-200 hover:border-emerald-300 text-gray-600 font-medium'
+                            ? 'border-brand bg-brand-light text-brand-dark font-bold ring-1 ring-brand' 
+                            : 'border-gray-200 hover:border-brand text-gray-600 font-medium'
                         }`}
                     >
                         {slot}
@@ -272,7 +272,7 @@ const PlaceOrder = () => {
                        </span>
                        <span className="font-semibold">-{currency}{couponDiscount}.00</span>
                      </div>
-                     <div className="bg-green-50 border border-green-200 px-2 py-1 rounded text-xs text-green-700 text-center">
+                     <div className="bg-brand-light border border-brand/10 px-2 py-1 rounded text-xs text-brand-dark text-center">
                        You saved {currency}{couponDiscount} with promo code!
                      </div>
                    </>
@@ -288,16 +288,16 @@ const PlaceOrder = () => {
                 <Title text1="PAYMENT" text2="METHOD" />
                 <div className="flex flex-col gap-3 mt-4">
                     {/* ✅ MOBILE FIX: Taller payment boxes (p-3.5) for easier thumb tapping. */}
-                    <div onClick={() => setMethod("stripe")} className={`flex items-center gap-3 p-3.5 sm:p-3 border cursor-pointer rounded-xl ${method === "stripe" ? "border-emerald-500 bg-emerald-50" : "border-gray-200"}`}>
-                        <div className={`w-4 h-4 rounded-full border flex-shrink-0 ${method === "stripe" ? "bg-emerald-500 border-emerald-500" : "border-gray-400"}`}></div>
+                    <div onClick={() => setMethod("stripe")} className={`flex items-center gap-3 p-3.5 sm:p-3 border cursor-pointer rounded-xl ${method === "stripe" ? "border-brand bg-brand-light" : "border-gray-200"}`}>
+                        <div className={`w-4 h-4 rounded-full border flex-shrink-0 ${method === "stripe" ? "bg-brand border-brand" : "border-gray-400"}`}></div>
                         <p className="font-semibold text-sm sm:text-base text-gray-800">Stripe / Credit Card</p>
                     </div>
-                    <div onClick={() => setMethod("razorpay")} className={`flex items-center gap-3 p-3.5 sm:p-3 border cursor-pointer rounded-xl ${method === "razorpay" ? "border-emerald-500 bg-emerald-50" : "border-gray-200"}`}>
-                        <div className={`w-4 h-4 rounded-full border flex-shrink-0 ${method === "razorpay" ? "bg-emerald-500 border-emerald-500" : "border-gray-400"}`}></div>
+                    <div onClick={() => setMethod("razorpay")} className={`flex items-center gap-3 p-3.5 sm:p-3 border cursor-pointer rounded-xl ${method === "razorpay" ? "border-brand bg-brand-light" : "border-gray-200"}`}>
+                        <div className={`w-4 h-4 rounded-full border flex-shrink-0 ${method === "razorpay" ? "bg-brand border-brand" : "border-gray-400"}`}></div>
                         <p className="font-semibold text-sm sm:text-base text-gray-800">Razorpay / UPI</p>
                     </div>
-                    <div onClick={() => setMethod("cod")} className={`flex items-center gap-3 p-3.5 sm:p-3 border cursor-pointer rounded-xl ${method === "cod" ? "border-emerald-500 bg-emerald-50" : "border-gray-200"}`}>
-                        <div className={`w-4 h-4 rounded-full border flex-shrink-0 ${method === "cod" ? "bg-emerald-500 border-emerald-500" : "border-gray-400"}`}></div>
+                    <div onClick={() => setMethod("cod")} className={`flex items-center gap-3 p-3.5 sm:p-3 border cursor-pointer rounded-xl ${method === "cod" ? "border-brand bg-brand-light" : "border-gray-200"}`}>
+                        <div className={`w-4 h-4 rounded-full border flex-shrink-0 ${method === "cod" ? "bg-brand border-brand" : "border-gray-400"}`}></div>
                         <p className="font-semibold text-sm sm:text-base text-gray-800">Cash on Delivery</p>
                     </div>
                 </div>
@@ -305,7 +305,7 @@ const PlaceOrder = () => {
                 <button 
                     type="submit" 
                     disabled={isUploading}
-                    className="mt-8 w-full cursor-pointer bg-emerald-600 text-white py-4 rounded-xl hover:bg-emerald-700 transition-colors font-bold text-base sm:text-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] disabled:bg-gray-400"
+                    className="mt-8 w-full cursor-pointer bg-brand text-white py-4 rounded-xl hover:bg-brand-dark transition-colors font-bold text-base sm:text-lg shadow-[0_8px_30px_rgb(0,0,0,0.12)] disabled:bg-gray-400"
                 >
                     {isUploading ? "Processing..." : "PLACE ORDER"}
                 </button>

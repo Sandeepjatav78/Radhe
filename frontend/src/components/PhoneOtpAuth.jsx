@@ -97,7 +97,7 @@ const PhoneOtpAuth = () => {
   }
 
   return (
-    <div className='min-h-screen bg-gradient-to-b from-emerald-50 to-white flex items-center justify-center px-4 py-8'>
+    <div className='min-h-screen bg-gradient-to-b from-brand-light to-white flex items-center justify-center px-4 py-8'>
       <div className='w-full max-w-md'>
         <div className='text-center mb-8'>
           <div className='text-5xl mb-3'>💊</div>
@@ -114,7 +114,7 @@ const PhoneOtpAuth = () => {
               </p>
 
               <label className='block text-sm font-semibold text-gray-700 mb-2'>Mobile Number</label>
-              <div className='flex items-center border-2 border-gray-200 rounded-xl focus-within:border-emerald-500 transition-colors overflow-hidden'>
+              <div className='flex items-center border-2 border-gray-200 rounded-xl focus-within:border-brand transition-colors overflow-hidden'>
                 <span className='px-4 py-3 bg-gray-50 text-gray-700 font-medium border-r border-gray-200'>+91</span>
                 <input
                   type='tel'
@@ -131,7 +131,7 @@ const PhoneOtpAuth = () => {
               <button
                 type='submit'
                 disabled={loading || cooldown > 0}
-                className='w-full mt-6 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-[0.98]'
+                className='w-full mt-6 bg-brand hover:bg-brand-dark disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-[0.98]'
               >
                 {loading ? (
                   <span className='flex items-center justify-center gap-2'>
@@ -168,7 +168,7 @@ const PhoneOtpAuth = () => {
                     value={digit}
                     onChange={(e) => handleOtpChange(index, e.target.value)}
                     onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                    className='w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-emerald-500 focus:outline-none transition-colors'
+                    className='w-12 h-14 sm:w-14 sm:h-16 text-center text-2xl font-bold border-2 border-gray-200 rounded-xl focus:border-brand focus:outline-none transition-colors'
                   />
                 ))}
               </div>
@@ -182,7 +182,7 @@ const PhoneOtpAuth = () => {
               <button
                 type='submit'
                 disabled={loading}
-                className='w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-[0.98]'
+                className='w-full bg-brand hover:bg-brand-dark disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold py-3.5 rounded-xl shadow-lg transition-all active:scale-[0.98]'
               >
                 {loading ? (
                   <span className='flex items-center justify-center gap-2'>
@@ -202,7 +202,7 @@ const PhoneOtpAuth = () => {
                   type='button'
                   onClick={handleSendOtp}
                   disabled={cooldown > 0 || loading}
-                  className='text-emerald-600 hover:text-emerald-700 font-semibold disabled:text-gray-300'
+                  className='text-brand hover:text-brand-dark font-semibold disabled:text-gray-300'
                 >
                   {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend OTP'}
                 </button>

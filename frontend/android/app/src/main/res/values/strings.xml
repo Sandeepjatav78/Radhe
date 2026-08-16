@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Radhe Pharmacy</string>
+    <string name="title_activity_main">Radhe Pharmacy</string>
+    <string name="package_name">com.radhe.pharmacy</string>
+    <string name="custom_url_scheme">com.radhe.pharmacy</string>
+</resources>

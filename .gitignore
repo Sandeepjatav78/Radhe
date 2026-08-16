@@ -1,6 +1,31 @@
-node_modules
+# ===================== Dependencies =====================
+node_modules/
 
-*.env
+# ===================== Env files (never commit secrets) =====================
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+!.env.production
+
+# ===================== OS / Editor files =====================
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ===================== Logs =====================
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# ===================== Build outputs (per-project .gitignore handles the rest) =====================
+dist/
+dist-ssr/
+
+# ===================== Android signing (never commit keystores!) =====================
+*.keystore
+*.jks

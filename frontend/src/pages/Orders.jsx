@@ -11,11 +11,11 @@ const Orders = () => {
 
   // Pharmacy Status Colors (Medical Theme)
   const statusColors = {
-    'order placed': 'bg-blue-500',
-    'packing': 'bg-indigo-500',
-    'shipped': 'bg-yellow-500',
-    'out for delivery': 'bg-orange-500',
-    'delivered': 'bg-emerald-600',
+    'order placed': 'bg-brand',
+    'packing': 'bg-brand-dark',
+    'shipped': 'bg-brand',
+    'out for delivery': 'bg-brand-dark',
+    'delivered': 'bg-brand',
     'cancelled': 'bg-red-500',
   };
 
@@ -118,14 +118,14 @@ const Orders = () => {
                   {/* ✅ CLICKABLE NAME FIXED */}
                   <p 
                     onClick={() => navigate(`/product/${actualProductId}`)}
-                    className="font-bold text-gray-800 text-base cursor-pointer hover:text-emerald-600 transition-colors"
+                    className="font-bold text-gray-800 text-base cursor-pointer hover:text-brand transition-colors"
                     title="View Product"
                   >
                     {item.name}
                   </p>
 
                   <div className="flex flex-wrap items-center gap-3 text-gray-600 text-sm">
-                    <p className='font-semibold text-emerald-700'>
+                    <p className='font-semibold text-brand-dark'>
                       {currency}{item.price}
                     </p>
                     <p>Qty: {item.quantity}</p>
@@ -142,7 +142,7 @@ const Orders = () => {
                   <div className="flex items-center gap-2 mt-1">
                     <p className="text-gray-500 text-xs font-medium">Method: {item.paymentMethod}</p>
                     <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wide ${
-                        isPaid ? 'bg-emerald-100 text-emerald-700' : 'bg-yellow-100 text-yellow-700'
+                        isPaid ? 'bg-brand-light text-brand-dark' : 'bg-gray-100 text-gray-600'
                     }`}>
                       {isPaid ? 'Paid' : 'Pending'}
                     </span>
@@ -168,7 +168,7 @@ const Orders = () => {
                 ) : (
                     /* --- 2. DELIVERY TIME SLOT (Show if Active) --- */
                     item.status !== 'delivered' && item.slot && (
-                        <div className="md:text-right bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100 inline-block self-start md:self-auto">
+                        <div className="md:text-right bg-brand-light px-3 py-1.5 rounded-lg border border-brand/10 inline-block self-start md:self-auto">
                             <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Expected Arrival</p>
                             <p className="text-blue-700 font-bold text-xs flex items-center gap-1">
                                 🕒 {item.slot}
@@ -188,7 +188,7 @@ const Orders = () => {
                 {item.status !== 'cancelled' && item.status !== 'delivered' && (
                     <button
                     onClick={loadOrderData}
-                    className="border border-gray-300 px-4 py-2 text-sm font-medium rounded-full hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-200 transition mt-2 md:mt-0"
+                    className="border border-gray-300 px-4 py-2 text-sm font-medium rounded-full hover:bg-brand-light hover:text-brand-dark hover:border-brand-light transition mt-2 md:mt-0"
                     >
                     Track Order
                     </button>

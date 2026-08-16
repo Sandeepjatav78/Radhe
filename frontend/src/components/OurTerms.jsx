@@ -22,7 +22,7 @@ const items = [
 
 const OurTerms = () => {
   return (
-    <section className="bg-emerald-50/50">
+    <section className="bg-brand-light/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 md:gap-10">
           {items.map((card, i) => (
@@ -32,9 +32,9 @@ const OurTerms = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
-              className="rounded-xl border border-emerald-100 bg-white p-6 text-center shadow-sm hover:shadow-md transition"
+              className="rounded-xl border border-brand-light bg-white p-6 text-center shadow-sm hover:shadow-md transition"
             >
-              <div className="mx-auto mb-4 w-14 h-14 grid place-items-center rounded-full bg-emerald-100 text-emerald-600">
+              <div className="mx-auto mb-4 w-14 h-14 grid place-items-center rounded-full bg-brand-light text-brand">
                 <img src={assets[card.img]} alt={card.title} className="w-6 h-6 opacity-80" />
               </div>
               <h3 className="text-lg font-semibold text-gray-800">{card.title}</h3>

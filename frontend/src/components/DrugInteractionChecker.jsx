@@ -56,7 +56,7 @@ const DrugInteractionChecker = ({ cartItems = [] }) => {
   };
 
   return (
-    <div className="mt-6 p-4 bg-blue-50 rounded-xl border-2 border-blue-200">
+    <div className="mt-6 p-4 bg-brand-light rounded-xl border-2 border-brand/10">
       <button
         onClick={() => setShowChecker(!showChecker)}
         className="w-full text-left font-bold text-blue-700 flex items-center gap-2 hover:text-blue-800"
@@ -90,7 +90,7 @@ const DrugInteractionChecker = ({ cartItems = [] }) => {
 
           <button
             onClick={handleAddMedicine}
-            className="w-full py-2 mb-4 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition font-medium"
+            className="w-full py-2 mb-4 bg-white text-brand border-2 border-brand/20 rounded-lg hover:bg-brand-light transition font-medium"
           >
             + Add Medicine
           </button>
@@ -98,7 +98,7 @@ const DrugInteractionChecker = ({ cartItems = [] }) => {
           <button
             onClick={handleCheckInteractions}
             disabled={loading || medicines.length < 2}
-            className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed font-bold"
+            className="w-full bg-brand text-white py-2 rounded-lg hover:bg-brand-dark transition disabled:opacity-50 disabled:cursor-not-allowed font-bold"
           >
             {loading ? "Checking..." : "Check Interactions"}
           </button>

@@ -32,7 +32,7 @@ const AdvancedFilters = ({ onFilterChange, priceRange = [0, 10000] }) => {
       {/* Filter Toggle (Mobile) */}
       <button
         onClick={() => setExpanded(!expanded)}
-        className="md:hidden w-full bg-emerald-600 text-white py-3 rounded-lg flex items-center justify-between font-bold mb-4"
+        className="md:hidden w-full bg-brand text-white py-3 rounded-lg flex items-center justify-between font-bold mb-4"
       >
         <span>🔍 Filters</span>
         <span>{expanded ? "▼" : "▶"}</span>
@@ -53,7 +53,7 @@ const AdvancedFilters = ({ onFilterChange, priceRange = [0, 10000] }) => {
               <select
                 value={filters.sortBy}
                 onChange={(e) => handleFilterChange("sortBy", e.target.value)}
-                className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:outline-none"
+                className="w-full px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-brand focus:outline-none"
               >
                 <option value="newest">Newest</option>
                 <option value="price_asc">Price: Low to High</option>
@@ -74,7 +74,7 @@ const AdvancedFilters = ({ onFilterChange, priceRange = [0, 10000] }) => {
                     onChange={(e) =>
                       handleFilterChange("priceMin", parseInt(e.target.value))
                     }
-                    className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:outline-none"
+                    className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-brand focus:outline-none"
                     placeholder="Min"
                   />
                   <input
@@ -83,7 +83,7 @@ const AdvancedFilters = ({ onFilterChange, priceRange = [0, 10000] }) => {
                     onChange={(e) =>
                       handleFilterChange("priceMax", parseInt(e.target.value))
                     }
-                    className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:outline-none"
+                    className="flex-1 px-3 py-2 border-2 border-gray-200 rounded-lg focus:border-brand focus:outline-none"
                     placeholder="Max"
                   />
                 </div>

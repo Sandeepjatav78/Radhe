@@ -173,7 +173,7 @@ const LocationPicker = ({ setLocation, onAddressSelect }) => {
             
             {/* Saved Location Indicator */}
             {localStorage.getItem('userLocation') && (
-                <div className='bg-blue-50 border border-blue-200 px-3 py-2 rounded-lg flex items-center justify-between text-xs'>
+                <div className='bg-brand-light border border-brand/10 px-3 py-2 rounded-lg flex items-center justify-between text-xs'>
                     <div className='flex items-center gap-2'>
                         <span>💾</span>
                         <span className='text-blue-700 font-medium'>Saved location loaded</span>
@@ -201,7 +201,7 @@ const LocationPicker = ({ setLocation, onAddressSelect }) => {
                     type="button"
                     onClick={handleGetLocation}
                     disabled={isLocating}
-                    className='text-xs bg-emerald-600 text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-sm active:scale-95 disabled:opacity-70 w-full sm:w-auto'
+                    className='text-xs bg-brand text-white px-4 py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-brand-dark transition-all shadow-sm active:scale-95 disabled:opacity-70 w-full sm:w-auto'
                 >
                     {isLocating ? (
                         <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
@@ -216,7 +216,7 @@ const LocationPicker = ({ setLocation, onAddressSelect }) => {
                 <input 
                     type="text" 
                     placeholder="Search (e.g. Model Town, Panipat)" 
-                    className='flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all'
+                    className='flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand transition-all'
                     value={searchText}
                     onChange={(e) => setSearchText(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSearch()}

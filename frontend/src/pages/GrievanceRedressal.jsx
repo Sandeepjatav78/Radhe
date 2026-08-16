@@ -33,7 +33,7 @@ const GrievanceRedressal = () => {
             <li>
                 <strong>Level 2 - Grievance Officer:</strong> If your issue is not resolved, escalate it to the Grievance Officer. 
             </li>
-            <li className='text-emerald-700 font-medium'>
+            <li className='text-brand-dark font-medium'>
                 <strong>Statutory Timeline:</strong> We will acknowledge your complaint within <strong>48 hours</strong> and resolve the issue within <strong>30 days</strong> from the date of receipt.
             </li>
         </ul>

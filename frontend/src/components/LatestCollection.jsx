@@ -1,8 +1,8 @@
 import React, { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import ProductItem from "./ProductItem";
-import ProductItemSkeleton from "../components/ProductSkeleton"; 
-import { motion } from "framer-motion";
+import ProductItemSkeleton from "../components/ProductSkeleton";
+import { Link } from "react-router-dom";
 
 const LatestCollection = () => {
   const { products } = useContext(ShopContext);
@@ -11,69 +11,76 @@ const LatestCollection = () => {
 
   useEffect(() => {
     setLoading(true);
-    
+
     if (products && products.length > 0) {
-        // 1. slice() creates a copy
-        // 2. reverse() makes newest appear first
-        // 3. slice(0, 10) takes the top 10
-        setLatestProduct(products.slice().reverse().slice(0, 10));
-        setLoading(false);
+      setLatestProduct(products.slice().reverse().slice(0, 10));
+      setLoading(false);
     }
   }, [products]);
 
   return (
-    <div className="py-12">
-      <div className="text-center mb-8">
-        <motion.h1
-          className="text-3xl sm:text-4xl font-bold text-gray-800 tracking-tight"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8 }}
+    <div className="py-6 sm:py-10">
+      <div className="flex items-center justify-between mb-3 sm:mb-6 px-1">
+        <div>
+          <h1 className="text-lg sm:text-2xl font-extrabold text-gray-900 tracking-tight">
+            New Arrivals
+          </h1>
+          <p className="text-xs sm:text-sm text-gray-500 mt-0.5">
+            Latest medicines added to our store
+          </p>
+        </div>
+        <Link
+          to="/collection"
+          className="text-brand font-semibold text-xs sm:text-sm flex items-center gap-1 hover:underline flex-shrink-0"
         >
-          <span className="text-gray-700">NEW</span>{" "}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">
-            ARRIVALS
-          </span>
-        </motion.h1>
-        <p className="text-gray-600 text-sm sm:text-base max-w-2xl mx-auto mt-4">
-          Latest medicines and healthcare products added to our inventory.
-        </p>
+          See All
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+          </svg>
+        </Link>
       </div>
 
-      <motion.div
-        layout
-        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 sm:gap-4 lg:gap-6"
-      >
+      {/* Mobile: horizontal scroll | Desktop: grid */}
+      <div className="flex gap-3 overflow-x-auto no-scrollbar sm:hidden pb-2 -mx-4 px-4">
         {loading
-          ? Array.from({ length: 10 }).map((_, i) => <ProductItemSkeleton key={i} />)
+          ? Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="w-40 flex-shrink-0"><ProductItemSkeleton /></div>
+            ))
           : latestProduct.map((item, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.05 }}
-              >
-                {/* --- PASS VARIANTS HERE --- */}
+              <div key={index} className="w-40 flex-shrink-0">
                 <ProductItem
                   id={item._id}
                   image={item.image}
                   name={item.name}
-                  
-                  // Keep these as fallbacks for old products
                   price={item.price}
-                  mrp={item.mrp} 
+                  mrp={item.mrp}
                   packSize={item.packSize}
-                  
-                  // Pharmacy Specific Data
                   salt={item.saltComposition}
                   isRx={item.prescriptionRequired}
-                  
-                  // ✅ IMPORTANT: Pass Variants Array
-                  variants={item.variants} 
+                  variants={item.variants}
                 />
-              </motion.div>
+              </div>
             ))}
-      </motion.div>
+      </div>
+
+      <div className="hidden sm:grid grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 lg:gap-6">
+        {loading
+          ? Array.from({ length: 10 }).map((_, i) => <ProductItemSkeleton key={i} />)
+          : latestProduct.map((item, index) => (
+              <ProductItem
+                key={index}
+                id={item._id}
+                image={item.image}
+                name={item.name}
+                price={item.price}
+                mrp={item.mrp}
+                packSize={item.packSize}
+                salt={item.saltComposition}
+                isRx={item.prescriptionRequired}
+                variants={item.variants}
+              />
+            ))}
+      </div>
     </div>
   );
 };

@@ -77,7 +77,7 @@ const PrescriptionUpload = ({ orderId, onUploadSuccess }) => {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-r from-orange-50 to-red-50 rounded-xl border-2 border-orange-200">
+    <div className="p-6 bg-gradient-to-r from-brand-light to-brand-soft rounded-xl border-2 border-brand/10">
       <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
         <span>📋</span> Upload Prescription
       </h3>
@@ -92,13 +92,13 @@ const PrescriptionUpload = ({ orderId, onUploadSuccess }) => {
           <img
             src={preview}
             alt="Prescription preview"
-            className="max-h-64 rounded-lg border-2 border-orange-300"
+            className="max-h-64 rounded-lg border-2 border-brand/20"
           />
         </div>
       )}
 
       {/* Upload Area */}
-      <label className="block p-6 border-2 border-dashed border-orange-300 rounded-lg cursor-pointer hover:bg-orange-100 transition mb-4">
+      <label className="block p-6 border-2 border-dashed border-brand/30 rounded-lg cursor-pointer hover:bg-brand-light transition mb-4">
         <input
           type="file"
           accept="image/*"
@@ -110,14 +110,14 @@ const PrescriptionUpload = ({ orderId, onUploadSuccess }) => {
           <div className="text-3xl mb-2">📷</div>
           <div className="font-bold text-gray-700">Click to upload or drag & drop</div>
           <div className="text-sm text-gray-600">PNG, JPG, or PDF (max 5MB)</div>
-          {uploading && <div className="text-sm text-orange-600 mt-2">Uploading...</div>}
+          {uploading && <div className="text-sm text-brand-dark mt-2">Uploading...</div>}
         </div>
       </label>
 
       {prescriptionImage && (
         <button
           onClick={handleSubmit}
-          className="w-full bg-orange-600 text-white py-3 rounded-lg hover:bg-orange-700 transition font-bold"
+          className="w-full bg-brand text-white py-3 rounded-lg hover:bg-brand-dark transition font-bold"
         >
           ✓ Submit Prescription
         </button>

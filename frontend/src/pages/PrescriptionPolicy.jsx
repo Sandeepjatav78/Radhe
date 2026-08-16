@@ -9,7 +9,7 @@ const PrescriptionPolicy = () => {
       </div>
 
       <div className='flex flex-col gap-6 text-gray-600 text-sm leading-7 text-justify'>
-        <p className='bg-yellow-50 p-4 border border-yellow-200 rounded text-yellow-800 font-medium'>
+        <p className='bg-brand-light p-4 border border-brand/10 rounded text-brand-dark font-medium'>
             <strong>Note:</strong> In compliance with Indian Laws, valid prescriptions are mandatory for Schedule H & H1 drugs.
         </p>
 

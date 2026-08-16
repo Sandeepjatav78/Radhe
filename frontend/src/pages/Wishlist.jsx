@@ -105,7 +105,7 @@ const UserWishlist = () => {
               <div className="text-xs text-gray-600 mb-2">
                 Rs {product.variants?.[0]?.price}
               </div>
-              <button className="w-full bg-emerald-600 text-white py-1 rounded text-xs font-bold hover:bg-emerald-700 transition">
+              <button className="w-full bg-brand text-white py-1 rounded text-xs font-bold hover:bg-brand-dark transition">
                 Add to Cart
               </button>
             </div>
