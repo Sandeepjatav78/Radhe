@@ -2,13 +2,14 @@ import axios from 'axios';
 
 // MSG91 API Configuration
 const MSG91_AUTH_KEY = process.env.MSG91_AUTH_KEY;
+const MSG91_TEMPLATE_ID = process.env.MSG91_TEMPLATE_ID;
 
 // Generate 6-digit OTP
 export const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Send OTP via MSG91 Direct OTP API (No template needed!)
+// Send OTP via MSG91 Direct OTP API
 export const sendSmsOTP = async (phoneNumber, otp) => {
     try {
         // Debug mode - print OTP in console instead of sending
@@ -39,8 +40,8 @@ export const sendSmsOTP = async (phoneNumber, otp) => {
             mobile = phoneNumber.substring(1);
         }
 
-        // MSG91 Send OTP API (No template required!)
-        const url = `https://control.msg91.com/api/v5/otp?otp=${otp}&mobile=91${mobile}`;
+        // MSG91 Send OTP API
+        const url = `https://api.msg91.com/api/v5/otp?otp=${otp}&mobile=91${mobile}${MSG91_TEMPLATE_ID ? `&template_id=${MSG91_TEMPLATE_ID}` : ''}`;
 
         console.log(`📤 Sending OTP to 91${mobile} via MSG91...`);
 
@@ -59,14 +60,12 @@ export const sendSmsOTP = async (phoneNumber, otp) => {
         } else {
             console.error('❌ MSG91 Error:', response.data.message || JSON.stringify(response.data));
             console.error('   Error Type:', response.data.type);
-            console.error('   Full Response:', response.data);
             return false;
         }
     } catch (error) {
         console.error('❌ MSG91 API Error:', error.message);
         console.error('   Status:', error.response?.status);
         console.error('   Data:', error.response?.data);
-        console.error('   Full Error:', error);
         return false;
     }
 };
