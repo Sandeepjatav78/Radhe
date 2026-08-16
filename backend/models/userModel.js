@@ -1,9 +1,10 @@
 import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema({
+    // Legacy Clerk ID - kept for existing users, not required for new OTP signups
     clerkId: {
         type: String,
-        required: true,
+        sparse: true,
         unique: true,
         trim: true
     },
@@ -16,7 +17,7 @@ const userSchema = new mongoose.Schema({
         type: String,
         trim: true,
         sparse: true,
-        default: ""
+        unique: true
     },
     name: {
         type: String,

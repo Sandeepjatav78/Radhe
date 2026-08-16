@@ -4,18 +4,18 @@ import userModel from "../models/userModel.js"
 const addToCart = async (req, res) => {
     try {
         const { itemId, size } = req.body;
-        const clerkId = req.user?.id;
+        const userId = req.user?.id;
 
-        if (!clerkId) {
+        if (!userId) {
             return res.status(401).json({ success: false, message: "Not authorized" });
         }
 
-        console.log(`[CART] Adding item ${itemId} for user ${clerkId}`);
+        console.log(`[CART] Adding item ${itemId} for user ${userId}`);
 
-        const userData = await userModel.findOne({ clerkId });
+        const userData = await userModel.findById(userId);
         
         if (!userData) {
-            console.log(`[CART] ❌ User not found: ${clerkId}`);
+            console.log(`[CART] ❌ User not found: ${userId}`);
             return res.json({ success: false, message: "User not found" });
         }
 
@@ -36,7 +36,7 @@ const addToCart = async (req, res) => {
         userData.markModified('cartData'); 
         await userData.save();
 
-        console.log(`[CART] ✅ Item added for user ${clerkId}`);
+        console.log(`[CART] ✅ Item added for user ${userId}`);
         res.json({ success: true, message: "Added to Cart" });
 
     } catch (error) {
@@ -49,18 +49,18 @@ const addToCart = async (req, res) => {
 const updateCart = async (req, res) => {
     try {
         const { itemId, size, quantity } = req.body;
-        const clerkId = req.user?.id;
+        const userId = req.user?.id;
 
-        if (!clerkId) {
+        if (!userId) {
             return res.status(401).json({ success: false, message: "Not authorized" });
         }
 
-        console.log(`[CART] Updating item ${itemId} for user ${clerkId}`);
+        console.log(`[CART] Updating item ${itemId} for user ${userId}`);
         
-        const userData = await userModel.findOne({ clerkId });
+        const userData = await userModel.findById(userId);
 
         if (!userData) {
-            console.log(`[CART] ❌ User not found: ${clerkId}`);
+            console.log(`[CART] ❌ User not found: ${userId}`);
             return res.json({ success: false, message: "User not found" });
         }
 
@@ -76,7 +76,7 @@ const updateCart = async (req, res) => {
         userData.markModified('cartData');
         await userData.save();
         
-        console.log(`[CART] ✅ Cart updated for user ${clerkId}`);
+        console.log(`[CART] ✅ Cart updated for user ${userId}`);
         res.json({ success: true, message: "Cart Updated" });
 
     } catch (error) {
@@ -88,24 +88,24 @@ const updateCart = async (req, res) => {
 // Get User Cart
 const getUserCart = async (req, res) => {
     try {
-        const clerkId = req.user?.id;
+        const userId = req.user?.id;
 
-        if (!clerkId) {
+        if (!userId) {
             return res.status(401).json({ success: false, message: "Not authorized" });
         }
 
-        console.log(`[CART] Getting cart for user ${clerkId}`);
+        console.log(`[CART] Getting cart for user ${userId}`);
 
-        const userData = await userModel.findOne({ clerkId });
+        const userData = await userModel.findById(userId);
 
         if (!userData) {
-            console.log(`[CART] ❌ User not found: ${clerkId}`);
+            console.log(`[CART] ❌ User not found: ${userId}`);
             return res.json({ success: true, cartData: {} });
         }
 
         let cartData = userData.cartData || {};
 
-        console.log(`[CART] ✅ Cart retrieved for user ${clerkId}`);
+        console.log(`[CART] ✅ Cart retrieved for user ${userId}`);
         res.json({ success: true, cartData });
     } catch (error) {
         console.error('[CART] Error getting cart:', error);

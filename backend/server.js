@@ -19,6 +19,7 @@ import path from 'path';
 import fs from 'fs';
 import dashboardRouter from './routes/dashboardRoute.js'
 import adminRoutes from "./routes/adminRoutes.js";
+import webhookRouter from './routes/webhookRoute.js'
 
 // App Config
 const app = express()
@@ -82,8 +83,10 @@ const apiLimiter = rateLimit({
     }
 });
 
-app.use(express.json())
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({
+    limit: "10mb",
+    verify: (req, res, buf) => { req.rawBody = buf; } // Capture raw body for webhook signature verification
+}));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 
 // CORS Configuration - allow all in development, restrict in production
@@ -105,6 +108,8 @@ app.use(cors(corsOptions))
 // API endpoint
 app.use('/api/user/login', authLimiter); // Rate limit login
 app.use('/api/user/register', authLimiter); // Rate limit register
+app.use('/api/user/send-otp', authLimiter); // Rate limit OTP requests
+app.use('/api/user/verify-otp', authLimiter); // Rate limit OTP verification
 app.use('/api/user/admin', authLimiter); // Rate limit admin login
 app.use('/api/user', userRouter)
 app.use('/api/product', apiLimiter, productRouter)
@@ -120,6 +125,9 @@ app.use('/api/dashboard', apiLimiter, dashboardRouter)
 // Favicon handler - prevent 404 errors
 app.get('/favicon.ico', (req, res) => res.status(204).end());
 app.get('/favicon.png', (req, res) => res.status(204).end());
+
+// Meta WhatsApp Cloud API webhook
+app.use('/webhook', webhookRouter);
 
 app.get('/', (req, res) => {
     res.send("API WORKING")

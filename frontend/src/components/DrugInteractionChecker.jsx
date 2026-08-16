@@ -1,12 +1,10 @@
 import React, { useContext, useState } from "react";
-import { useAuth } from "@clerk/clerk-react";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { ShopContext } from "../context/ShopContext";
 
 const DrugInteractionChecker = ({ cartItems = [] }) => {
   const { token, backendUrl } = useContext(ShopContext);
-  const { getToken } = useAuth();
   const [showChecker, setShowChecker] = useState(false);
   const [medicines, setMedicines] = useState([]);
   const [interactions, setInteractions] = useState([]);
@@ -23,13 +21,7 @@ const DrugInteractionChecker = ({ cartItems = [] }) => {
       return;
     }
 
-    let authToken = token;
-    try {
-      const freshToken = await getToken?.();
-      authToken = freshToken || token;
-    } catch (error) {
-      authToken = token;
-    }
+    let authToken = token || localStorage.getItem("token");
 
     setLoading(true);
     try {

@@ -1,42 +1,24 @@
-// API Helper - Gets fresh Clerk token for each request
+// API Helper - Gets the stored JWT token for each request
 import axios from 'axios';
 
-// This will be set by App.jsx
-let getTokenFunction = null;
-
-export const setGetTokenFunction = (fn) => {
-  getTokenFunction = fn;
-  console.log('[APIHelper] ✅ getToken function registered');
-};
-
-// Helper to get fresh token
+// Helper to get the stored token
 export const getFreshToken = async () => {
-  if (!getTokenFunction) {
-    console.error('[APIHelper] ❌ getTokenFunction not set!');
+  const token = localStorage.getItem('token');
+  if (!token) {
+    console.error('[APIHelper] ❌ No token found in localStorage');
     return null;
   }
-  
-  try {
-    const token = await getTokenFunction();
-    if (!token) {
-      console.error('[APIHelper] ❌ Could not get token from Clerk');
-      return null;
-    }
-    return token;
-  } catch (error) {
-    console.error('[APIHelper] ❌ Error getting fresh token:', error);
-    return null;
-  }
+  return token;
 };
 
-// Create axios instance with fresh token interceptor
+// Create axios instance with token interceptor
 export const createApiCall = async (axiosConfig) => {
   try {
     const freshToken = await getFreshToken();
     if (freshToken) {
       axiosConfig.headers = axiosConfig.headers || {};
       axiosConfig.headers.Authorization = `Bearer ${freshToken}`;
-      console.log('[APIHelper] 🔐 Fresh token added to request');
+      console.log('[APIHelper] 🔐 Token added to request');
     }
     return axiosConfig;
   } catch (error) {

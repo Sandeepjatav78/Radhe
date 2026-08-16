@@ -1,7 +1,6 @@
 import React, { useContext, useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { toast } from "react-toastify";
-import { useAuth } from "@clerk/clerk-react"; // ✅ Import useAuth to get fresh token
 import { ShopContext } from "../context/ShopContext";
 import { FaEdit, FaCamera, FaSave } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -12,8 +11,7 @@ const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/dt9g6lw4r/upload"; // Yo
 const UPLOAD_PRESET = "unsigned_preset_here"; // Replace with your unsigned upload preset name
 
 const Profile = () => {
-  const { backendUrl } = useContext(ShopContext);
-  const { getToken } = useAuth(); // ✅ Get fresh token from Clerk for each request
+  const { backendUrl, token } = useContext(ShopContext);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -45,7 +43,7 @@ const Profile = () => {
       if (isInitializing) return;
       
       try {
-        const freshToken = await getToken();
+        const freshToken = token || localStorage.getItem("token");
         
         if (!freshToken) {
           setLoading(false);
@@ -56,7 +54,7 @@ const Profile = () => {
         
         const response = await axios.get(
           `${backendUrl}/api/user/profile`,
-          { headers: { Authorization: `Bearer ${freshToken}` } } // ✅ Use fresh token
+          { headers: { Authorization: `Bearer ${freshToken}` } } // ✅ Use stored token
         );
 
         if (response.data.success) {
@@ -101,7 +99,7 @@ const Profile = () => {
     };
 
     fetchUserProfile();
-  }, [isInitializing, getToken, backendUrl, navigate]);
+  }, [isInitializing, token, backendUrl, navigate]);
 
   const handleFormChange = (e) => {
     const { name, value } = e.target;

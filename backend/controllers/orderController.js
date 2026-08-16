@@ -45,7 +45,7 @@ const placeOrder = async (req, res) => {
 
         const newOrder = new orderModel(orderData);
         await newOrder.save();
-            await userModel.findOneAndUpdate({ clerkId: userId }, { cartData: {} });
+            await userModel.findByIdAndUpdate(userId, { cartData: {} });
 
         // Increment coupon usage if applied
         if (couponCode) {
@@ -179,7 +179,7 @@ const verifyStripe = async (req, res) => {
         }
         if (success === "true") {
             const order = await orderModel.findByIdAndUpdate(orderId, { payment: true }, { new: true });
-                await userModel.findOneAndUpdate({ clerkId: userId }, { cartData: {} });
+                await userModel.findByIdAndUpdate(userId, { cartData: {} });
             
             // ✅ Use the DETAILED utility after Stripe success
             await sendWhatsAppAdmin(order);
@@ -207,7 +207,7 @@ const verifyRazorpay = async (req, res) => {
         
         if (orderInfo.status === 'paid') {
             const order = await orderModel.findByIdAndUpdate(orderInfo.receipt, { payment: true }, { new: true });
-                await userModel.findOneAndUpdate({ clerkId: userId }, { cartData: {} });
+                await userModel.findByIdAndUpdate(userId, { cartData: {} });
             
             // ✅ Use the DETAILED utility after Razorpay success
             await sendWhatsAppAdmin(order);

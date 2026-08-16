@@ -1,5 +1,4 @@
 import React, { useContext, useEffect, useState } from "react";
-import { useAuth } from "@clerk/clerk-react"; // ✅ Import to get fresh tokens
 import { ShopContext } from "../context/ShopContext";
 import Title from "../components/Title";
 import { assets } from "../assets/assets";
@@ -11,8 +10,7 @@ import CouponCode from "../components/CouponCode";
 import axios from "axios";
 
 const Cart = () => {
-  const { products, currency, cartItems, updateQuantity, navigate, backendUrl } = useContext(ShopContext);
-  const { getToken } = useAuth(); // ✅ Get fresh token from Clerk
+  const { products, currency, cartItems, updateQuantity, navigate, backendUrl, token } = useContext(ShopContext);
   const [cartData, setCartData] = useState([]);
   
   // --- CALCULATION STATES ---
@@ -172,16 +170,15 @@ const Cart = () => {
     }
 
     try {
-      // ✅ Get fresh token from Clerk for this request
-      const freshToken = await getToken();
-      if (!freshToken) {
+      // ✅ Use the stored JWT token for this request
+      if (!token) {
         toast.error("Please login to apply coupon");
         return;
       }
       const response = await axios.post(
         backendUrl + "/api/coupon/validate",
         { code: code, cartTotal },
-        { headers: { Authorization: `Bearer ${freshToken}` } } // ✅ Use fresh token
+        { headers: { Authorization: `Bearer ${token}` } } // ✅ Use stored token
       );
 
       if (response.data.success) {

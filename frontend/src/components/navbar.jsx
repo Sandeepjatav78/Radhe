@@ -1,7 +1,6 @@
 import React, { useContext, useState } from "react";
 import { assets } from "../assets/assets";
 import { Link, NavLink, useNavigate, useLocation } from "react-router-dom"; // ✅ Added useLocation
-import { useClerk } from "@clerk/clerk-react"; // ✅ Import Clerk
 import { ShopContext } from "../context/ShopContext";
 
 const Navbar = () => {
@@ -9,16 +8,12 @@ const Navbar = () => {
   const [visible, setVisible] = useState(false); 
 
   const { setShowSearch, getCartCount, setToken, token, setCartItems } = useContext(ShopContext);
-  const { signOut } = useClerk(); // ✅ Get Clerk's signOut function
   
   const navigate = useNavigate();
   const location = useLocation();
 
   const logout = async () => {
     try {
-      // ✅ Sign out from Clerk
-      await signOut();
-      
       // Clear frontend state
       localStorage.removeItem("token");
       localStorage.removeItem("cartData"); // ✅ Also clear cached cart
