@@ -96,6 +96,11 @@ const corsOptions = {
             'https://radhepharmacy.app',
             'https://www.radhepharmacy.app',
             'https://radhe-admin.vercel.app',
+            // Capacitor WebView app origins (Android/iOS)
+            'https://localhost',
+            'http://localhost',
+            'capacitor://localhost',
+            'ionic://localhost',
             process.env.FRONTEND_URL
           ].filter(Boolean) // Remove undefined values
         : true, // Allow all origins in development
